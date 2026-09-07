@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light" data-font="1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f7f7f9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16171c" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Программа конференции ЯДРО-2026 / NUCLEUS-2026 programme">
+  <title>ЯДРО-2026 — Программа</title>
+  <link rel="stylesheet" href="app.css">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('nucleus2026:theme');
+        var f = localStorage.getItem('nucleus2026:font');
+        var q = new URLSearchParams(location.search).get('lang');
+        var l = q || localStorage.getItem('nucleus2026:lang');
+        if (t) document.documentElement.dataset.theme = JSON.parse(t);
+        else if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';
+        if (f) document.documentElement.dataset.font = String(JSON.parse(f));
+        if (l) {
+          if (l.charAt(0) === '"') l = JSON.parse(l);
+          if (l === 'en' || l === 'ru') document.documentElement.lang = l;
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">К содержанию</a>
+
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#view=schedule" id="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">
+          <span class="brand-title" id="brand-title">ЯДРО-2026</span>
+          <span class="brand-sub" id="brand-sub"></span>
+        </span>
+      </a>
+
+      <nav class="nav-desktop" id="nav-desktop" aria-label="Разделы"></nav>
+
+      <div class="controls" id="controls">
+        <button class="ctl" id="btn-changes" type="button" aria-haspopup="dialog">
+          <span class="ico" data-icon="history"></span>
+          <span class="ctl-label" data-i18n="changes">Изменения</span>
+          <span class="badge" id="changes-badge" hidden></span>
+        </button>
+        <button class="ctl ctl-icon" id="btn-font" type="button">
+          <span class="ico" data-icon="type"></span>
+        </button>
+        <button class="ctl ctl-icon" id="btn-theme" type="button">
+          <span class="ico" data-icon="moon"></span>
+        </button>
+        <button class="ctl lang" id="btn-lang" type="button" aria-label="Switch language">
+          <span class="lang-ru">RU</span><span class="lang-sep">·</span><span class="lang-en">EN</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="daybar" id="daybar" hidden>
+      <div class="daybar-inner" role="tablist" id="day-tabs" aria-label="Дни конференции"></div>
+    </div>
+  </header>
+
+  <main id="main" class="main" tabindex="-1"></main>
+
+  <footer class="footer" id="footer"></footer>
+
+  <nav class="bottom-nav" id="bottom-nav" aria-label="Разделы"></nav>
+
+  <dialog class="sheet" id="detail" aria-labelledby="detail-title"></dialog>
+  <dialog class="sheet" id="changes-dialog" aria-labelledby="changes-title"></dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <div id="print-root" class="print-root" aria-hidden="true"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

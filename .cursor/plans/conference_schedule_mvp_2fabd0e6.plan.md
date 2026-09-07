@@ -4,31 +4,31 @@ overview: Build a dependency-free, offline-capable, fully bilingual (RU/EN) web 
 todos:
   - id: scaffold
     content: Create repo layout (data/, tools/, site/), .gitignore, copy original workbook to data/original/, initial commit
-    status: in_progress
+    status: completed
   - id: migrate
     content: "Write tools/migrate.py: parse original workbook (grid + plenary + 7 sections + posters) into normalized data/programme.xlsx with Настройки/Секции/Блоки/Доклады/Постеры/Изменения sheets (RU/EN columns, stable IDs); sentence-case ALL-CAPS titles with acronym protection; print judgement-call + converted-titles report"
-    status: pending
+    status: completed
   - id: build
     content: "Write tools/build.py: read programme.xlsx, validate (IDs, numbers, placement, duplicates, overlaps), compute per-talk times, emit site/data.js and single-file dist/*.html"
-    status: pending
+    status: completed
   - id: design-system
     content: "Design system: bundle Onest/Inter woff2 locally (system fallback), OKLCH tokens for light+dark themes and 7 section hues, fluid type scale, inline Lucide icons, motion tokens with prefers-reduced-motion"
-    status: pending
+    status: completed
   - id: site-core
     content: "Build site/index.html + app.css + app.js: glass sticky header with day pills, bottom tab bar (mobile) / top bar (desktop), day timeline with time rail and now-line, bento grid of parallel section cards, plenary/breaks rendering, talk detail as bottom sheet/dialog"
-    status: pending
+    status: completed
   - id: site-views
     content: Add Секции, Постеры, Поиск (search + speaker index), Моё (favourites), section filter chips, now/next marker, changelog panel
-    status: pending
+    status: completed
   - id: site-extras
     content: Add .ics export (single/starred/all), print stylesheet, full RU/EN switch (?lang= param, persisted), share-my-schedule link, font-size toggle, accessibility pass (contrast, targets, ARIA, focus)
-    status: pending
+    status: completed
   - id: verify
     content: Run build, open site via file:// in browser at desktop and 390px widths, check counts (158/32/47), fix issues
-    status: pending
+    status: completed
   - id: readme
     content: "Write README.md (RU): editing rules per sheet, rebuild command, local testing, publishing options (folder, single file, WordPress iframe), next steps"
-    status: pending
+    status: completed
 isProject: false
 ---
 
