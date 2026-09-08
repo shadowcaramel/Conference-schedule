@@ -8,6 +8,9 @@
   const D = window.PROGRAMME;
   if (!D) { document.body.textContent = 'data.js not found — run tools/build.py'; return; }
 
+  // Consecutive plenary/jubilee/sponsor cards get a group subtitle. Set false to flatten.
+  const SLOT_GROUPS = true;
+
   // ------------------------------------------------------------------ helpers
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -69,7 +72,7 @@
     expand: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
     collapse: '<path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/>',
     trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
-    list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+    mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
   };
   const icon = (name, cls = '') => el('span', { class: `ico ${cls}`.trim(), 'aria-hidden': 'true', html: `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>` });
@@ -108,6 +111,8 @@
       close: 'Закрыть', openTalk: 'Открыть доклад', dayOf: 'День', of: 'из', noTalks: 'Нет докладов', tbc: 'уточняется',
       allDays: 'Все дни', posterHint: 'Номера стендов будут указаны позже.', sectionsHint: 'Полная программа каждой секции по дням.',
       plenarySection: 'Пленарные доклады', close2: 'Закрыть', starredCount: 'отмечено', dayTabs: 'Дни конференции', viewsNav: 'Разделы',
+      email: 'Email', layoutTimeline: 'Лента', layoutOverview: 'Сетка', scheduleLayout: 'Вид расписания',
+      slotGroupPlenary: 'Пленарные доклады', openSection: 'Открыть секцию',
     },
     en: {
       skip: 'Skip to content', schedule: 'Schedule', sections: 'Sections', posters: 'Posters', search: 'Search', my: 'My',
@@ -132,6 +137,8 @@
       close: 'Close', openTalk: 'Open talk', dayOf: 'Day', of: 'of', noTalks: 'No talks', tbc: 'to be confirmed',
       allDays: 'All days', posterHint: 'Board numbers will be announced later.', sectionsHint: 'Full programme of each section, day by day.',
       plenarySection: 'Plenary talks', close2: 'Close', starredCount: 'starred', dayTabs: 'Conference days', viewsNav: 'Sections',
+      email: 'Email', layoutTimeline: 'Timeline', layoutOverview: 'Overview', scheduleLayout: 'Schedule layout',
+      slotGroupPlenary: 'Plenary talks', openSection: 'Open section',
     },
   };
   const BLOCK_TYPE_LABEL = {
@@ -169,9 +176,11 @@
     filters: new Set(),
     favs: new Set(store.get('favs', [])),
     expanded: new Map(),          // blockId -> bool (user override)
+    layout: 'timeline',           // 'timeline' | 'overview'
     lastSeenChanges: store.get('lastSeenChanges', ''),
   };
   if (params.get('lang')) store.set('lang', state.lang);
+  if (params.get('groups') === '0') document.documentElement.dataset.slotGroups = 'off';
 
   const t = (key) => (I18N[state.lang] && I18N[state.lang][key]) || I18N.ru[key] || key;
   const L = (obj) => obj ? (obj[state.lang] || obj.ru || obj.en || '') : '';
@@ -246,6 +255,18 @@
   const speakerShort = (x) => x.last || x.first || '';
   function isFav(id) { return state.favs.has(id); }
   const roomOf = (b) => b.room || (b.section && sectionsById[b.section] && sectionsById[b.section].room) || '';
+  const roomLabel = (b) => roomOf(b) || t('tbc');
+  const chairLabel = (s) => (s && L(s.chair)) || t('tbc');
+  function slotGroupsOn() {
+    return SLOT_GROUPS && document.documentElement.dataset.slotGroups !== 'off';
+  }
+  const TALK_LIKE = new Set(['plenary', 'jubilee', 'sponsor']);
+  function slotIsTalkLike(slot) {
+    return slot.blocks.length && slot.blocks.every(b => TALK_LIKE.has(b.type));
+  }
+  function slotIsShortBreak(slot) {
+    return slot.blocks.length && slot.blocks.every(b => b.type === 'break');
+  }
 
   function slotsForDay(date) {
     // group blocks by start time, keep parallel section blocks together
@@ -289,6 +310,7 @@
   function writeHash(push = false) {
     const parts = [`view=${state.view}`];
     if (state.view === 'schedule' && state.day) parts.push(`day=${state.day}`);
+    if (state.view === 'schedule' && state.layout === 'overview') parts.push('layout=overview');
     if (state.view === 'sections') parts.push(`section=${state.section}`);
     if (state.view === 'search' && state.q) parts.push(`q=${encodeURIComponent(state.q)}`);
     if (openTalkId) parts.push(`talk=${openTalkId}`);
@@ -298,6 +320,8 @@
   }
   let openTalkId = null;
   let suppressHash = false;
+  let ignoreDayObs = false;
+  let dayObserver = null;
 
   function applyHash() {
     const h = readHash();
@@ -313,6 +337,7 @@
     }
     if (h.view && ['schedule', 'sections', 'posters', 'search', 'my'].includes(h.view)) state.view = h.view;
     if (h.day && CONF_DAYS.has(h.day)) state.day = h.day;
+    if (h.layout === 'overview' || h.layout === 'timeline') state.layout = h.layout;
     if (h.section && sectionsById[h.section]) state.section = h.section;
     if (h.q !== undefined) state.q = h.q;
     if (h.talk && (D.talks[h.talk] || postersById[h.talk])) openTalkId = h.talk; else openTalkId = null;
@@ -468,9 +493,35 @@
     if (state.view === view && view !== 'schedule') return;
     withTransition(() => { state.view = view; renderAll(); writeHash(push); window.scrollTo(0, 0); });
   }
-  function setDay(day) {
-    if (state.day === day) return;
-    withTransition(() => { state.day = day; renderMain(); renderDaybar(); writeHash(true); });
+  function setLayout(layout) {
+    if (state.layout === layout) return;
+    state.layout = layout;
+    writeHash(true);
+    renderDaybar();
+    renderMain();
+    window.scrollTo(0, 0);
+  }
+  function setDay(day, opts = {}) {
+    const scroll = opts.scroll !== false;
+    const rebuild = opts.rebuild === true || state.layout === 'overview' || state.view !== 'schedule';
+    if (state.day === day && !opts.force) {
+      if (scroll && state.layout === 'timeline') scrollToDay(day);
+      return;
+    }
+    state.day = day;
+    writeHash(true);
+    renderDaybar();
+    if (rebuild) renderMain();
+    else if (scroll) scrollToDay(day);
+  }
+  function scrollToDay(day) {
+    const chunk = document.querySelector(`.day-chunk[data-day="${day}"]`);
+    if (!chunk) return;
+    ignoreDayObs = true;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    chunk.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    clearTimeout(scrollToDay._t);
+    scrollToDay._t = setTimeout(() => { ignoreDayObs = false; }, 500);
   }
 
   // ------------------------------------------------------------------ day bar
@@ -486,14 +537,20 @@
       tabs.append(btn);
     }
     tabs.append(el('span', { class: 'spacer' }));
-    const allOpen = D.blocks.filter(b => b.date === state.day && b.type === 'section').every(b => isExpanded(b));
-    tabs.append(el('button', { class: 'btn ghost sm daybar-action', type: 'button', onclick: () => toggleAll(!allOpen) }, icon(allOpen ? 'collapse' : 'expand'), el('span', null, t(allOpen ? 'collapseAll' : 'expandAll'))));
+    const isOverview = state.layout === 'overview';
+    tabs.append(el('div', { class: 'seg', role: 'group', 'aria-label': t('scheduleLayout') },
+      el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(!isOverview), onclick: () => setLayout('timeline') }, t('layoutTimeline')),
+      el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(isOverview), onclick: () => setLayout('overview') }, t('layoutOverview'))));
+    if (!isOverview) {
+      const allOpen = D.blocks.filter(b => b.type === 'section').every(b => isExpanded(b));
+      tabs.append(el('button', { class: 'btn ghost sm daybar-action', type: 'button', onclick: () => toggleAll(!allOpen) }, icon(allOpen ? 'collapse' : 'expand'), el('span', null, t(allOpen ? 'collapseAll' : 'expandAll'))));
+    }
     requestAnimationFrame(() => { const act = $('.daypill[aria-selected="true"]', tabs); if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); });
   }
   function isExpanded(block) { return state.expanded.has(block.id) ? state.expanded.get(block.id) : isDesktop(); }
   function toggleAll(open) {
-    for (const b of D.blocks) if (b.date === state.day && b.type === 'section') state.expanded.set(b.id, open);
-    renderMain(); renderDaybar();
+    for (const b of D.blocks) if (b.type === 'section') state.expanded.set(b.id, open);
+    preserveScroll(() => { renderMain(); renderDaybar(); });
   }
 
   // ------------------------------------------------------------------ main views
@@ -512,52 +569,208 @@
 
   // ---- Schedule ------------------------------------------------------------
   function viewSchedule() {
+    if (state.layout === 'overview') return viewOverview();
     const frag = document.createDocumentFragment();
-    const date = state.day;
     const now = confNow();
-    const isToday = now.date === date;
-    const dayIndex = DAYS.indexOf(date) + 1;
 
-    frag.append(el('div', { class: 'page-head' },
-      el('div', null,
-        el('h1', { class: 'page-title' }, fmtLong(date), ' ', el('span', { class: 'dim' }, `· ${t('dayOf')} ${dayIndex} ${t('of')} ${DAYS.length}`)),
-        el('p', { class: 'page-sub' }, daySummary(date).flatMap((s, i) => i ? [el('span', { class: 'sep' }, '·'), el('span', null, s)] : [el('span', null, s)]))),
-    ));
-
-    // section filter chips
-    const secIds = Array.from(new Set(D.blocks.filter(b => b.date === date && b.type === 'section').map(b => b.section))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const secIds = Array.from(new Set(D.blocks.filter(b => b.type === 'section').map(b => b.section)))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     if (secIds.length > 1) {
       const chips = el('div', { class: 'chips scroll', role: 'group', 'aria-label': t('filterSections') });
-      chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(state.filters.size === 0), onclick: () => { state.filters.clear(); renderMain(); } }, t('allSections')));
+      chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(state.filters.size === 0), onclick: () => { state.filters.clear(); preserveScroll(renderMain); } }, t('allSections')));
       for (const id of secIds) {
         const s = sectionsById[id];
-        chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.filters.has(id)), onclick: () => { state.filters.has(id) ? state.filters.delete(id) : state.filters.add(id); renderMain(); } },
+        chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.filters.has(id)), onclick: () => { state.filters.has(id) ? state.filters.delete(id) : state.filters.add(id); preserveScroll(renderMain); } },
           el('span', { class: 'dot' }), `${id} · ${L(s.short)}`));
       }
       frag.append(el('div', { class: 'filters' }, chips));
     }
 
-    if (isToday) { const card = nowCard(date, now); if (card) frag.append(card); }
-
-    const timeline = el('div', { class: 'timeline' });
-    for (const slot of slotsForDay(date)) {
-      const sMin = toMin(slot.start), eMin = toMin(slot.end);
-      const status = isToday ? (now.minutes >= eMin ? 'is-past' : now.minutes >= sMin ? 'is-now' : '') : '';
-      const body = el('div', { class: 'slot-body' });
-      const sectionBlocks = slot.blocks.filter(b => b.type === 'section');
-      const others = slot.blocks.filter(b => b.type !== 'section');
-      for (const b of others) body.append(renderBlock(b, isToday ? now : null));
-      if (sectionBlocks.length) {
-        const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}` });
-        for (const b of sectionBlocks) grid.append(renderSectionCard(b, isToday ? now : null));
-        body.append(el('div', { class: 'parallel' }, grid));
-      }
-      timeline.append(el('section', { class: `slot ${status}`.trim(), id: `slot-${slot.start.replace(':', '')}`, 'aria-label': `${slot.start}–${slot.end}` },
-        el('div', { class: 'slot-time' }, el('span', { class: 't-start' }, slot.start), el('span', { class: 't-end' }, slot.end), el('span', { class: 'rail-dot' })),
-        body));
+    for (const date of DAYS) {
+      const isToday = now.date === date;
+      const dayIndex = DAYS.indexOf(date) + 1;
+      const chunk = el('section', { class: 'day-chunk', dataset: { day: date }, id: `day-${date}` });
+      chunk.append(el('div', { class: 'day-chunk-head' },
+        el('h1', { class: 'page-title' }, fmtLong(date), ' ', el('span', { class: 'dim' }, `· ${t('dayOf')} ${dayIndex} ${t('of')} ${DAYS.length}`)),
+        el('p', { class: 'page-sub' }, daySummary(date).flatMap((s, i) => i ? [el('span', { class: 'sep' }, '·'), el('span', null, s)] : [el('span', null, s)]))));
+      if (isToday) { const card = nowCard(date, now); if (card) chunk.append(card); }
+      chunk.append(renderDayTimeline(date, isToday ? now : null));
+      frag.append(chunk);
     }
-    frag.append(timeline);
+    requestAnimationFrame(() => {
+      observeDayChunks();
+      if (state.day && !viewSchedule._skipScroll) {
+        const chunk = document.querySelector(`.day-chunk[data-day="${state.day}"]`);
+        if (chunk) {
+          ignoreDayObs = true;
+          chunk.scrollIntoView({ behavior: 'auto', block: 'start' });
+          setTimeout(() => { ignoreDayObs = false; }, 200);
+        }
+      }
+      viewSchedule._skipScroll = false;
+    });
     return frag;
+  }
+
+  function preserveScroll(fn) {
+    const y = window.scrollY;
+    viewSchedule._skipScroll = true;
+    fn();
+    window.scrollTo(0, y);
+  }
+
+  function clusterSlots(slots) {
+    if (!slotGroupsOn()) return slots.map(s => ({ kind: 'slot', slot: s }));
+    const out = [];
+    let i = 0;
+    while (i < slots.length) {
+      if (slotIsTalkLike(slots[i])) {
+        const group = [slots[i++]];
+        while (i < slots.length) {
+          if (slotIsTalkLike(slots[i])) { group.push(slots[i++]); continue; }
+          if (slotIsShortBreak(slots[i]) && i + 1 < slots.length && slotIsTalkLike(slots[i + 1])) {
+            group.push(slots[i++]); continue;
+          }
+          break;
+        }
+        if (group.filter(slotIsTalkLike).length >= 2) out.push({ kind: 'group', label: t('slotGroupPlenary'), slots: group });
+        else group.forEach(s => out.push({ kind: 'slot', slot: s }));
+      } else {
+        out.push({ kind: 'slot', slot: slots[i++] });
+      }
+    }
+    return out;
+  }
+
+  function renderDayTimeline(date, now) {
+    const timeline = el('div', { class: 'timeline' });
+    const isToday = now && now.date === date;
+    for (const item of clusterSlots(slotsForDay(date))) {
+      if (item.kind === 'group') {
+        const group = el('div', { class: 'slot-group' });
+        group.append(el('div', { class: 'slot-group-label' }, item.label));
+        for (const slot of item.slots) group.append(renderSlot(slot, isToday ? now : null));
+        timeline.append(group);
+      } else {
+        timeline.append(renderSlot(item.slot, isToday ? now : null));
+      }
+    }
+    return timeline;
+  }
+
+  function renderSlot(slot, now) {
+    const sMin = toMin(slot.start), eMin = toMin(slot.end);
+    const status = now ? (now.minutes >= eMin ? 'is-past' : now.minutes >= sMin ? 'is-now' : '') : '';
+    const body = el('div', { class: 'slot-body' });
+    const sectionBlocks = slot.blocks.filter(b => b.type === 'section');
+    const others = slot.blocks.filter(b => b.type !== 'section');
+    for (const b of others) body.append(renderBlock(b, now));
+    if (sectionBlocks.length) {
+      const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}` });
+      for (const b of sectionBlocks) grid.append(renderSectionCard(b, now));
+      const allOpen = sectionBlocks.every(b => isExpanded(b));
+      const toggle = el('button', { class: 'slot-collapse', type: 'button', onclick: () => {
+        const open = !allOpen;
+        for (const b of sectionBlocks) state.expanded.set(b.id, open);
+        preserveScroll(() => { renderMain(); renderDaybar(); });
+      } }, icon(allOpen ? 'collapse' : 'expand'), t(allOpen ? 'hideTalks' : 'showTalks'));
+      body.append(el('div', { class: 'parallel' }, toggle, grid));
+    }
+    return el('section', { class: `slot ${status}`.trim(), id: `slot-${slot.start.replace(':', '')}-${slot.blocks[0].date || ''}`, 'aria-label': `${slot.start}–${slot.end}` },
+      el('div', { class: 'slot-time' }, el('span', { class: 't-start' }, slot.start), el('span', { class: 't-end' }, slot.end), el('span', { class: 'rail-dot' })),
+      body);
+  }
+
+  function observeDayChunks() {
+    if (dayObserver) { dayObserver.disconnect(); dayObserver = null; }
+    const chunks = $$('.day-chunk');
+    if (!chunks.length) return;
+    dayObserver = new IntersectionObserver((entries) => {
+      if (ignoreDayObs) return;
+      const hit = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!hit) return;
+      const day = hit.target.dataset.day;
+      if (day && day !== state.day) {
+        state.day = day;
+        renderDaybar();
+        writeHash(false);
+      }
+    }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, 0.15, 0.4] });
+    chunks.forEach(c => dayObserver.observe(c));
+  }
+
+  function mergeDayBands(date) {
+    const blocks = D.blocks.filter(b => b.date === date).slice().sort((a, b) => a.start.localeCompare(b.start) || a.type.localeCompare(b.type));
+    const bands = [];
+    let i = 0;
+    while (i < blocks.length) {
+      const b = blocks[i];
+      if (TALK_LIKE.has(b.type)) {
+        const start = b.start; let end = b.end; const items = [b]; i++;
+        while (i < blocks.length) {
+          const n = blocks[i];
+          if (TALK_LIKE.has(n.type)) { items.push(n); if (n.end > end) end = n.end; i++; }
+          else if (n.type === 'break' && i + 1 < blocks.length && TALK_LIKE.has(blocks[i + 1].type)) { i++; }
+          else break;
+        }
+        bands.push({ start, end, kind: 'plenary', items });
+      } else if (b.type === 'section') {
+        const start = b.start; let end = b.end; const items = [b]; i++;
+        while (i < blocks.length && blocks[i].type === 'section' && blocks[i].start === start) {
+          items.push(blocks[i]); if (blocks[i].end > end) end = blocks[i].end; i++;
+        }
+        bands.push({ start, end, kind: 'section', items });
+      } else {
+        bands.push({ start: b.start, end: b.end, kind: b.type, items: [b] });
+        i++;
+      }
+    }
+    return bands;
+  }
+
+  function viewOverview() {
+    const frag = document.createDocumentFragment();
+    frag.append(el('div', { class: 'page-head' },
+      el('div', null, el('h1', { class: 'page-title' }, t('layoutOverview')),
+        el('p', { class: 'page-sub' }, t('schedule')))));
+    const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
+    const starts = Array.from(new Set(DAYS.flatMap(d => byDay[d].map(b => b.start)))).sort();
+    const table = el('div', { class: 'overview', role: 'table' });
+    table.style.setProperty('--days', String(DAYS.length));
+    const head = el('div', { class: 'overview-row overview-head', role: 'row' },
+      el('div', { class: 'overview-time', role: 'columnheader' }),
+      ...DAYS.map(d => el('div', { class: `overview-cell head${d === state.day ? ' is-active' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d } },
+        el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)))));
+    table.append(head);
+    for (const start of starts) {
+      const cells = DAYS.map(d => byDay[d].find(b => b.start === start) || null);
+      const end = cells.reduce((m, c) => (c && c.end > m ? c.end : m), '');
+      const row = el('div', { class: 'overview-row', role: 'row' },
+        el('div', { class: 'overview-time', role: 'cell' }, el('span', { class: 't-start' }, start), end ? el('span', { class: 't-end' }, end) : null));
+      for (const band of cells) row.append(renderOverviewCell(band));
+      table.append(row);
+    }
+    frag.append(el('div', { class: 'overview-wrap' }, table));
+    return frag;
+  }
+
+  function renderOverviewCell(band) {
+    if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
+    if (band.kind === 'section') {
+      const inner = el('div', { class: 'overview-secs' });
+      for (const b of band.items) {
+        const s = sectionsById[b.section];
+        inner.append(el('span', { class: 'overview-sec', dataset: { color: s ? s.color : 'slate' } },
+          el('span', { class: 'dot' }), s ? `${t('section')} ${s.id} · ${L(s.short)}` : `${t('section')} ${b.section}`));
+      }
+      return el('div', { class: 'overview-cell sections', role: 'cell' }, inner);
+    }
+    if (band.kind === 'plenary') {
+      return el('div', { class: 'overview-cell plenary-band', role: 'cell' }, t('slotGroupPlenary'));
+    }
+    const b = band.items[0];
+    const label = blockTitle(b);
+    return el('div', { class: `overview-cell kind-${band.kind}`, role: 'cell' }, label);
   }
 
   function nowCard(date, now) {
@@ -569,7 +782,7 @@
     const item = (b) => {
       const s = b.section ? sectionsById[b.section] : null;
       const label = b.type === 'section' ? `${t('section')} ${b.section} · ${blockTitle(b)}` : (b.talks.length === 1 && D.talks[b.talks[0]] ? `${blockTitle(b)}: ${speakerShort(D.talks[b.talks[0]])}` : blockTitle(b));
-      return el('a', { class: 'now-item', href: `#slot-${b.start.replace(':', '')}`, dataset: s ? { color: s.color } : null, onclick: (e) => { e.preventDefault(); const target = $(`#slot-${b.start.replace(':', '')}`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+      return el('a', { class: 'now-item', href: `#slot-${b.start.replace(':', '')}-${b.date}`, dataset: s ? { color: s.color } : null, onclick: (e) => { e.preventDefault(); const target = document.getElementById(`slot-${b.start.replace(':', '')}-${b.date}`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
         s ? el('span', { class: 'dot' }) : null, label, el('span', { class: 'muted xs' }, ` ${t('until')} ${b.end}`));
     };
     if (current.length) {
@@ -600,14 +813,13 @@
   function renderPlenary(b, now) {
     const talk = D.talks[b.talks[0]];
     if (!talk) return el('div', { class: 'row-card' }, icon('mic'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, t('tbc'))));
-    const topic = talk.topic ? sectionsById[talk.topic] : null;
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
     const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${talk.title}`,
       onclick: () => openDetail(talk.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id); } } },
-      el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), topic ? el('span', { class: 'sec-chip', dataset: { color: topic.color } }, el('span', { class: 'dot' }), L(topic.short)) : null, statusBadge(talk)),
+      el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
       el('h3', { class: 'ptitle' }, talk.title),
       el('div', { class: 'pspeaker' }, el('b', null, speakerName(talk)), talk.org ? el('span', null, talk.org) : null),
-      el('div', { class: 'pmeta' }, el('span', { class: 'tnum' }, icon('clock'), ` ${talk.start}–${talk.end} · ${talk.duration} ${t('min')}`), roomOf(b) ? el('span', null, icon('pin'), ` ${roomOf(b)}`) : null),
+      el('div', { class: 'pmeta' }, el('span', { class: 'tnum' }, icon('clock'), ` ${talk.start}–${talk.end} · ${talk.duration} ${t('min')}`), el('span', { class: 'room' }, icon('pin'), ` ${roomLabel(b)}`)),
       starButton(talk.id));
     return card;
   }
@@ -626,13 +838,16 @@
     const range = talks.length ? (talks.length > 1 ? `${talks[0].number}–${talks[talks.length - 1].number}` : talks[0].number) : '';
     const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}`, dataset: { color: s.color, block: b.id } });
     const listId = `talks-${b.id}`;
-    const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': String(open), 'aria-controls': listId, onclick: () => { state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); list.classList.toggle('open', nowOpen); } },
+    const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': String(open), 'aria-controls': listId, 'aria-label': isDesktop() ? t('openSection') : undefined, onclick: () => {
+      if (isDesktop()) { state.section = s.id; setView('sections'); return; }
+      state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); list.classList.toggle('open', nowOpen);
+    } },
       el('span', { class: 'sec-name' }, el('span', { class: 'num' }, `${t('section')} ${s.id}`), el('span', null, L(s.short))),
       el('span', { class: 'chev' }, icon('chevron')),
       el('span', { class: 'sec-meta' },
         el('span', null, `${talks.length} ${t('talks')}${range ? ` (${range})` : ''}`),
-        roomOf(b) ? el('span', null, icon('pin'), ` ${roomOf(b)}`) : null,
-        L(s.chair) ? el('span', null, icon('user'), ` ${L(s.chair)}`) : null));
+        el('span', null, icon('pin'), ` ${roomLabel(b)}`),
+        el('span', null, icon('user'), ` ${chairLabel(s)}`)));
     const list = el('div', { class: `collapsible${open ? ' open' : ''}`, id: listId }, el('div', { class: 'collapsible-inner' }, el('div', { class: 'talks' }, ...talks.map(tk => renderTalkRow(tk, now)))));
     card.append(head, list);
     return card;
@@ -669,7 +884,7 @@
       el('div', { class: 'kicker' }, s.id === 'P' ? t('plenarySection') : `${t('section')} ${s.id}`),
       el('h2', null, L(s.short)),
       L(s.full) !== L(s.short) ? el('p', { class: 'full' }, L(s.full)) : null,
-      el('div', { class: 'meta' }, L(s.chair) ? el('span', null, icon('user'), ` ${t('chair')}: ${L(s.chair)}`) : null, el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), s.room ? el('span', null, icon('pin'), ` ${s.room}`) : null)));
+      el('div', { class: 'meta' }, el('span', null, icon('user'), ` ${t('chair')}: ${chairLabel(s)}`), el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), el('span', null, icon('pin'), ` ${s.room || t('tbc')}`))));
 
     // group by day
     const byDay = new Map();
@@ -730,7 +945,7 @@
   function renderPoster(p, q = '') {
     const s = sectionsById[p.section];
     return el('article', { class: 'card hoverable poster', dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id); } } },
-      el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', null, `${t('section')} ${s.id}`) : null),
+      el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null),
       el('div', { class: 'p-title' }, q ? highlight(p.title, q) : p.title),
       el('div', { class: 'p-speaker' }, el('b', null, q ? highlight(speakerName(p), q) : speakerName(p)), p.org ? ` · ${p.org}` : ''),
       starButton(p.id));
@@ -795,7 +1010,7 @@
       const letters = Array.from(byLetter.keys()).sort((a, b) => a.localeCompare(b, locale()));
       for (const ch of letters) {
         wrap.append(el('div', { class: 'index-letter' }, el('div', { class: 'letter', 'aria-hidden': 'true' }, ch), el('div', { class: 'index-names' },
-          ...byLetter.get(ch).map(p => el('button', { class: 'name-chip', type: 'button', onclick: () => { state.q = p.last; $('.search-box input').value = p.last; $('.search-box .clear').hidden = false; writeHash(); renderResults(); } }, `${p.last}${p.first ? ' ' + p.first.split(' ')[0] : ''}`, p.n > 1 ? el('span', { class: 'n' }, `×${p.n}`) : null)))));
+          ...byLetter.get(ch).map(p => el('button', { class: 'name-chip', type: 'button', onclick: () => { const q = speakerName(p); state.q = q; $('.search-box input').value = q; $('.search-box .clear').hidden = false; writeHash(); renderResults(); } }, `${p.last}${p.first ? ' ' + p.first.split(' ')[0] : ''}`, p.n > 1 ? el('span', { class: 'n' }, `×${p.n}`) : null)))));
       }
       return wrap;
     }
@@ -885,8 +1100,13 @@
     if (block) { fact(t('date'), fmtShort(block.date)); }
     if (talk && talk.start) fact(t('time'), `${talk.start}–${talk.end}`); else if (poster && posterBlock) fact(t('time'), `${posterBlock.start}–${posterBlock.end}`);
     if (talk && talk.duration) fact(t('duration'), `${talk.duration} ${t('min')}`);
-    if (block && roomOf(block)) fact(t('roomLong'), roomOf(block));
-    if (sec && L(sec.chair) && sec.id !== 'P') fact(t('chair'), L(sec.chair));
+    fact(t('roomLong'), block ? roomLabel(block) : t('tbc'));
+    if (sec && sec.id !== 'P') fact(t('chair'), chairLabel(sec));
+    if (item.email) {
+      facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, t('email')), el('a', { class: 'v', href: `mailto:${item.email}` }, item.email)));
+    } else {
+      fact(t('email'), t('tbc'));
+    }
     const body = el('div', { class: 'sheet-body' },
       el('h2', { id: 'detail-title' }, item.title || '—'),
       el('div', { class: 'speaker' }, el('b', null, speakerName(item)), item.org ? el('span', { class: 'org' }, item.org) : null),
@@ -928,9 +1148,22 @@
       el('span', { class: 'xs' }, t('fontLicence'))));
   }
 
+  function setPrintPage(overview) {
+    let tag = document.getElementById('print-page-style');
+    if (!tag) { tag = document.createElement('style'); tag.id = 'print-page-style'; document.head.append(tag); }
+    tag.textContent = overview
+      ? '@media print { @page { size: A4 landscape; margin: 8mm; } }'
+      : '@media print { @page { margin: 14mm 12mm; } }';
+    document.documentElement.dataset.print = overview ? 'overview' : 'detail';
+  }
+
   function renderPrint() {
+    const overview = state.view === 'schedule' && state.layout === 'overview';
+    setPrintPage(overview);
     const root = $('#print-root'); root.innerHTML = '';
+    root.className = overview ? 'print-root print-overview' : 'print-root';
     root.append(el('h1', null, L(D.settings.title) || 'ЯДРО-2026'), el('div', { class: 'print-sub' }, [L(D.settings.city), L(D.settings.venue), fmtRange(), `${t('updated')}: ${fmtStamp(D.generatedAt)}`].filter(Boolean).join(' · ')));
+    if (overview) { renderPrintOverview(root); return; }
     for (const date of DAYS) {
       root.append(el('h2', null, fmtLong(date)));
       for (const slot of slotsForDay(date)) {
@@ -939,7 +1172,7 @@
         for (const b of slot.blocks) {
           const blk = el('div', { class: 'p-block' });
           const title = b.type === 'section' ? `${t('section')} ${b.section} · ${blockTitle(b)}` : blockTitle(b);
-          const meta = [roomOf(b) ? `${t('room')} ${roomOf(b)}` : '', b.type === 'section' && sectionsById[b.section] && L(sectionsById[b.section].chair) ? `${t('chair')}: ${L(sectionsById[b.section].chair)}` : '', L(b.note)].filter(Boolean).join(' · ');
+          const meta = [`${t('room')} ${roomLabel(b)}`, b.type === 'section' && sectionsById[b.section] ? `${t('chair')}: ${chairLabel(sectionsById[b.section])}` : '', L(b.note)].filter(Boolean).join(' · ');
           const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
           if (talks.length === 1 && b.type !== 'section') {
             const tk = talks[0];
@@ -953,7 +1186,38 @@
         root.append(el('div', { class: `p-slot${hasTalks ? ' allow-break' : ''}` }, el('div', { class: 'p-time' }, slot.start, el('small', null, slot.end)), body));
       }
     }
-    root.append(el('h2', null, t('posters')), el('div', { class: 'p-posters' }, ...D.posters.map(p => el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, p.board || ''), el('span', null, el('div', { class: 'pt-title' }, p.title), el('div', { class: 'pt-speaker' }, [speakerName(p), p.org, sectionsById[p.section] ? `${t('section')} ${p.section}` : ''].filter(Boolean).join(' · ')))))));
+    root.append(el('h2', null, t('posters')), el('div', { class: 'p-posters' }, ...D.posters.map(p => el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, p.board || ''), el('span', null, el('div', { class: 'pt-title' }, p.title), el('div', { class: 'pt-speaker' }, [speakerName(p), p.org, sectionsById[p.section] ? L(sectionsById[p.section].short) : ''].filter(Boolean).join(' · ')))))));
+  }
+
+  function renderPrintOverview(root) {
+    const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
+    const starts = Array.from(new Set(DAYS.flatMap(d => byDay[d].map(b => b.start)))).sort();
+    const table = el('table', { class: 'p-overview' });
+    const thead = el('thead', null, el('tr', null, el('th', null, t('time')), ...DAYS.map(d => el('th', null, `${fmtDow(d)} ${fmtDom(d)}`))));
+    const tbody = el('tbody');
+    for (const start of starts) {
+      const cells = DAYS.map(d => byDay[d].find(b => b.start === start) || null);
+      const end = cells.reduce((m, c) => (c && c.end > m ? c.end : m), '');
+      const tr = el('tr', null, el('th', { class: 'p-ov-time' }, start, end ? el('div', { class: 'muted' }, end) : null));
+      for (const band of cells) {
+        if (!band) { tr.append(el('td', { class: 'empty' })); continue; }
+        if (band.kind === 'section') {
+          const td = el('td', { class: 'secs' });
+          for (const b of band.items) {
+            const s = sectionsById[b.section];
+            td.append(el('div', { class: 'p-ov-sec' }, s ? `${s.id} · ${L(s.short)}` : b.section));
+          }
+          tr.append(td);
+        } else if (band.kind === 'plenary') {
+          tr.append(el('td', { class: 'plenary' }, t('slotGroupPlenary')));
+        } else {
+          tr.append(el('td', null, blockTitle(band.items[0])));
+        }
+      }
+      tbody.append(tr);
+    }
+    table.append(thead, tbody);
+    root.append(table);
   }
 
   // ------------------------------------------------------------------ wiring
@@ -971,8 +1235,8 @@
   $('#brand').addEventListener('click', (e) => { e.preventDefault(); setView('schedule'); });
   window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); });
   window.addEventListener('beforeprint', renderPrint);
-  window.matchMedia('(min-width: 900px)').addEventListener('change', () => { if (state.view === 'schedule') { renderMain(); renderDaybar(); } });
-  setInterval(() => { if (state.view === 'schedule' && confNow().date === state.day) { renderMain(); } }, 60000);
+  window.matchMedia('(min-width: 900px)').addEventListener('change', () => { if (state.view === 'schedule') { preserveScroll(() => { renderMain(); renderDaybar(); }); } });
+  setInterval(() => { if (state.view === 'schedule' && state.layout === 'timeline' && confNow().date === state.day) { preserveScroll(renderMain); } }, 60000);
 
   // boot
   applyHash();

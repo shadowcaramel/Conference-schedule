@@ -28,6 +28,7 @@ from common import (  # noqa: E402
     COLS_SECTIONS,
     COLS_SETTINGS,
     COLS_TALKS,
+    DATA_DIR,
     DEFAULT_DURATION,
     DIST_DIR,
     PLENARY_SECTION,
@@ -239,7 +240,8 @@ def build_model(wb) -> dict:
             diag.warn(f"Доклады, строка {row} ({tid}): тематика «{topic}» не соответствует ни одной секции")
         talks[tid] = {
             "id": tid, "section": sec, "number": num, "last": clean(rec["Фамилия"]),
-            "first": clean(rec["Имя"]), "org": clean(rec["Организация"]), "title": title,
+            "first": clean(rec["Имя"]), "org": clean(rec["Организация"]), "email": clean(rec["Email"]),
+            "title": title,
             "duration": duration, "startOverride": start_override,
             "status": TALK_STATUSES.get(status_raw, "ok"), "topic": topic,
             "note": bilingual(rec["Примечание (RU)"], rec["Примечание (EN)"]),
@@ -373,6 +375,7 @@ def build_model(wb) -> dict:
             diag.warn(f"Постеры, строка {rec['_row']} ({pid}): неизвестная секция «{sec}»")
         posters.append({
             "id": pid, "last": clean(rec["Фамилия"]), "first": clean(rec["Имя"]), "org": clean(rec["Организация"]),
+            "email": clean(rec["Email"]),
             "title": clean(rec["Название"]), "section": sec, "board": norm_number(rec["№ стенда"]),
             "note": bilingual(rec["Примечание (RU)"], rec["Примечание (EN)"]),
         })
@@ -482,11 +485,23 @@ def write_single_file(model: dict) -> Path | None:
 
 def main(argv: list[str]) -> int:
     check_only = "--check" in argv
-    if not PROGRAMME_XLSX.exists():
+    src = PROGRAMME_XLSX
+    alt = DATA_DIR / "_programme_update.xlsx"
+    if alt.exists():
+        try:
+            import shutil
+            shutil.copy2(alt, PROGRAMME_XLSX)
+            alt.unlink()
+            print(f"Применена отложенная правка книги → {PROGRAMME_XLSX}")
+        except PermissionError:
+            print("Файл programme.xlsx открыт в Excel — сборка идёт из data/_programme_update.xlsx "
+                  "(закройте книгу и повторите, чтобы подменить оригинал).")
+            src = alt
+    if not src.exists():
         print(f"Не найден файл {PROGRAMME_XLSX}. Сначала выполните: python tools/migrate.py")
         return 1
     try:
-        wb = openpyxl.load_workbook(PROGRAMME_XLSX, data_only=True)
+        wb = openpyxl.load_workbook(src, data_only=True)
     except PermissionError:
         print("Файл programme.xlsx открыт в Excel и заблокирован. Закройте его (или сохраните копию) и повторите.")
         return 1
