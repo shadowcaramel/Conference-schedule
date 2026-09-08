@@ -215,6 +215,7 @@
     return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) * 60 + parseInt(m[3], 10));
   }
   const toMin = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+  const fromMin = (n) => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
   const dateObj = (iso) => new Date(iso + 'T00:00:00Z');
   function fmtDate(iso, opts) {
     return new Intl.DateTimeFormat(locale(), Object.assign({ timeZone: 'UTC' }, opts)).format(dateObj(iso));
@@ -666,9 +667,12 @@
     const others = slot.blocks.filter(b => b.type !== 'section');
     for (const b of others) body.append(renderBlock(b, now));
     if (sectionBlocks.length) {
-      const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}` });
-      for (const b of sectionBlocks) grid.append(renderSectionCard(b, now));
+      const times = Array.from(new Set(sectionBlocks.flatMap(b => b.talks.map(id => D.talks[id]).filter(Boolean).map(tk => tk.start)))).sort();
       const allOpen = sectionBlocks.every(b => isExpanded(b));
+      const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}${allOpen ? '' : ' is-collapsed'}` });
+      grid.style.setProperty('--cols', String(Math.min(sectionBlocks.length, 4)));
+      grid.style.setProperty('--talk-rows', String(times.length));
+      for (const b of sectionBlocks) grid.append(renderSectionCard(b, now, times));
       const toggle = el('button', { class: 'slot-collapse', type: 'button', onclick: () => {
         const open = !allOpen;
         for (const b of sectionBlocks) state.expanded.set(b.id, open);
@@ -728,28 +732,58 @@
     return bands;
   }
 
+  function overviewTicks(byDay) {
+    const mins = new Set();
+    for (const d of DAYS) {
+      for (const b of byDay[d] || []) {
+        mins.add(toMin(b.start));
+        mins.add(toMin(b.end));
+      }
+    }
+    return Array.from(mins).sort((a, b) => a - b);
+  }
+
   function viewOverview() {
     const frag = document.createDocumentFragment();
     frag.append(el('div', { class: 'page-head' },
       el('div', null, el('h1', { class: 'page-title' }, t('layoutOverview')),
         el('p', { class: 'page-sub' }, t('schedule')))));
     const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
-    const starts = Array.from(new Set(DAYS.flatMap(d => byDay[d].map(b => b.start)))).sort();
-    const table = el('div', { class: 'overview', role: 'table' });
+    const ticks = overviewTicks(byDay);
+    const slices = Math.max(1, ticks.length - 1);
+    const table = el('div', { class: 'overview', role: 'grid' });
     table.style.setProperty('--days', String(DAYS.length));
-    const head = el('div', { class: 'overview-row overview-head', role: 'row' },
-      el('div', { class: 'overview-time', role: 'columnheader' }),
-      ...DAYS.map(d => el('div', { class: `overview-cell head${d === state.day ? ' is-active' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d } },
-        el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)))));
-    table.append(head);
-    for (const start of starts) {
-      const cells = DAYS.map(d => byDay[d].find(b => b.start === start) || null);
-      const end = cells.reduce((m, c) => (c && c.end > m ? c.end : m), '');
-      const row = el('div', { class: 'overview-row', role: 'row' },
-        el('div', { class: 'overview-time', role: 'cell' }, el('span', { class: 't-start' }, start), end ? el('span', { class: 't-end' }, end) : null));
-      for (const band of cells) row.append(renderOverviewCell(band));
-      table.append(row);
+    table.style.setProperty('--slices', String(slices));
+    const rowSizes = ['auto'];
+    for (let i = 0; i < ticks.length - 1; i++) {
+      rowSizes.push(`${Math.max(28, Math.round((ticks[i + 1] - ticks[i]) * 1.1))}px`);
     }
+    table.style.gridTemplateRows = rowSizes.join(' ');
+    table.append(el('div', { class: 'overview-time overview-corner', role: 'columnheader' }));
+    DAYS.forEach((d, i) => {
+      const cell = el('div', { class: `overview-cell head${d === state.day ? ' is-active' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d } },
+        el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
+      cell.style.gridColumn = String(i + 2);
+      cell.style.gridRow = '1';
+      table.append(cell);
+    });
+    for (let i = 0; i < ticks.length - 1; i++) {
+      const label = el('div', { class: 'overview-time', role: 'rowheader' }, fromMin(ticks[i]));
+      label.style.gridColumn = '1';
+      label.style.gridRow = String(i + 2);
+      table.append(label);
+    }
+    DAYS.forEach((d, di) => {
+      for (const band of byDay[d]) {
+        const r0 = ticks.indexOf(toMin(band.start));
+        const r1 = ticks.indexOf(toMin(band.end));
+        if (r0 < 0 || r1 < 0 || r1 <= r0) continue;
+        const cell = renderOverviewCell(band);
+        cell.style.gridColumn = String(di + 2);
+        cell.style.gridRow = `${r0 + 2} / ${r1 + 2}`;
+        table.append(cell);
+      }
+    });
     frag.append(el('div', { class: 'overview-wrap' }, table));
     return frag;
   }
@@ -830,26 +864,34 @@
     return null;
   }
 
-  function renderSectionCard(b, now) {
+  function renderSectionCard(b, now, times = null) {
     const s = sectionsById[b.section];
     const dimmed = state.filters.size && !state.filters.has(b.section);
     const open = isExpanded(b);
     const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
     const range = talks.length ? (talks.length > 1 ? `${talks[0].number}–${talks[talks.length - 1].number}` : talks[0].number) : '';
-    const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}`, dataset: { color: s.color, block: b.id } });
     const listId = `talks-${b.id}`;
+    const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}${open ? ' open' : ''}`, dataset: { color: s.color, block: b.id }, id: listId });
     const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': String(open), 'aria-controls': listId, 'aria-label': isDesktop() ? t('openSection') : undefined, onclick: () => {
       if (isDesktop()) { state.section = s.id; setView('sections'); return; }
-      state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); list.classList.toggle('open', nowOpen);
+      state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); card.classList.toggle('open', nowOpen);
     } },
-      el('span', { class: 'sec-name' }, el('span', { class: 'num' }, `${t('section')} ${s.id}`), el('span', null, L(s.short))),
+      el('span', { class: 'sec-name', title: `${t('section')} ${s.id} · ${L(s.short)}` }, `${t('section')} ${s.id} · ${L(s.short)}`),
       el('span', { class: 'chev' }, icon('chevron')),
       el('span', { class: 'sec-meta' },
         el('span', null, `${talks.length} ${t('talks')}${range ? ` (${range})` : ''}`),
         el('span', null, icon('pin'), ` ${roomLabel(b)}`),
         el('span', null, icon('user'), ` ${chairLabel(s)}`)));
-    const list = el('div', { class: `collapsible${open ? ' open' : ''}`, id: listId }, el('div', { class: 'collapsible-inner' }, el('div', { class: 'talks' }, ...talks.map(tk => renderTalkRow(tk, now)))));
-    card.append(head, list);
+    card.append(head);
+    if (times && times.length) {
+      const byStart = Object.fromEntries(talks.filter(tk => tk.start).map(tk => [tk.start, tk]));
+      for (const start of times) {
+        const tk = byStart[start];
+        card.append(tk ? renderTalkRow(tk, now) : el('div', { class: 'talk-slot empty', 'aria-hidden': 'true' }));
+      }
+    } else {
+      card.append(el('div', { class: 'collapsible open', id: listId }, el('div', { class: 'collapsible-inner' }, el('div', { class: 'talks' }, ...talks.map(tk => renderTalkRow(tk, now))))));
+    }
     return card;
   }
 
@@ -1010,7 +1052,7 @@
       const letters = Array.from(byLetter.keys()).sort((a, b) => a.localeCompare(b, locale()));
       for (const ch of letters) {
         wrap.append(el('div', { class: 'index-letter' }, el('div', { class: 'letter', 'aria-hidden': 'true' }, ch), el('div', { class: 'index-names' },
-          ...byLetter.get(ch).map(p => el('button', { class: 'name-chip', type: 'button', onclick: () => { const q = speakerName(p); state.q = q; $('.search-box input').value = q; $('.search-box .clear').hidden = false; writeHash(); renderResults(); } }, `${p.last}${p.first ? ' ' + p.first.split(' ')[0] : ''}`, p.n > 1 ? el('span', { class: 'n' }, `×${p.n}`) : null)))));
+          ...byLetter.get(ch).map(p => el('button', { class: 'name-chip', type: 'button', onclick: () => { const q = speakerName(p); state.q = q; $('.search-box input').value = q; $('.search-box .clear').hidden = false; writeHash(); renderResults(); } }, speakerName(p) || p.last, p.n > 1 ? el('span', { class: 'n' }, `×${p.n}`) : null)))));
       }
       return wrap;
     }
@@ -1191,27 +1233,38 @@
 
   function renderPrintOverview(root) {
     const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
-    const starts = Array.from(new Set(DAYS.flatMap(d => byDay[d].map(b => b.start)))).sort();
+    const ticks = overviewTicks(byDay);
     const table = el('table', { class: 'p-overview' });
     const thead = el('thead', null, el('tr', null, el('th', null, t('time')), ...DAYS.map(d => el('th', null, `${fmtDow(d)} ${fmtDom(d)}`))));
     const tbody = el('tbody');
-    for (const start of starts) {
-      const cells = DAYS.map(d => byDay[d].find(b => b.start === start) || null);
-      const end = cells.reduce((m, c) => (c && c.end > m ? c.end : m), '');
-      const tr = el('tr', null, el('th', { class: 'p-ov-time' }, start, end ? el('div', { class: 'muted' }, end) : null));
-      for (const band of cells) {
-        if (!band) { tr.append(el('td', { class: 'empty' })); continue; }
-        if (band.kind === 'section') {
-          const td = el('td', { class: 'secs' });
-          for (const b of band.items) {
-            const s = sectionsById[b.section];
-            td.append(el('div', { class: 'p-ov-sec' }, s ? `${s.id} · ${L(s.short)}` : b.section));
+    for (let i = 0; i < ticks.length - 1; i++) {
+      const t0 = ticks[i];
+      const tr = el('tr', null, el('th', { class: 'p-ov-time' }, fromMin(t0)));
+      for (const d of DAYS) {
+        const bands = byDay[d] || [];
+        const startsHere = bands.find(b => toMin(b.start) === t0);
+        if (startsHere) {
+          const r0 = ticks.indexOf(toMin(startsHere.start));
+          const r1 = ticks.indexOf(toMin(startsHere.end));
+          const span = (r0 >= 0 && r1 > r0) ? r1 - r0 : 1;
+          let td;
+          if (startsHere.kind === 'section') {
+            td = el('td', { class: 'secs' });
+            for (const b of startsHere.items) {
+              const s = sectionsById[b.section];
+              td.append(el('div', { class: 'p-ov-sec' }, s ? `${s.id} · ${L(s.short)}` : b.section));
+            }
+          } else if (startsHere.kind === 'plenary') {
+            td = el('td', { class: 'plenary' }, t('slotGroupPlenary'));
+          } else {
+            td = el('td', null, blockTitle(startsHere.items[0]));
           }
+          if (span > 1) td.setAttribute('rowspan', String(span));
           tr.append(td);
-        } else if (band.kind === 'plenary') {
-          tr.append(el('td', { class: 'plenary' }, t('slotGroupPlenary')));
+        } else if (bands.some(b => toMin(b.start) < t0 && toMin(b.end) > t0)) {
+          /* covered by an earlier rowspan */
         } else {
-          tr.append(el('td', null, blockTitle(band.items[0])));
+          tr.append(el('td', { class: 'empty' }));
         }
       }
       tbody.append(tr);
