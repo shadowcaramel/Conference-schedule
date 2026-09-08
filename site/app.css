@@ -47,6 +47,8 @@
   --bottom-nav-h: 64px;
   --content-max: 1200px;
   --rail-w: 5.4rem;
+  --rail-dot: 12px;
+  --rail-line: 2px;
 
   /* light theme (hsl fallbacks; oklch below when supported) */
   --bg: hsl(230 15% 97.5%);
@@ -403,15 +405,18 @@ html[data-theme="dark"] .chip.plain[aria-pressed="true"] { background: var(--acc
 /* ---------- Timeline ------------------------------------------------------ */
 .timeline { position: relative; display: grid; gap: 14px; }
 .timeline::before {
-  content: ""; position: absolute; left: calc(var(--rail-w) - 6px); top: 10px; bottom: 10px;
-  width: 2px; background: var(--border); border-radius: 2px;
+  content: ""; position: absolute; top: 10px; bottom: 10px; pointer-events: none;
+  /* Dot sits in the last 12px of --rail-w; subtract half the 2px stroke (original `… / 2 - 1px`). */
+  left: calc(var(--rail-w) - var(--rail-dot) / 2 - var(--rail-line) / 2);
+  width: var(--rail-line);
+  background: var(--border);
 }
 .slot { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 0 10px; align-items: start; position: relative; }
 .slot:not(:has(.parallel)) { align-items: center; }
 @media (max-width: 599px) { :root { --rail-w: 4.5rem; } .timeline { gap: 10px; } }
 .slot-time {
   position: sticky; top: calc(var(--topbar-h) + var(--daybar-h) + 2.4rem);
-  display: grid; grid-template-columns: 1fr 12px; grid-template-rows: auto auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) var(--rail-dot); grid-template-rows: auto auto;
   align-items: center; column-gap: 8px; padding: 0; text-align: right; z-index: 1;
 }
 .slot-time .t-start, .slot-time .t-end {
@@ -421,7 +426,8 @@ html[data-theme="dark"] .chip.plain[aria-pressed="true"] { background: var(--acc
 .slot-time .t-end { grid-row: 2; font-size: var(--fs-xs); color: var(--text-3); font-variant-numeric: tabular-nums; }
 .slot-time .rail-dot {
   grid-column: 2; grid-row: 1 / span 2; align-self: center; justify-self: center;
-  width: 12px; height: 12px; margin: 0; border-radius: 50%; background: var(--surface); border: 2px solid var(--border-2);
+  width: var(--rail-dot); height: var(--rail-dot); margin: 0; border-radius: 50%;
+  background: var(--surface); border: var(--rail-line) solid var(--border-2);
   box-shadow: 0 0 0 4px var(--bg);
 }
 .slot.is-past .slot-time { opacity: .55; }
