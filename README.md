@@ -137,3 +137,7 @@ python tools/migrate.py --force
 - Синхронизация «Моего» между устройствами через сервер (нужен вход).
 
 Шрифт [Onest](https://github.com/googlefonts/onest) — SIL Open Font License, файлы в `site/assets/fonts/`.
+
+## Лицензия
+
+Этот проект распространяется на условиях [GNU General Public License версии 3](LICENSE) (GPL-3.0).
