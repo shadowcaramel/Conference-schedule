@@ -118,6 +118,8 @@ python -m http.server 8080 --directory site
 
 и зайдите на `http://127.0.0.1:8080/`.
 
+Проверка по ссылке (GitHub Pages): [https://shadowcaramel.github.io/Conference-schedule/](https://shadowcaramel.github.io/Conference-schedule/). Каждый push в `main` обновляет эту страницу из папки `site/`. После `python tools/build.py` закоммитьте изменённые файлы в `site/`.
+
 ## Миграция из исходного Excel (один раз)
 
 Уже выполнена. Повторная перезапись книги **уничтожит ручные правки**:
