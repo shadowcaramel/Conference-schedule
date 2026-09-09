@@ -75,6 +75,8 @@
     mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
     vibrate: '<rect width="8" height="14" x="8" y="5" rx="1"/><path d="m2 8 2 2-2 2 2 2-2 2"/><path d="m22 8-2 2 2 2-2 2 2 2"/>',
+    smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
+    shareup: '<path d="M12 17V4"/><polyline points="7 9 12 4 17 9"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
   };
   const icon = (name, cls = '') => el('span', { class: `ico ${cls}`.trim(), 'aria-hidden': 'true', html: `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>` });
 
@@ -123,6 +125,21 @@
       plenarySection: 'Пленарные доклады', close2: 'Закрыть', starredCount: 'отмечено', dayTabs: 'Дни конференции', viewsNav: 'Разделы',
       email: 'Email', layoutTimeline: 'Лента', layoutOverview: 'Сетка', scheduleLayout: 'Вид расписания',
       slotGroupPlenary: 'Пленарные доклады', openSection: 'Открыть секцию',
+      install: 'На экран Домой', installTitle: 'Программа как приложение',
+      installLead: 'Ярлык на экране Домой открывает расписание сразу, без поиска во вкладках.',
+      installNative: 'Установить приложение',
+      installNativeHint: 'Откроется в отдельном окне, без адресной строки браузера.',
+      installIos1: 'Откройте эту страницу в Safari — на iPhone так ярлык ведёт себя как приложение.',
+      installIos2: 'Нажмите «Поделиться» (квадрат со стрелкой вверх).',
+      installIos3: 'Выберите «На экран „Домой“», затем «Добавить».',
+      installAndroid1: 'Откройте меню браузера (⋮) вверху справа.',
+      installAndroid2: 'Выберите «Установить приложение» или «Добавить на главный экран».',
+      installDesktop1: 'В Chrome или Edge откройте меню браузера.',
+      installDesktop2: 'Выберите «Установить ЯДРО-2026…». Если пункта нет — закрепите вкладку или добавьте страницу в закладки.',
+      installHttp: 'Страница открыта по HTTP. Браузер не ставит полноценное приложение без HTTPS — только ярлык, который откроет сайт во вкладке. Когда на сайте конференции включат HTTPS, установка станет настоящей (как на GitHub Pages).',
+      installIframe: 'Страница встроена в другой сайт. Сначала откройте её в отдельной вкладке — затем можно добавить ярлык.',
+      installOpenTab: 'Открыть в новой вкладке', installLater: 'Не сейчас',
+      installBanner: 'Добавьте программу на экран Домой — так удобнее в дни конференции.',
     },
     en: {
       skip: 'Skip to content', schedule: 'Schedule', sections: 'Sections', posters: 'Posters', search: 'Search', my: 'My',
@@ -150,6 +167,21 @@
       plenarySection: 'Plenary talks', close2: 'Close', starredCount: 'starred', dayTabs: 'Conference days', viewsNav: 'Sections',
       email: 'Email', layoutTimeline: 'Timeline', layoutOverview: 'Overview', scheduleLayout: 'Schedule layout',
       slotGroupPlenary: 'Plenary talks', openSection: 'Open section',
+      install: 'Add to Home Screen', installTitle: 'Programme as an app',
+      installLead: 'A Home Screen icon opens the programme immediately, without hunting through browser tabs.',
+      installNative: 'Install app',
+      installNativeHint: 'Opens in its own window, without the browser address bar.',
+      installIos1: 'Open this page in Safari — on iPhone that is the most reliable way to get an app-like icon.',
+      installIos2: 'Tap Share (square with an up arrow).',
+      installIos3: 'Choose “Add to Home Screen”, then Add.',
+      installAndroid1: 'Open the browser menu (⋮) at the top right.',
+      installAndroid2: 'Tap “Install app” or “Add to Home screen”.',
+      installDesktop1: 'In Chrome or Edge, open the browser menu.',
+      installDesktop2: 'Choose “Install ЯДРО-2026…”. If it is missing, pin the tab or bookmark the page.',
+      installHttp: 'This page is HTTP. Browsers will not install a real app without HTTPS — only a shortcut that opens a tab. Once the conference site enables HTTPS, a proper install will work (as it already does on GitHub Pages).',
+      installIframe: 'This page is embedded. Open it in a new tab first, then add the shortcut.',
+      installOpenTab: 'Open in a new tab', installLater: 'Not now',
+      installBanner: 'Add the programme to your Home Screen — easier during the conference.',
     },
   };
   const BLOCK_TYPE_LABEL = {
@@ -534,11 +566,143 @@
   }
   const norm = (s) => String(s || '').toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
 
+  // ------------------------------------------------------------------ install / PWA
+  let deferredPrompt = null;
+
+  function isStandalone() {
+    return document.documentElement.classList.contains('is-standalone')
+      || window.navigator.standalone === true
+      || (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches
+        || window.matchMedia('(display-mode: fullscreen)').matches
+        || window.matchMedia('(display-mode: minimal-ui)').matches));
+  }
+  function inIframe() {
+    try { return window.self !== window.top; } catch { return true; }
+  }
+  function isIos() {
+    const ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function isAndroid() { return /Android/i.test(navigator.userAgent || ''); }
+  function isSafariLike() {
+    const ua = navigator.userAgent || '';
+    return /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome|Android/i.test(ua);
+  }
+  function installPlatform() {
+    if (isIos()) return 'ios';
+    if (isAndroid()) return 'android';
+    if (!isDesktop()) return 'android';
+    return 'desktop';
+  }
+  function canNativeInstall() { return !!deferredPrompt; }
+  function showInstallHint() {
+    if (isStandalone()) return false;
+    const hint = store.get('installHint', '');
+    if (hint === 'dismissed' || hint === 'installed') return false;
+    if (inIframe()) return true;
+    if (canNativeInstall()) return true;
+    return !isDesktop();
+  }
+  function applyThemeColor() {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', state.theme === 'dark' ? '#16171c' : '#f7f7f9');
+  }
+  function installBanner() {
+    let n = $('#install-banner');
+    if (!n) {
+      n = el('div', { id: 'install-banner', class: 'install-banner', hidden: true, role: 'status' });
+      document.body.append(n);
+    }
+    return n;
+  }
+  function dismissInstall() {
+    store.set('installHint', 'dismissed');
+    syncInstallUi();
+  }
+  function syncInstallUi() {
+    const standalone = isStandalone();
+    document.documentElement.classList.toggle('is-standalone', standalone);
+    const banner = installBanner();
+    const show = showInstallHint();
+    banner.hidden = !show;
+    if (show) {
+      banner.replaceChildren(
+        icon('smartphone'),
+        el('span', { class: 'install-banner-text' }, inIframe() ? t('installIframe') : t('installBanner')),
+        el('button', { class: 'btn sm primary', type: 'button', onclick: openInstall }, inIframe() ? t('installOpenTab') : t('install')),
+        el('button', { class: 'install-banner-x', type: 'button', 'aria-label': t('installLater'), onclick: dismissInstall }, icon('x')),
+      );
+    }
+    $$('[data-install-btn]').forEach((b) => { b.hidden = standalone; });
+  }
+  async function nativeInstall() {
+    if (!deferredPrompt) return false;
+    const ev = deferredPrompt;
+    deferredPrompt = null;
+    ev.prompt();
+    const choice = await ev.userChoice;
+    if (choice && choice.outcome === 'accepted') {
+      store.set('installHint', 'installed');
+      const dlg = $('#install-dialog');
+      if (dlg && dlg.open) dlg.close();
+    }
+    syncInstallUi();
+    return !!(choice && choice.outcome === 'accepted');
+  }
+  function openInstall() {
+    if (inIframe()) {
+      window.open(pageUrl(), '_blank', 'noopener');
+      return;
+    }
+    const dlg = $('#install-dialog');
+    dlg.innerHTML = '';
+    const platform = installPlatform();
+    const steps = [];
+    if (platform === 'ios') {
+      if (!isSafariLike()) steps.push(['smartphone', t('installIos1')]);
+      steps.push(['shareup', t('installIos2')]);
+      steps.push(['smartphone', t('installIos3')]);
+    } else if (platform === 'android') {
+      steps.push(['smartphone', t('installAndroid1')]);
+      steps.push(['download', t('installAndroid2')]);
+    } else {
+      steps.push(['smartphone', t('installDesktop1')]);
+      steps.push(['download', t('installDesktop2')]);
+    }
+    const actions = [];
+    if (canNativeInstall()) {
+      actions.push(el('button', { class: 'btn primary', type: 'button', onclick: nativeInstall }, icon('download'), t('installNative')));
+    }
+    actions.push(el('button', { class: 'btn ghost', type: 'button', onclick: () => dlg.close() }, t('close')));
+    dlg.append(el('div', { class: 'sheet-inner' },
+      el('div', { class: 'grabber' }),
+      el('div', { class: 'sheet-head' },
+        el('h2', { id: 'install-title', style: 'font-size:var(--fs-xl)' }, t('installTitle')),
+        el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))),
+      el('div', { class: 'sheet-body' },
+        el('p', null, t('installLead')),
+        canNativeInstall() ? el('p', { class: 'muted small' }, t('installNativeHint')) : null,
+        !window.isSecureContext ? el('div', { class: 'hint' }, icon('warn'), el('span', null, t('installHttp'))) : null,
+        el('ol', { class: 'install-steps' }, ...steps.map(([ic, text]) =>
+          el('li', { class: 'install-step' }, icon(ic), el('span', null, text)))),
+      ),
+      el('div', { class: 'sheet-actions' }, ...actions)));
+    if (!dlg.open) dlg.showModal();
+    dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+  }
+  function registerSW() {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
+    if (location.protocol === 'file:') return;
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
   // ------------------------------------------------------------------ chrome
   function applyChrome() {
     document.documentElement.lang = state.lang;
     document.documentElement.dataset.theme = state.theme;
     document.documentElement.dataset.font = String(state.font);
+    applyThemeColor();
+    syncInstallUi();
     document.title = `${L(D.settings.shortTitle) || 'ЯДРО-2026'} — ${t('schedule')}`;
     $('#brand-title').textContent = L(D.settings.shortTitle) || 'ЯДРО-2026';
     $('#brand-sub').textContent = [L(D.settings.city), fmtRange()].filter(Boolean).join(' · ');
@@ -1377,6 +1541,7 @@
       D.settings.website ? el('a', { href: D.settings.website, target: '_blank', rel: 'noopener' }, icon('external'), ` ${t('website')}`) : null,
       D.settings.contact ? el('span', null, `${t('contact')}: ${D.settings.contact}`) : null,
       el('button', { class: 'btn ghost sm', type: 'button', onclick: () => { renderPrint(); window.print(); } }, icon('printer'), t('print')),
+      el('button', { class: 'btn ghost sm', type: 'button', dataset: { installBtn: true }, onclick: openInstall, hidden: isStandalone() }, icon('smartphone'), t('install')),
       el('button', { class: 'btn ghost sm', type: 'button', onclick: () => downloadICS(Object.values(D.talks).filter(x => x.date), 'nucleus2026-programme.ics') }, icon('download'), t('exportAll')),
       el('span', { class: 'xs' }, t('fontLicence'))));
   }
@@ -1463,10 +1628,26 @@
   $('#btn-lang').addEventListener('click', () => { state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); withTransition(renderAll); });
   $('#btn-changes').addEventListener('click', openChanges);
   $('#brand').addEventListener('click', (e) => { e.preventDefault(); setView('schedule'); });
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    syncInstallUi();
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    store.set('installHint', 'installed');
+    syncInstallUi();
+  });
+  if (window.matchMedia) {
+    ['standalone', 'fullscreen', 'minimal-ui'].forEach((mode) => {
+      try { window.matchMedia(`(display-mode: ${mode})`).addEventListener('change', syncInstallUi); } catch { /* old Safari */ }
+    });
+  }
   window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); });
   window.addEventListener('beforeprint', renderPrint);
   window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
     applyHapticsControl();
+    syncInstallUi();
     if (state.view === 'schedule') { preserveScroll(() => { renderMain(); renderDaybar(); }); }
   });
   window.matchMedia('(hover: hover) and (pointer: fine)').addEventListener('change', applyHapticsControl);
@@ -1478,4 +1659,5 @@
   renderAll();
   writeHash(false);
   if (openTalkId) openDetail(openTalkId);
+  registerSW();
 })();

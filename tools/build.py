@@ -471,8 +471,10 @@ def write_single_file(model: dict) -> Path | None:
 
     html = re.sub(r'<link\s+rel="stylesheet"\s+href="([^"]+)"\s*/?>', inline_css, html)
     html = re.sub(r'<script\s+src="([^"]+)"\s*></script>', inline_js, html)
-    # manifest / icons that only make sense when hosted
+    # manifest / icons that only make sense when hosted as a folder
     html = re.sub(r'\s*<link\s+rel="manifest"[^>]*>', "", html)
+    html = re.sub(r'\s*<link\s+rel="apple-touch-icon"[^>]*>', "", html)
+    html = re.sub(r'\s*<link\s+rel="icon"[^>]*>', "", html)
 
     DIST_DIR.mkdir(parents=True, exist_ok=True)
     out = DIST_DIR / SINGLE_FILE_NAME

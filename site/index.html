@@ -4,10 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f7f7f9" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#16171c" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f7f9">
   <meta name="description" content="Программа конференции ЯДРО-2026 / NUCLEUS-2026 programme">
+  <meta name="application-name" content="ЯДРО-2026">
+  <meta name="apple-mobile-web-app-title" content="ЯДРО-2026">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
   <title>ЯДРО-2026 — Программа</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="app.css">
   <script>
     (function () {
@@ -23,6 +32,14 @@
           if (l.charAt(0) === '"') l = JSON.parse(l);
           if (l === 'en' || l === 'ru') document.documentElement.lang = l;
         }
+        var dark = document.documentElement.dataset.theme === 'dark';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#16171c' : '#f7f7f9');
+        var standalone = (window.navigator.standalone === true)
+          || (window.matchMedia && (matchMedia('(display-mode: standalone)').matches
+            || matchMedia('(display-mode: fullscreen)').matches
+            || matchMedia('(display-mode: minimal-ui)').matches));
+        document.documentElement.classList.toggle('is-standalone', !!standalone);
       } catch (e) {}
     })();
   </script>
@@ -76,6 +93,7 @@
 
   <dialog class="sheet" id="detail" aria-labelledby="detail-title"></dialog>
   <dialog class="sheet" id="changes-dialog" aria-labelledby="changes-title"></dialog>
+  <dialog class="sheet" id="install-dialog" aria-labelledby="install-title"></dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 

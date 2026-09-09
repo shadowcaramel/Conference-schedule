@@ -1,0 +1,54 @@
+{
+  "id": "./",
+  "name": "ЯДРО-2026 — программа",
+  "short_name": "ЯДРО-2026",
+  "description": "Программа конференции ЯДРО-2026 / NUCLEUS-2026 programme",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f7f7f9",
+  "theme_color": "#f7f7f9",
+  "categories": ["education", "utilities"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Расписание",
+      "short_name": "Расписание",
+      "url": "./#view=schedule"
+    },
+    {
+      "name": "Моё",
+      "short_name": "Моё",
+      "url": "./#view=my"
+    }
+  ]
+}
