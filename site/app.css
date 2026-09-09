@@ -549,8 +549,10 @@ html[data-slot-groups="off"] .slot-group-label { display: none; }
   }
 }
 .parallel-grid.is-collapsed { grid-template-rows: auto; }
-.parallel-grid.is-collapsed .talk,
-.parallel-grid.is-collapsed .talk-slot { display: none; }
+@media (min-width: 900px) {
+  .parallel-grid.is-collapsed .talk,
+  .parallel-grid.is-collapsed .talk-slot { display: none; }
+}
 @media (max-width: 899px) {
   .seccard:not(.open) > .talk,
   .seccard:not(.open) > .talk-slot { display: none; }

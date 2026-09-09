@@ -692,7 +692,8 @@
     if (sectionBlocks.length) {
       const times = Array.from(new Set(sectionBlocks.flatMap(b => b.talks.map(id => D.talks[id]).filter(Boolean).map(tk => tk.start)))).sort();
       const allOpen = sectionBlocks.every(b => isExpanded(b));
-      const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}${allOpen ? '' : ' is-collapsed'}` });
+      const collapsed = isDesktop() ? !allOpen : !sectionBlocks.some(b => isExpanded(b));
+      const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}${collapsed ? ' is-collapsed' : ''}` });
       grid.style.setProperty('--cols', String(Math.min(sectionBlocks.length, 4)));
       grid.style.setProperty('--talk-rows', String(times.length));
       for (const b of sectionBlocks) grid.append(renderSectionCard(b, now, times));
@@ -956,6 +957,8 @@
     const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': desktop ? undefined : String(open), 'aria-controls': desktop ? undefined : listId, 'aria-label': desktop ? t('openSection') : undefined, onclick: () => {
       if (isDesktop()) { state.section = s.id; setView('sections'); return; }
       state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); card.classList.toggle('open', nowOpen);
+      const grid = card.closest('.parallel-grid');
+      if (grid) grid.classList.toggle('is-collapsed', ![...grid.querySelectorAll('.seccard')].some(c => c.classList.contains('open')));
     } },
       el('span', { class: 'sec-name', title: `${t('section')} ${s.id} · ${L(s.short)}` }, `${t('section')} ${s.id} · ${L(s.short)}`),
       desktop ? null : el('span', { class: 'chev' }, icon('chevron')),
