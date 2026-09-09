@@ -85,6 +85,14 @@
     if (/банкет|dinner|фуршет|party|reception/.test(t)) return 'wine';
     return 'sparkles';
   }
+  function bandGlyph(band) {
+    if (!band) return null;
+    if (band.kind === 'plenary') return 'mic';
+    if (band.kind === 'section') return null;
+    const b = band.items[0];
+    if (!b) return 'info';
+    return b.type === 'social' ? socialIcon(b) : (BLOCK_ICON[b.type] || 'info');
+  }
 
   // ------------------------------------------------------------------ i18n
   const I18N = {
@@ -178,6 +186,7 @@
     expanded: new Map(),          // blockId -> bool (user override)
     layout: 'timeline',           // 'timeline' | 'overview'
     overviewFocus: null,          // focused overview column, or null = whole week
+    overviewSel: null,            // { day, start } highlighted overview cell, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
   };
   if (params.get('lang')) store.set('lang', state.lang);
@@ -499,6 +508,7 @@
     if (state.layout === layout) return;
     state.layout = layout;
     if (layout === 'overview') state.overviewFocus = null;
+    else state.overviewSel = null;
     writeHash(true);
     renderDaybar();
     renderMain();
@@ -782,7 +792,8 @@
       table.append(cell);
     });
     for (let i = 0; i < ticks.length - 1; i++) {
-      const label = el('div', { class: 'overview-time', role: 'rowheader' }, fromMin(ticks[i]));
+      const hl = state.overviewSel && state.overviewSel.start === ticks[i];
+      const label = el('div', { class: `overview-time${hl ? ' is-hl' : ''}`, role: 'rowheader', dataset: { tick: String(ticks[i]) } }, fromMin(ticks[i]));
       label.style.gridColumn = '1';
       label.style.gridRow = String(i + 2);
       table.append(label);
@@ -792,7 +803,7 @@
         const r0 = ticks.indexOf(toMin(band.start));
         const r1 = ticks.indexOf(toMin(band.end));
         if (r0 < 0 || r1 < 0 || r1 <= r0) continue;
-        const cell = renderOverviewCell(band);
+        const cell = renderOverviewCell(band, d);
         if (d === focus) cell.classList.add('is-focus');
         cell.style.gridColumn = String(di + 2);
         cell.style.gridRow = `${r0 + 2} / ${r1 + 2}`;
@@ -803,8 +814,33 @@
     return frag;
   }
 
-  function renderOverviewCell(band) {
+  function activateOverviewCell(day, start) {
+    const same = state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start;
+    state.overviewSel = same ? null : { day, start };
+    const table = document.querySelector('.overview');
+    if (!table) return;
+    table.querySelectorAll('.overview-cell.is-picked').forEach(c => c.classList.remove('is-picked'));
+    table.querySelectorAll('.overview-time.is-hl').forEach(c => c.classList.remove('is-hl'));
+    if (!state.overviewSel) return;
+    table.querySelectorAll('.overview-cell[data-start]').forEach(c => {
+      if (c.dataset.day === day && Number(c.dataset.start) === start) c.classList.add('is-picked');
+    });
+    const tick = table.querySelector(`.overview-time[data-tick="${start}"]`);
+    if (tick) tick.classList.add('is-hl');
+  }
+
+  function overviewCellActivate(e) {
+    if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.type === 'keydown') e.preventDefault();
+    const cell = e.currentTarget;
+    activateOverviewCell(cell.dataset.day, Number(cell.dataset.start));
+  }
+
+  function renderOverviewCell(band, day) {
     if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
+    const start = toMin(band.start);
+    const picked = !!(state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start);
+    const attrs = { role: 'button', tabindex: 0, dataset: { start: String(start), day }, onclick: overviewCellActivate, onkeydown: overviewCellActivate };
     if (band.kind === 'section') {
       const inner = el('div', { class: 'overview-secs' });
       const seen = new Set();
@@ -815,14 +851,14 @@
         inner.append(el('span', { class: 'overview-sec', dataset: { color: s ? s.color : 'slate' } },
           el('span', { class: 'dot' }), s ? `${t('section')} ${s.id} · ${L(s.short)}` : `${t('section')} ${b.section}`));
       }
-      return el('div', { class: 'overview-cell sections', role: 'cell' }, inner);
+      return el('div', { class: `overview-cell sections${picked ? ' is-picked' : ''}`, ...attrs }, inner);
     }
-    if (band.kind === 'plenary') {
-      return el('div', { class: 'overview-cell plenary-band', role: 'cell' }, t('slotGroupPlenary'));
-    }
-    const b = band.items[0];
-    const label = blockTitle(b);
-    return el('div', { class: `overview-cell kind-${band.kind}`, role: 'cell' }, label);
+    const glyph = bandGlyph(band);
+    const label = band.kind === 'plenary' ? t('slotGroupPlenary') : blockTitle(band.items[0]);
+    const kindClass = band.kind === 'plenary' ? 'plenary-band' : `kind-${band.kind}`;
+    return el('div', { class: `overview-cell ${kindClass}${picked ? ' is-picked' : ''}`, ...attrs },
+      glyph ? icon(glyph) : null,
+      el('span', { class: 'overview-label' }, label));
   }
 
   function nowCard(date, now) {
@@ -1213,7 +1249,7 @@
     let tag = document.getElementById('print-page-style');
     if (!tag) { tag = document.createElement('style'); tag.id = 'print-page-style'; document.head.append(tag); }
     tag.textContent = overview
-      ? '@media print { @page { size: A4 landscape; margin: 8mm; } }'
+      ? '@media print { @page { size: A4 landscape; margin: 6mm; } }'
       : '@media print { @page { margin: 14mm 12mm; } }';
     document.documentElement.dataset.print = overview ? 'overview' : 'detail';
   }
@@ -1276,10 +1312,11 @@
               const s = sectionsById[b.section];
               td.append(el('div', { class: 'p-ov-sec' }, s ? `${s.id} · ${L(s.short)}` : b.section));
             }
-          } else if (startsHere.kind === 'plenary') {
-            td = el('td', { class: 'plenary' }, t('slotGroupPlenary'));
           } else {
-            td = el('td', null, blockTitle(startsHere.items[0]));
+            const glyph = bandGlyph(startsHere);
+            const label = startsHere.kind === 'plenary' ? t('slotGroupPlenary') : blockTitle(startsHere.items[0]);
+            td = el('td', { class: startsHere.kind === 'plenary' ? 'plenary' : `kind-${startsHere.kind}` },
+              glyph ? icon(glyph, 'p-ov-ico') : null, el('span', null, label));
           }
           if (span > 1) td.setAttribute('rowspan', String(span));
           tr.append(td);

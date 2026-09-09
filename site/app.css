@@ -775,14 +775,21 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
 .overview-corner { min-height: 2.4rem; }
 .overview-time {
   font-variant-numeric: tabular-nums; font-size: var(--fs-sm); font-weight: 700;
-  color: var(--text-2); text-align: right; padding: 0 8px 0 0;
+  color: var(--text-2); text-align: right; padding: 2px 8px 2px 4px;
   display: flex; align-items: center; justify-content: flex-end;
+  border-radius: 6px; transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
+.overview-time.is-hl { color: var(--accent); background: var(--accent-soft); }
 .overview-cell {
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm);
   padding: 8px 10px; font-size: var(--fs-xs); font-weight: 650; min-height: 0;
-  display: flex; align-items: center; overflow: hidden;
-  transition: opacity var(--dur) var(--ease);
+  display: flex; align-items: center; gap: 6px; overflow: hidden;
+  transition: opacity var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.overview-cell:not(.head):not(.empty) { cursor: pointer; }
+.overview-cell .ico { width: 1.15em; height: 1.15em; color: inherit; }
+.overview-cell .overview-label {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .overview-cell.head { flex-direction: column; align-items: flex-start; gap: 0; background: transparent; border: 0; padding: 0 4px 8px; min-height: 0; overflow: visible; }
 .overview-cell.head .dow { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); }
@@ -791,12 +798,13 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
 .overview-cell.head.is-active .dom, .overview-cell.head.is-focus .dom { color: var(--accent); }
 .overview.is-day-focus .overview-cell:not(.head):not(.is-focus) { opacity: .45; }
 .overview.is-day-focus .overview-cell.head:not(.is-focus) { opacity: .5; }
-.overview-cell.empty { background: transparent; border-style: dashed; opacity: .4; }
+.overview-cell.empty { background: transparent; border-style: dashed; opacity: .4; cursor: default; }
 .overview-cell.plenary-band { background: var(--accent-soft); border-color: var(--accent-soft-2); color: var(--accent); justify-content: center; text-align: center; }
 .overview-cell.kind-break, .overview-cell.kind-lunch { background: transparent; border-style: dashed; color: var(--text-3); font-weight: 550; }
 .overview-cell.kind-social, .overview-cell.kind-opening, .overview-cell.kind-closing, .overview-cell.kind-registration, .overview-cell.kind-poster {
   background: var(--surface); box-shadow: var(--shadow-sm);
 }
+.overview-cell.is-picked { box-shadow: 0 0 0 2px var(--accent); background: var(--accent-soft); color: var(--accent); }
 .overview-cell.sections { align-items: stretch; padding: 6px; }
 .overview-secs { display: grid; gap: 4px; width: 100%; align-content: start; }
 .overview-sec { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 8px; background: var(--sec-tint); color: var(--sec-text); font-size: 11px; font-weight: 700; }
@@ -828,19 +836,36 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   .print-root .p-talk .pt-speaker { color: #444; font-size: 9pt; }
   .print-root .p-posters .p-talk { grid-template-columns: 3em 1fr; }
   .print-root .p-muted { color: #666; }
-  html[data-print="overview"] { font-size: 8.5pt; }
-  html[data-print="overview"] .print-root h1 { font-size: 13pt; margin-bottom: 1pt; }
-  html[data-print="overview"] .print-root .print-sub { margin-bottom: 6pt; font-size: 8pt; }
+  html[data-print="overview"] {
+    font-size: 7pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  html[data-print="overview"] .print-root {
+    width: 285mm; height: 198mm;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  html[data-print="overview"] .print-root h1 { font-size: 11pt; margin: 0 0 1pt; }
+  html[data-print="overview"] .print-root .print-sub { margin-bottom: 3pt; font-size: 7pt; }
   html[data-print="overview"] .print-root h2 { display: none; }
-  .print-overview .p-overview { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 7.6pt; }
-  .print-overview .p-overview th, .print-overview .p-overview td { border: 0.4pt solid #bbb; padding: 3pt 4pt; vertical-align: middle; }
-  .print-overview .p-overview thead th { background: #f2f2f2; font-size: 8pt; text-align: center; }
-  .print-overview .p-overview .p-ov-time { width: 3.4em; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; vertical-align: middle; }
+  .print-overview .p-overview {
+    width: 100%; height: 184mm; flex: 1 1 auto;
+    border-collapse: collapse; table-layout: fixed; font-size: 6.5pt;
+  }
+  .print-overview .p-overview th, .print-overview .p-overview td { border: 0.4pt solid #bbb; padding: 1pt 2.5pt; vertical-align: middle; }
+  .print-overview .p-overview thead th { background: #f2f2f2; font-size: 7pt; text-align: center; }
+  .print-overview .p-overview .p-ov-time { width: 3.2em; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; vertical-align: middle; }
   .print-overview .p-overview td.plenary { background: #eef2ff; text-align: center; font-weight: 700; }
-  .print-overview .p-overview td.secs { padding: 2pt; }
-  .print-overview .p-overview .p-ov-sec { margin: 1pt 0; padding: 1.5pt 3pt; background: #f6f6f8; font-weight: 650; }
+  .print-overview .p-overview td.secs { padding: 1pt; }
+  .print-overview .p-overview .p-ov-sec {
+    margin: 0 0 0.5pt; padding: 0.4pt 2pt; background: #f6f6f8; font-weight: 650;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .print-overview .p-overview .p-ov-sec:last-child { margin-bottom: 0; }
   .print-overview .p-overview td.empty { background: #fafafa; }
-  .print-overview tr { break-inside: avoid; }
+  .print-overview .p-overview .p-ov-ico { width: 8px; height: 8px; margin-right: 3px; vertical-align: -1px; }
+  .print-overview .p-overview .p-ov-ico svg { width: 8px; height: 8px; }
 }
 
 /* ---------- Motion preferences -------------------------------------------- */
