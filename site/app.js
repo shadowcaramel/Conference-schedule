@@ -177,6 +177,7 @@
     favs: new Set(store.get('favs', [])),
     expanded: new Map(),          // blockId -> bool (user override)
     layout: 'timeline',           // 'timeline' | 'overview'
+    overviewFocus: null,          // focused overview column, or null = whole week
     lastSeenChanges: store.get('lastSeenChanges', ''),
   };
   if (params.get('lang')) store.set('lang', state.lang);
@@ -497,6 +498,7 @@
   function setLayout(layout) {
     if (state.layout === layout) return;
     state.layout = layout;
+    if (layout === 'overview') state.overviewFocus = null;
     writeHash(true);
     renderDaybar();
     renderMain();
@@ -504,9 +506,17 @@
   }
   function setDay(day, opts = {}) {
     const scroll = opts.scroll !== false;
-    const rebuild = opts.rebuild === true || state.layout === 'overview' || state.view !== 'schedule';
+    if (state.layout === 'overview' && state.view === 'schedule') {
+      state.overviewFocus = state.overviewFocus === day ? null : day;
+      if (state.overviewFocus) state.day = day;
+      writeHash(true);
+      renderDaybar();
+      renderMain();
+      return;
+    }
+    const rebuild = opts.rebuild === true || state.view !== 'schedule';
     if (state.day === day && !opts.force) {
-      if (scroll && state.layout === 'timeline') scrollToDay(day);
+      if (scroll) scrollToDay(day);
       return;
     }
     state.day = day;
@@ -532,13 +542,16 @@
     if (bar.hidden) return;
     tabs.innerHTML = ''; tabs.setAttribute('aria-label', t('dayTabs'));
     const today = confNow().date;
-    for (const d of DAYS) {
-      const btn = el('button', { class: `daypill${d === today ? ' is-today' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(d === state.day), onclick: () => setDay(d), title: fmtLong(d) },
-        el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
-      tabs.append(btn);
-    }
-    tabs.append(el('span', { class: 'spacer' }));
     const isOverview = state.layout === 'overview';
+    const week = el('div', { class: `day-week${isOverview ? ' is-overview' : ''}` });
+    for (const d of DAYS) {
+      const selected = isOverview ? d === state.overviewFocus : d === state.day;
+      const btn = el('button', { class: `daypill${d === today ? ' is-today' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(selected), onclick: () => setDay(d), title: fmtLong(d) },
+        el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
+      week.append(btn);
+    }
+    tabs.append(week);
+    tabs.append(el('span', { class: 'spacer' }));
     tabs.append(el('div', { class: 'seg', role: 'group', 'aria-label': t('scheduleLayout') },
       el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(!isOverview), onclick: () => setLayout('timeline') }, t('layoutTimeline')),
       el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(isOverview), onclick: () => setLayout('overview') }, t('layoutOverview'))));
@@ -720,7 +733,7 @@
         bands.push({ start, end, kind: 'plenary', items });
       } else if (b.type === 'section') {
         const start = b.start; let end = b.end; const items = [b]; i++;
-        while (i < blocks.length && blocks[i].type === 'section' && blocks[i].start === start) {
+        while (i < blocks.length && blocks[i].type === 'section') {
           items.push(blocks[i]); if (blocks[i].end > end) end = blocks[i].end; i++;
         }
         bands.push({ start, end, kind: 'section', items });
@@ -751,17 +764,18 @@
     const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
     const ticks = overviewTicks(byDay);
     const slices = Math.max(1, ticks.length - 1);
-    const table = el('div', { class: 'overview', role: 'grid' });
+    const focus = state.overviewFocus;
+    const table = el('div', { class: `overview${focus ? ' is-day-focus' : ''}`, role: 'grid' });
     table.style.setProperty('--days', String(DAYS.length));
     table.style.setProperty('--slices', String(slices));
     const rowSizes = ['auto'];
     for (let i = 0; i < ticks.length - 1; i++) {
-      rowSizes.push(`${Math.max(28, Math.round((ticks[i + 1] - ticks[i]) * 1.1))}px`);
+      rowSizes.push(`minmax(${Math.max(28, Math.round((ticks[i + 1] - ticks[i]) * 1.1))}px, auto)`);
     }
     table.style.gridTemplateRows = rowSizes.join(' ');
     table.append(el('div', { class: 'overview-time overview-corner', role: 'columnheader' }));
     DAYS.forEach((d, i) => {
-      const cell = el('div', { class: `overview-cell head${d === state.day ? ' is-active' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d } },
+      const cell = el('div', { class: `overview-cell head${d === focus ? ' is-active is-focus' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d }, onclick: () => setDay(d) },
         el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
       cell.style.gridColumn = String(i + 2);
       cell.style.gridRow = '1';
@@ -779,6 +793,7 @@
         const r1 = ticks.indexOf(toMin(band.end));
         if (r0 < 0 || r1 < 0 || r1 <= r0) continue;
         const cell = renderOverviewCell(band);
+        if (d === focus) cell.classList.add('is-focus');
         cell.style.gridColumn = String(di + 2);
         cell.style.gridRow = `${r0 + 2} / ${r1 + 2}`;
         table.append(cell);
@@ -792,7 +807,10 @@
     if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
     if (band.kind === 'section') {
       const inner = el('div', { class: 'overview-secs' });
+      const seen = new Set();
       for (const b of band.items) {
+        if (seen.has(b.section)) continue;
+        seen.add(b.section);
         const s = sectionsById[b.section];
         inner.append(el('span', { class: 'overview-sec', dataset: { color: s ? s.color : 'slate' } },
           el('span', { class: 'dot' }), s ? `${t('section')} ${s.id} · ${L(s.short)}` : `${t('section')} ${b.section}`));
@@ -872,12 +890,13 @@
     const range = talks.length ? (talks.length > 1 ? `${talks[0].number}–${talks[talks.length - 1].number}` : talks[0].number) : '';
     const listId = `talks-${b.id}`;
     const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}${open ? ' open' : ''}`, dataset: { color: s.color, block: b.id }, id: listId });
-    const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': String(open), 'aria-controls': listId, 'aria-label': isDesktop() ? t('openSection') : undefined, onclick: () => {
+    const desktop = isDesktop();
+    const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': desktop ? undefined : String(open), 'aria-controls': desktop ? undefined : listId, 'aria-label': desktop ? t('openSection') : undefined, onclick: () => {
       if (isDesktop()) { state.section = s.id; setView('sections'); return; }
       state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); card.classList.toggle('open', nowOpen);
     } },
       el('span', { class: 'sec-name', title: `${t('section')} ${s.id} · ${L(s.short)}` }, `${t('section')} ${s.id} · ${L(s.short)}`),
-      el('span', { class: 'chev' }, icon('chevron')),
+      desktop ? null : el('span', { class: 'chev' }, icon('chevron')),
       el('span', { class: 'sec-meta' },
         el('span', null, `${talks.length} ${t('talks')}${range ? ` (${range})` : ''}`),
         el('span', null, icon('pin'), ` ${roomLabel(b)}`),
@@ -937,7 +956,7 @@
       group.append(el('div', { class: 'group-head' }, el('h3', null, fmtLong(date)), el('span', { class: 'when' }, dayBlocks.map(b => `${b.start}–${b.end}`).join(', '))));
       for (const b of dayBlocks) {
         const card = el('div', { class: 'card', dataset: { color: s.color } });
-        if (dayBlocks.length > 1 || roomOf(b)) card.append(el('div', { class: 'sechead', style: 'cursor:default' }, el('span', { class: 'sec-name' }, el('span', { class: 'num' }, `${b.start}–${b.end}`), b.type !== 'section' ? el('span', null, blockTitle(b)) : null), el('span', { class: 'sec-meta' }, roomOf(b) ? el('span', null, icon('pin'), ` ${roomOf(b)}`) : null)));
+        if (dayBlocks.length > 1 || roomOf(b)) card.append(el('div', { class: 'sechead', style: 'cursor:default' }, el('span', { class: 'sec-name' }, el('span', { class: 'num' }, `${b.start}–${b.end}`), b.type !== 'section' ? ' · ' : null, b.type !== 'section' ? el('span', { class: 'sec-cat' }, blockTitle(b)) : null), el('span', { class: 'sec-meta' }, roomOf(b) ? el('span', null, icon('pin'), ` ${roomOf(b)}`) : null)));
         card.append(el('div', { class: 'talks' }, ...b.talks.map(id => D.talks[id]).filter(Boolean).map(tk => renderTalkRow(tk, now.date === date ? now : null))));
         group.append(card);
       }
@@ -1250,7 +1269,10 @@
           let td;
           if (startsHere.kind === 'section') {
             td = el('td', { class: 'secs' });
+            const seen = new Set();
             for (const b of startsHere.items) {
+              if (seen.has(b.section)) continue;
+              seen.add(b.section);
               const s = sectionsById[b.section];
               td.append(el('div', { class: 'p-ov-sec' }, s ? `${s.id} · ${L(s.short)}` : b.section));
             }
