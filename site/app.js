@@ -186,7 +186,7 @@
     expanded: new Map(),          // blockId -> bool (user override)
     layout: 'timeline',           // 'timeline' | 'overview'
     overviewFocus: null,          // focused overview column, or null = whole week
-    overviewSel: null,            // { day, start } highlighted overview cell, or null
+    overviewSel: null,            // { day, start, end } highlighted overview interval, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
   };
   if (params.get('lang')) store.set('lang', state.lang);
@@ -734,11 +734,8 @@
       const b = blocks[i];
       if (TALK_LIKE.has(b.type)) {
         const start = b.start; let end = b.end; const items = [b]; i++;
-        while (i < blocks.length) {
-          const n = blocks[i];
-          if (TALK_LIKE.has(n.type)) { items.push(n); if (n.end > end) end = n.end; i++; }
-          else if (n.type === 'break' && i + 1 < blocks.length && TALK_LIKE.has(blocks[i + 1].type)) { i++; }
-          else break;
+        while (i < blocks.length && TALK_LIKE.has(blocks[i].type)) {
+          items.push(blocks[i]); if (blocks[i].end > end) end = blocks[i].end; i++;
         }
         bands.push({ start, end, kind: 'plenary', items });
       } else if (b.type === 'section') {
@@ -780,7 +777,7 @@
     table.style.setProperty('--slices', String(slices));
     const rowSizes = ['auto'];
     for (let i = 0; i < ticks.length - 1; i++) {
-      rowSizes.push(`minmax(${Math.max(28, Math.round((ticks[i + 1] - ticks[i]) * 1.1))}px, auto)`);
+      rowSizes.push(`${Math.max(1, ticks[i + 1] - ticks[i])}fr`);
     }
     table.style.gridTemplateRows = rowSizes.join(' ');
     table.append(el('div', { class: 'overview-time overview-corner', role: 'columnheader' }));
@@ -792,8 +789,12 @@
       table.append(cell);
     });
     for (let i = 0; i < ticks.length - 1; i++) {
-      const hl = state.overviewSel && state.overviewSel.start === ticks[i];
-      const label = el('div', { class: `overview-time${hl ? ' is-hl' : ''}`, role: 'rowheader', dataset: { tick: String(ticks[i]) } }, fromMin(ticks[i]));
+      const start = ticks[i], end = ticks[i + 1];
+      const label = el('div', {
+        class: 'overview-time', role: 'rowheader',
+        'aria-label': `${fromMin(start)}–${fromMin(end)}`,
+        dataset: { tick: String(start), start: String(start), end: String(end) }
+      }, el('span', { class: 't-start' }, fromMin(start)), el('span', { class: 't-end' }, fromMin(end)));
       label.style.gridColumn = '1';
       label.style.gridRow = String(i + 2);
       table.append(label);
@@ -810,37 +811,62 @@
         table.append(cell);
       }
     });
+    applyOverviewHighlight(table);
     frag.append(el('div', { class: 'overview-wrap' }, table));
     return frag;
   }
 
-  function activateOverviewCell(day, start) {
-    const same = state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start;
-    state.overviewSel = same ? null : { day, start };
-    const table = document.querySelector('.overview');
+  function applyOverviewHighlight(table) {
     if (!table) return;
     table.querySelectorAll('.overview-cell.is-picked').forEach(c => c.classList.remove('is-picked'));
-    table.querySelectorAll('.overview-time.is-hl').forEach(c => c.classList.remove('is-hl'));
-    if (!state.overviewSel) return;
+    table.querySelectorAll('.t-start.is-hl, .t-end.is-hl, .overview-time.is-hl').forEach(c => c.classList.remove('is-hl'));
+    const old = table.querySelector('.overview-range');
+    if (old) old.remove();
+    const sel = state.overviewSel;
+    if (!sel) return;
     table.querySelectorAll('.overview-cell[data-start]').forEach(c => {
-      if (c.dataset.day === day && Number(c.dataset.start) === start) c.classList.add('is-picked');
+      if (c.dataset.day === sel.day && Number(c.dataset.start) === sel.start) c.classList.add('is-picked');
     });
-    const tick = table.querySelector(`.overview-time[data-tick="${start}"]`);
-    if (tick) tick.classList.add('is-hl');
+    const times = [...table.querySelectorAll('.overview-time[data-start]')].sort(
+      (a, b) => Number(a.dataset.start) - Number(b.dataset.start)
+    );
+    const hlRows = [];
+    for (const n of times) {
+      const a = Number(n.dataset.start), b = Number(n.dataset.end);
+      const startEl = n.querySelector('.t-start');
+      const endEl = n.querySelector('.t-end');
+      if (startEl && a >= sel.start && a < sel.end) startEl.classList.add('is-hl');
+      if (endEl && b > sel.start && b <= sel.end) endEl.classList.add('is-hl');
+      if (a < sel.end && b > sel.start) hlRows.push(n);
+    }
+    if (!hlRows.length) return;
+    const r0 = parseInt(hlRows[0].style.gridRow, 10);
+    const r1 = parseInt(hlRows[hlRows.length - 1].style.gridRow, 10) + 1;
+    const bar = el('div', { class: 'overview-range', 'aria-hidden': 'true' });
+    bar.style.gridColumn = '1';
+    bar.style.gridRow = `${r0} / ${r1}`;
+    table.prepend(bar);
+  }
+
+  function activateOverviewCell(day, start, end) {
+    const same = state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start;
+    state.overviewSel = same ? null : { day, start, end };
+    applyOverviewHighlight(document.querySelector('.overview'));
   }
 
   function overviewCellActivate(e) {
     if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
     if (e.type === 'keydown') e.preventDefault();
     const cell = e.currentTarget;
-    activateOverviewCell(cell.dataset.day, Number(cell.dataset.start));
+    activateOverviewCell(cell.dataset.day, Number(cell.dataset.start), Number(cell.dataset.end));
   }
 
   function renderOverviewCell(band, day) {
     if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
     const start = toMin(band.start);
+    const end = toMin(band.end);
     const picked = !!(state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start);
-    const attrs = { role: 'button', tabindex: 0, dataset: { start: String(start), day }, onclick: overviewCellActivate, onkeydown: overviewCellActivate };
+    const attrs = { role: 'button', tabindex: 0, dataset: { start: String(start), end: String(end), day }, onclick: overviewCellActivate, onkeydown: overviewCellActivate };
     if (band.kind === 'section') {
       const inner = el('div', { class: 'overview-secs' });
       const seen = new Set();
@@ -1287,49 +1313,30 @@
   }
 
   function renderPrintOverview(root) {
-    const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
-    const ticks = overviewTicks(byDay);
-    const table = el('table', { class: 'p-overview' });
-    const thead = el('thead', null, el('tr', null, el('th', null, t('time')), ...DAYS.map(d => el('th', null, `${fmtDow(d)} ${fmtDom(d)}`))));
-    const tbody = el('tbody');
-    for (let i = 0; i < ticks.length - 1; i++) {
-      const t0 = ticks[i];
-      const tr = el('tr', null, el('th', { class: 'p-ov-time' }, fromMin(t0)));
-      for (const d of DAYS) {
-        const bands = byDay[d] || [];
-        const startsHere = bands.find(b => toMin(b.start) === t0);
-        if (startsHere) {
-          const r0 = ticks.indexOf(toMin(startsHere.start));
-          const r1 = ticks.indexOf(toMin(startsHere.end));
-          const span = (r0 >= 0 && r1 > r0) ? r1 - r0 : 1;
-          let td;
-          if (startsHere.kind === 'section') {
-            td = el('td', { class: 'secs' });
-            const seen = new Set();
-            for (const b of startsHere.items) {
-              if (seen.has(b.section)) continue;
-              seen.add(b.section);
-              const s = sectionsById[b.section];
-              td.append(el('div', { class: 'p-ov-sec' }, s ? `${s.id} · ${L(s.short)}` : b.section));
-            }
-          } else {
-            const glyph = bandGlyph(startsHere);
-            const label = startsHere.kind === 'plenary' ? t('slotGroupPlenary') : blockTitle(startsHere.items[0]);
-            td = el('td', { class: startsHere.kind === 'plenary' ? 'plenary' : `kind-${startsHere.kind}` },
-              glyph ? icon(glyph, 'p-ov-ico') : null, el('span', null, label));
-          }
-          if (span > 1) td.setAttribute('rowspan', String(span));
-          tr.append(td);
-        } else if (bands.some(b => toMin(b.start) < t0 && toMin(b.end) > t0)) {
-          /* covered by an earlier rowspan */
-        } else {
-          tr.append(el('td', { class: 'empty' }));
-        }
-      }
-      tbody.append(tr);
-    }
-    table.append(thead, tbody);
-    root.append(table);
+    const live = document.querySelector('.overview');
+    if (!live) return;
+    const clone = live.cloneNode(true);
+    clone.classList.add('print-overview-grid');
+    clone.classList.remove('is-day-focus');
+    clone.querySelectorAll('.is-picked, .is-hl, .is-focus, .is-active').forEach(n => {
+      n.classList.remove('is-picked', 'is-hl', 'is-focus', 'is-active');
+    });
+    const range = clone.querySelector('.overview-range');
+    if (range) range.remove();
+    const stage = el('div', { class: 'print-overview-stage' });
+    stage.append(clone);
+    root.append(stage);
+    const w = Math.max(1, live.scrollWidth);
+    const h = Math.max(1, live.scrollHeight);
+    const pageW = 285 * 96 / 25.4;
+    const pageH = 184 * 96 / 25.4;
+    const s = Math.min(pageW / w, pageH / h, 1);
+    clone.style.width = `${w}px`;
+    clone.style.height = `${h}px`;
+    clone.style.transform = `scale(${s})`;
+    clone.style.transformOrigin = 'top left';
+    clone.style.marginRight = `${(s - 1) * w}px`;
+    clone.style.marginBottom = `${(s - 1) * h}px`;
   }
 
   // ------------------------------------------------------------------ wiring

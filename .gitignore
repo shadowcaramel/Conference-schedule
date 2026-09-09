@@ -17,3 +17,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Print version
+/NUCLEUS-2026 — Schedule.pdf
