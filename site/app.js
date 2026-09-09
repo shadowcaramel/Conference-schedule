@@ -74,6 +74,7 @@
     trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
     mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+    vibrate: '<rect width="8" height="14" x="8" y="5" rx="1"/><path d="m2 8 2 2-2 2 2 2-2 2"/><path d="m22 8-2 2 2 2-2 2 2 2"/>',
   };
   const icon = (name, cls = '') => el('span', { class: `ico ${cls}`.trim(), 'aria-hidden': 'true', html: `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>` });
 
@@ -100,6 +101,7 @@
       skip: 'К содержанию', schedule: 'Расписание', sections: 'Секции', posters: 'Постеры', search: 'Поиск', my: 'Моё',
       changes: 'Изменения', changesTitle: 'Изменения в программе', noChanges: 'Изменений пока нет.',
       theme: 'Тема: светлая / тёмная', font: 'Размер шрифта', lang: 'Switch to English',
+      hapticsDays: 'Отклик: дни', hapticsScroll: 'Отклик: прокрутка', hapticsOff: 'Отклик: выкл',
       updated: 'Обновлено', today: 'Сегодня', now: 'Сейчас', next: 'Далее', at: 'в', until: 'до',
       day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', talks: 'докладов', talk: 'Доклад',
       plenaryTalk: 'Пленарный доклад', jubileeTalk: 'Юбилейный доклад', sponsorTalk: 'Доклад спонсора', section: 'Секция',
@@ -126,6 +128,7 @@
       skip: 'Skip to content', schedule: 'Schedule', sections: 'Sections', posters: 'Posters', search: 'Search', my: 'My',
       changes: 'Changes', changesTitle: 'Programme changes', noChanges: 'No changes yet.',
       theme: 'Theme: light / dark', font: 'Font size', lang: 'Переключить на русский',
+      hapticsDays: 'Haptics: days', hapticsScroll: 'Haptics: scroll', hapticsOff: 'Haptics: off',
       updated: 'Updated', today: 'Today', now: 'Now', next: 'Next', at: 'at', until: 'until',
       day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', talks: 'talks', talk: 'Talk',
       plenaryTalk: 'Plenary talk', jubileeTalk: 'Anniversary talk', sponsorTalk: 'Sponsor talk', section: 'Section',
@@ -188,6 +191,7 @@
     overviewFocus: null,          // focused overview column, or null = whole week
     overviewSel: null,            // { day, start, end } highlighted overview interval, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
+    haptics: (() => { const v = store.get('haptics', 'selection'); return v === 'scroll' || v === 'off' ? v : 'selection'; })(),
   };
   if (params.get('lang')) store.set('lang', state.lang);
   if (params.get('groups') === '0') document.documentElement.dataset.slotGroups = 'off';
@@ -333,6 +337,9 @@
   let suppressHash = false;
   let ignoreDayObs = false;
   let dayObserver = null;
+  let slotObserver = null;
+  let slotObsReady = false;
+  let lastSlotId = null;
 
   function applyHash() {
     const h = readHash();
@@ -367,7 +374,20 @@
       if (b === btn) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
     });
     updateNavCounts();
+    if (on && favOverlaps(id)) haptic('warn');
+    else haptic('confirm');
     if (state.view === 'my') renderMain();
+  }
+  function favOverlaps(id) {
+    const talk = D.talks[id];
+    if (!talk || !talk.date || !talk.start || !talk.end) return false;
+    for (const otherId of state.favs) {
+      if (otherId === id) continue;
+      const o = D.talks[otherId];
+      if (!o || o.date !== talk.date || !o.start || !o.end) continue;
+      if (toMin(o.start) < toMin(talk.end) && toMin(talk.start) < toMin(o.end)) return true;
+    }
+    return false;
   }
   function starButton(id) {
     const on = isFav(id);
@@ -451,6 +471,61 @@
     fn();
   }
   const isDesktop = () => window.matchMedia('(min-width: 900px)').matches;
+  const isFinePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  const HAPTIC_MODES = ['selection', 'scroll', 'off'];
+  const HAPTIC_PATTERNS = { tick: 12, confirm: 18, success: [12, 40, 18], warn: [18, 40, 18, 40, 28] };
+  const HAPTIC_COOLDOWN_MS = 80;
+  let lastHapticAt = 0;
+  let lastDayHapticAt = 0;
+
+  function hapticsApiOk() { return typeof navigator.vibrate === 'function'; }
+  function canShowHapticsControl() { return hapticsApiOk() && !isDesktop() && !isFinePointer(); }
+  function canHaptic() {
+    if (state.haptics === 'off') return false;
+    if (!hapticsApiOk()) return false;
+    if (document.visibilityState !== 'visible') return false;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    if (isDesktop() || isFinePointer()) return false;
+    return true;
+  }
+  function haptic(kind, opts = {}) {
+    if (!canHaptic()) return false;
+    const now = performance.now();
+    if (!opts.force && now - lastHapticAt < HAPTIC_COOLDOWN_MS) return false;
+    try {
+      navigator.vibrate(HAPTIC_PATTERNS[kind] || HAPTIC_PATTERNS.tick);
+    } catch { return false; }
+    lastHapticAt = now;
+    if (opts.day) lastDayHapticAt = now;
+    return true;
+  }
+  function hapticsLabel() {
+    if (state.haptics === 'scroll') return t('hapticsScroll');
+    if (state.haptics === 'off') return t('hapticsOff');
+    return t('hapticsDays');
+  }
+  function applyHapticsControl() {
+    const btn = $('#btn-haptics');
+    if (!btn) return;
+    const show = canShowHapticsControl();
+    btn.hidden = !show;
+    btn.innerHTML = '';
+    btn.append(icon('vibrate'));
+    btn.setAttribute('aria-label', hapticsLabel());
+    btn.title = hapticsLabel();
+    btn.dataset.mode = state.haptics;
+    btn.classList.toggle('is-off', state.haptics === 'off');
+  }
+  function cycleHaptics() {
+    const i = HAPTIC_MODES.indexOf(state.haptics);
+    state.haptics = HAPTIC_MODES[(i < 0 ? 0 : i + 1) % HAPTIC_MODES.length];
+    store.set('haptics', state.haptics);
+    applyHapticsControl();
+    if (state.haptics !== 'off') haptic('tick', { force: true });
+    if (state.view === 'schedule' && state.layout === 'timeline') observeSlots();
+    else if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
+  }
   function highlight(text, q) {
     if (!q) return text;
     const idx = norm(text).indexOf(q);
@@ -470,6 +545,7 @@
     $$('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
     const themeBtn = $('#btn-theme'); themeBtn.innerHTML = ''; themeBtn.append(icon(state.theme === 'dark' ? 'sun' : 'moon')); themeBtn.setAttribute('aria-label', t('theme')); themeBtn.title = t('theme');
     const fontBtn = $('#btn-font'); fontBtn.innerHTML = ''; fontBtn.append(icon('type')); fontBtn.setAttribute('aria-label', `${t('font')}: ${['A', 'A+', 'A++'][state.font - 1]}`); fontBtn.title = fontBtn.getAttribute('aria-label');
+    applyHapticsControl();
     const langBtn = $('#btn-lang'); langBtn.dataset.lang = state.lang; langBtn.setAttribute('aria-label', t('lang')); langBtn.title = t('lang');
     const ch = $('#btn-changes'); ch.innerHTML = ''; ch.append(icon('history'), el('span', { class: 'ctl-label' }, t('changes')), el('span', { class: 'badge', id: 'changes-badge', hidden: true }));
     ch.setAttribute('aria-label', t('changesTitle')); ch.title = t('changesTitle');
@@ -502,6 +578,7 @@
   }
   function setView(view, push = true) {
     if (state.view === view && view !== 'schedule') return;
+    if (state.view !== view) haptic('tick');
     withTransition(() => { state.view = view; renderAll(); writeHash(push); window.scrollTo(0, 0); });
   }
   function setLayout(layout) {
@@ -517,7 +594,9 @@
   function setDay(day, opts = {}) {
     const scroll = opts.scroll !== false;
     if (state.layout === 'overview' && state.view === 'schedule') {
-      state.overviewFocus = state.overviewFocus === day ? null : day;
+      const next = state.overviewFocus === day ? null : day;
+      if (next !== state.overviewFocus) haptic('tick');
+      state.overviewFocus = next;
       if (state.overviewFocus) state.day = day;
       writeHash(true);
       renderDaybar();
@@ -529,6 +608,7 @@
       if (scroll) scrollToDay(day);
       return;
     }
+    haptic('tick');
     state.day = day;
     writeHash(true);
     renderDaybar();
@@ -581,6 +661,7 @@
   function renderAll() { applyChrome(); renderDaybar(); renderMain(); renderFooter(); }
 
   function renderMain() {
+    if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
     const main = $('#main'); main.innerHTML = '';
     switch (state.view) {
       case 'schedule': main.append(viewSchedule()); break;
@@ -623,6 +704,7 @@
     }
     requestAnimationFrame(() => {
       observeDayChunks();
+      observeSlots();
       if (state.day && !viewSchedule._skipScroll) {
         const chunk = document.querySelector(`.day-chunk[data-day="${state.day}"]`);
         if (chunk) {
@@ -719,12 +801,37 @@
       if (!hit) return;
       const day = hit.target.dataset.day;
       if (day && day !== state.day) {
+        haptic('tick', { day: true });
         state.day = day;
         renderDaybar();
         writeHash(false);
       }
     }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, 0.15, 0.4] });
     chunks.forEach(c => dayObserver.observe(c));
+  }
+
+  function observeSlots() {
+    if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
+    slotObsReady = false;
+    lastSlotId = null;
+    if (state.haptics !== 'scroll') return;
+    if (state.view !== 'schedule' || state.layout !== 'timeline') return;
+    const slots = $$('.slot');
+    if (!slots.length) return;
+    slotObserver = new IntersectionObserver((entries) => {
+      if (ignoreDayObs) return;
+      const hit = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!hit) return;
+      const id = hit.target.id;
+      if (!id) return;
+      const changed = id !== lastSlotId;
+      lastSlotId = id;
+      if (!slotObsReady || !changed) return;
+      if (performance.now() - lastDayHapticAt < HAPTIC_COOLDOWN_MS) return;
+      haptic('tick');
+    }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, 0.15, 0.4] });
+    slots.forEach(s => slotObserver.observe(s));
+    requestAnimationFrame(() => requestAnimationFrame(() => { slotObsReady = true; }));
   }
 
   function mergeDayBands(date) {
@@ -1205,7 +1312,7 @@
   async function shareMy() {
     const url = pageUrl(`#my=${Array.from(state.favs).join(',')}`);
     if (navigator.share) { try { await navigator.share({ title: L(D.settings.shortTitle), url }); return; } catch { /* cancelled */ } }
-    if (await copyText(url)) toast(t('shareCopied'));
+    if (await copyText(url)) { haptic('success'); toast(t('shareCopied')); }
   }
 
   // ------------------------------------------------------------------ detail sheet
@@ -1242,7 +1349,7 @@
     const actions = el('div', { class: 'sheet-actions' },
       el('button', { class: `btn ${isFav(id) ? '' : 'primary'}`.trim(), type: 'button', onclick: (e) => { toggleFav(id, null); const on = isFav(id); e.currentTarget.classList.toggle('primary', !on); e.currentTarget.replaceChildren(icon('star', on ? 'filled' : ''), on ? t('unstar') : t('star')); } }, icon('star', isFav(id) ? 'filled' : ''), isFav(id) ? t('unstar') : t('star')),
       (talk && talk.date) || (poster && posterBlock) ? el('button', { class: 'btn', type: 'button', onclick: () => downloadICS([item], `${id}.ics`) }, icon('calplus'), t('addToCalendar')) : null,
-      el('button', { class: 'btn ghost', type: 'button', onclick: async () => { const url = pageUrl(`#view=${state.view}${state.view === 'schedule' && state.day ? '&day=' + state.day : ''}&talk=${id}`); if (await copyText(url)) toast(t('linkCopied')); } }, icon('link'), t('copyLink')));
+      el('button', { class: 'btn ghost', type: 'button', onclick: async () => { const url = pageUrl(`#view=${state.view}${state.view === 'schedule' && state.day ? '&day=' + state.day : ''}&talk=${id}`); if (await copyText(url)) { haptic('success'); toast(t('linkCopied')); } } }, icon('link'), t('copyLink')));
     dlg.append(el('div', { class: 'sheet-inner' }, el('div', { class: 'grabber' }), el('div', { class: 'sheet-head' }, kicker, el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))), body, actions));
     if (!dlg.open) dlg.showModal();
     dlg.onclose = () => { openTalkId = null; writeHash(); };
@@ -1350,14 +1457,19 @@
     return DAYS[0];
   }
 
-  $('#btn-theme').addEventListener('click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; store.set('theme', state.theme); applyChrome(); });
   $('#btn-font').addEventListener('click', () => { state.font = state.font >= 3 ? 1 : state.font + 1; store.set('font', state.font); applyChrome(); });
+  $('#btn-haptics').addEventListener('click', cycleHaptics);
+  $('#btn-theme').addEventListener('click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; store.set('theme', state.theme); applyChrome(); });
   $('#btn-lang').addEventListener('click', () => { state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); withTransition(renderAll); });
   $('#btn-changes').addEventListener('click', openChanges);
   $('#brand').addEventListener('click', (e) => { e.preventDefault(); setView('schedule'); });
   window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); });
   window.addEventListener('beforeprint', renderPrint);
-  window.matchMedia('(min-width: 900px)').addEventListener('change', () => { if (state.view === 'schedule') { preserveScroll(() => { renderMain(); renderDaybar(); }); } });
+  window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
+    applyHapticsControl();
+    if (state.view === 'schedule') { preserveScroll(() => { renderMain(); renderDaybar(); }); }
+  });
+  window.matchMedia('(hover: hover) and (pointer: fine)').addEventListener('change', applyHapticsControl);
   setInterval(() => { if (state.view === 'schedule' && state.layout === 'timeline' && confNow().date === state.day) { preserveScroll(renderMain); } }, 60000);
 
   // boot
