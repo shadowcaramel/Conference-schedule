@@ -330,15 +330,25 @@
   }
 
   function daySummary(date) {
-    const blocks = D.blocks.filter(b => b.date === date);
+    const blocks = D.blocks.filter(b => b.date === date).slice().sort((a, b) => a.start.localeCompare(b.start) || a.type.localeCompare(b.type));
     const plenary = blocks.filter(b => ['plenary', 'jubilee'].includes(b.type)).length;
     const sectionSlots = new Set(blocks.filter(b => b.type === 'section').map(b => b.start)).size;
     const sectionCount = blocks.filter(b => b.type === 'section').length;
-    const socials = blocks.filter(b => ['social', 'poster', 'opening', 'closing', 'registration'].includes(b.type)).map(b => blockTitle(b));
+    const sectionPart = sectionCount
+      ? `${sectionCount} ${t('parallel')}` + (sectionSlots > 1 ? ` (${sectionSlots} ${state.lang === 'ru' ? 'слота' : 'slots'})` : '')
+      : '';
     const parts = [];
-    if (plenary) parts.push(`${plenary} ${t('plenaryCount')}`);
-    if (sectionCount) parts.push(`${sectionCount} ${t('parallel')}` + (sectionSlots > 1 ? ` (${sectionSlots} ${state.lang === 'ru' ? 'слота' : 'slots'})` : ''));
-    return parts.concat(socials);
+    let sawPlenary = false, sawSection = false;
+    for (const b of blocks) {
+      if (['plenary', 'jubilee'].includes(b.type)) {
+        if (!sawPlenary && plenary) { parts.push(`${plenary} ${t('plenaryCount')}`); sawPlenary = true; }
+      } else if (b.type === 'section') {
+        if (!sawSection && sectionPart) { parts.push(sectionPart); sawSection = true; }
+      } else if (['social', 'poster', 'opening', 'closing', 'registration'].includes(b.type)) {
+        parts.push(blockTitle(b));
+      }
+    }
+    return parts;
   }
 
   // ------------------------------------------------------------------ routing
@@ -764,7 +774,9 @@
       if (state.overviewFocus) state.day = day;
       writeHash(true);
       renderDaybar();
-      renderMain();
+      const table = document.querySelector('.overview');
+      if (table) applyOverviewDayFocus(table);
+      else renderMain();
       return;
     }
     const rebuild = opts.rebuild === true || state.view !== 'schedule';
@@ -1038,8 +1050,7 @@
   function viewOverview() {
     const frag = document.createDocumentFragment();
     frag.append(el('div', { class: 'page-head' },
-      el('div', null, el('h1', { class: 'page-title' }, t('layoutOverview')),
-        el('p', { class: 'page-sub' }, t('schedule')))));
+      el('div', null, el('h1', { class: 'page-title' }, t('layoutOverview'), ' ', el('span', { class: 'dim' }, `· ${t('schedule')}`)))));
     const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
     const ticks = overviewTicks(byDay);
     const slices = Math.max(1, ticks.length - 1);
@@ -1083,9 +1094,38 @@
         table.append(cell);
       }
     });
+    applyOverviewDayFocus(table);
     applyOverviewHighlight(table);
     frag.append(el('div', { class: 'overview-wrap' }, table));
     return frag;
+  }
+
+  function applyOverviewDayFocus(table) {
+    if (!table) return;
+    const focus = state.overviewFocus;
+    table.classList.toggle('is-day-focus', !!focus);
+    table.querySelectorAll('.overview-cell.head').forEach(c => {
+      const on = !!(focus && c.dataset.day === focus);
+      c.classList.toggle('is-focus', on);
+      c.classList.toggle('is-active', on);
+    });
+    table.querySelectorAll('.overview-cell[data-start]').forEach(c => {
+      c.classList.toggle('is-focus', !!(focus && c.dataset.day === focus));
+    });
+    const ticks = new Set();
+    if (focus) {
+      table.querySelectorAll(`.overview-cell[data-day="${focus}"][data-start]`).forEach(c => {
+        ticks.add(Number(c.dataset.start));
+        ticks.add(Number(c.dataset.end));
+      });
+    }
+    table.querySelectorAll('.overview-time[data-start]').forEach(n => {
+      const a = Number(n.dataset.start), b = Number(n.dataset.end);
+      const startEl = n.querySelector('.t-start');
+      const endEl = n.querySelector('.t-end');
+      if (startEl) startEl.classList.toggle('is-idle', !!focus && !ticks.has(a));
+      if (endEl) endEl.classList.toggle('is-idle', !!focus && !ticks.has(b));
+    });
   }
 
   function applyOverviewHighlight(table) {
@@ -1147,7 +1187,7 @@
         seen.add(b.section);
         const s = sectionsById[b.section];
         inner.append(el('span', { class: 'overview-sec', dataset: { color: s ? s.color : 'slate' } },
-          el('span', { class: 'dot' }), s ? `${t('section')} ${s.id} · ${L(s.short)}` : `${t('section')} ${b.section}`));
+          el('span', { class: 'dot' }), s ? `S${s.id} · ${L(s.short)}` : `S${b.section}`));
       }
       return el('div', { class: `overview-cell sections${picked ? ' is-picked' : ''}`, ...attrs }, inner);
     }
@@ -1593,8 +1633,8 @@
     const clone = live.cloneNode(true);
     clone.classList.add('print-overview-grid');
     clone.classList.remove('is-day-focus');
-    clone.querySelectorAll('.is-picked, .is-hl, .is-focus, .is-active').forEach(n => {
-      n.classList.remove('is-picked', 'is-hl', 'is-focus', 'is-active');
+    clone.querySelectorAll('.is-picked, .is-hl, .is-focus, .is-active, .is-idle').forEach(n => {
+      n.classList.remove('is-picked', 'is-hl', 'is-focus', 'is-active', 'is-idle');
     });
     const range = clone.querySelector('.overview-range');
     if (range) range.remove();
