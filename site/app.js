@@ -677,6 +677,10 @@
   }
 
   // ------------------------------------------------------------------ chrome
+  function brandDisplayTitle() {
+    const raw = L(D.settings.shortTitle) || 'ЯДРО-2026';
+    return raw.replace(/[\u2010-\u2015\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
   function applyChrome() {
     document.documentElement.lang = state.lang;
     document.documentElement.dataset.theme = state.theme;
@@ -684,21 +688,34 @@
     applyThemeColor();
     syncInstallUi();
     document.title = `${L(D.settings.shortTitle) || 'ЯДРО-2026'} — ${t('schedule')}`;
-    $('#brand-title').textContent = L(D.settings.shortTitle) || 'ЯДРО-2026';
+    $('#brand-title').textContent = brandDisplayTitle();
     $('#brand-sub').textContent = [L(D.settings.city), fmtRange()].filter(Boolean).join(' · ');
     $$('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
     const themeBtn = $('#btn-theme'); themeBtn.innerHTML = ''; themeBtn.append(icon(state.theme === 'dark' ? 'sun' : 'moon')); themeBtn.setAttribute('aria-label', t('theme')); themeBtn.title = t('theme');
     const fontBtn = $('#btn-font'); fontBtn.innerHTML = ''; fontBtn.append(icon('type')); fontBtn.setAttribute('aria-label', `${t('font')}: ${['A', 'A+', 'A++'][state.font - 1]}`); fontBtn.title = fontBtn.getAttribute('aria-label');
     const langBtn = $('#btn-lang'); langBtn.dataset.lang = state.lang; langBtn.setAttribute('aria-label', t('lang')); langBtn.title = t('lang');
-    const ch = $('#btn-changes'); ch.innerHTML = ''; ch.append(icon('history'), el('span', { class: 'ctl-label' }, t('changes')), el('span', { class: 'badge', id: 'changes-badge', hidden: true }));
-    ch.setAttribute('aria-label', t('changesTitle')); ch.title = t('changesTitle');
+    fillChangesButton($('#btn-changes'), true);
     updateChangesBadge();
     renderNav();
   }
+  function fillChangesButton(btn, withLabel) {
+    if (!btn) return;
+    btn.innerHTML = '';
+    btn.append(icon('history'));
+    if (withLabel) btn.append(el('span', { class: 'ctl-label' }, t('changes')));
+    btn.append(el('span', { class: 'badge changes-badge', hidden: true }));
+    btn.setAttribute('aria-label', t('changesTitle'));
+    btn.title = t('changesTitle');
+    btn.setAttribute('aria-haspopup', 'dialog');
+  }
+  function makeDaybarChangesButton() {
+    const btn = el('button', { class: 'ctl ctl-icon daybar-changes', type: 'button', onclick: openChanges });
+    fillChangesButton(btn, false);
+    return btn;
+  }
   function updateChangesBadge() {
-    const badge = $('#changes-badge'); if (!badge) return;
     const unseen = D.changes.filter(c => c.at > (state.lastSeenChanges || '')).length;
-    badge.hidden = unseen === 0; badge.textContent = String(unseen);
+    $$('.changes-badge').forEach(badge => { badge.hidden = unseen === 0; badge.textContent = String(unseen); });
   }
   const VIEWS = [
     { id: 'schedule', icon: 'calendar' }, { id: 'sections', icon: 'grid' }, { id: 'poster', icon: 'poster', view: 'posters' },
@@ -791,10 +808,12 @@
     tabs.append(el('div', { class: 'seg', role: 'group', 'aria-label': t('scheduleLayout') },
       el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(!isOverview), onclick: () => setLayout('timeline') }, t('layoutTimeline')),
       el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(isOverview), onclick: () => setLayout('overview') }, t('layoutOverview'))));
+    tabs.append(makeDaybarChangesButton());
     if (!isOverview) {
       const allOpen = D.blocks.filter(b => b.type === 'section').every(b => isExpanded(b));
       tabs.append(el('button', { class: 'btn ghost sm daybar-action', type: 'button', onclick: () => toggleAll(!allOpen) }, icon(allOpen ? 'collapse' : 'expand'), el('span', null, t(allOpen ? 'collapseAll' : 'expandAll'))));
     }
+    updateChangesBadge();
     requestAnimationFrame(() => { const act = $('.daypill[aria-selected="true"]', tabs); if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); });
   }
   function isExpanded(block) { return state.expanded.has(block.id) ? state.expanded.get(block.id) : isDesktop(); }
@@ -844,8 +863,8 @@
       const dayIndex = DAYS.indexOf(date) + 1;
       const chunk = el('section', { class: 'day-chunk', dataset: { day: date }, id: `day-${date}` });
       chunk.append(el('div', { class: 'day-chunk-head' },
-        el('h1', { class: 'page-title' }, fmtLong(date), ' ', el('span', { class: 'dim' }, `· ${t('dayOf')} ${dayIndex} ${t('of')} ${DAYS.length}`)),
-        el('p', { class: 'page-sub' }, daySummary(date).flatMap((s, i) => i ? [el('span', { class: 'sep' }, '·'), el('span', null, s)] : [el('span', null, s)]))));
+        el('h1', { class: 'page-title' }, fmtLong(date), ' ', el('span', { class: 'dim' }, `· ${t('dayOf')} ${dayIndex} ${t('of')} ${DAYS.length}`))));
+      chunk.append(el('p', { class: 'page-sub' }, daySummary(date).flatMap((s, i) => i ? [el('span', { class: 'sep' }, '·'), el('span', null, s)] : [el('span', null, s)])));
       if (isToday) { const card = nowCard(date, now); if (card) chunk.append(card); }
       chunk.append(renderDayTimeline(date, isToday ? now : null));
       frag.append(chunk);

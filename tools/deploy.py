@@ -76,33 +76,13 @@ def local_files() -> list[tuple[str, Path, int]]:
     return out
 
 
-def parse_mlsd_line(line: str) -> tuple[str, str, str] | None:
-    facts, _, name = line.partition(" ")
-    if name in (".", "..") or not name:
+def remote_size(ftp: FTP, path: str) -> int | None:
+    """SIZE on the control connection — no MLSD data channel (those often time out)."""
+    try:
+        got = ftp.size(path)
+    except (error_perm, TimeoutError, OSError):
         return None
-    parsed = dict(part.split("=", 1) for part in facts.rstrip(";").split(";") if "=" in part)
-    return parsed.get("type", ""), parsed.get("size") or parsed.get("sizd") or "", name
-
-
-def remote_tree(ftp: FTP) -> dict[str, int]:
-    found: dict[str, int] = {}
-
-    def walk(prefix: str) -> None:
-        lines: list[str] = []
-        ftp.retrlines("MLSD " + (prefix or "."), lines.append)
-        for line in lines:
-            parsed = parse_mlsd_line(line)
-            if not parsed:
-                continue
-            typ, size, name = parsed
-            path = f"{prefix}/{name}" if prefix else name
-            if typ == "dir":
-                walk(path)
-            elif typ == "file" and size.isdigit():
-                found[path] = int(size)
-
-    walk("")
-    return found
+    return int(got) if got is not None else None
 
 
 def ensure_dir(ftp: FTP, remote_dir: str) -> None:
@@ -130,7 +110,7 @@ def warn_if_stale() -> None:
 
 def connect(host: str, port: int, user: str, password: str) -> FTP:
     ftp = FTP()
-    ftp.connect(host, port, timeout=60)
+    ftp.connect(host, port, timeout=90)
     ftp.login(user, password)
     ftp.encoding = "utf-8"
     ftp.set_pasv(True)
@@ -180,10 +160,9 @@ def main(argv: list[str]) -> int:
 
     ftp = connect(host, port, user, password)
     try:
-        remote = remote_tree(ftp)
         planned: list[tuple[str, Path, int, str]] = []
         for rel, path, size in files:
-            old = remote.get(rel)
+            old = None if force_all else remote_size(ftp, rel)
             if force_all or old is None:
                 reason = "новый" if old is None else "принудительно"
                 planned.append((rel, path, size, reason))
