@@ -377,6 +377,7 @@
   let ignoreDayObs = false;
   let dayObserver = null;
   let slotObserver = null;
+  let timelineCapObs = null;
   let slotObsReady = false;
   let lastSlotId = null;
 
@@ -808,6 +809,7 @@
 
   function renderMain() {
     if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
+    if (timelineCapObs) { timelineCapObs.disconnect(); timelineCapObs = null; }
     const main = $('#main'); main.innerHTML = '';
     switch (state.view) {
       case 'schedule': main.append(viewSchedule()); break;
@@ -851,6 +853,7 @@
     requestAnimationFrame(() => {
       observeDayChunks();
       observeSlots();
+      observeTimelineCaps();
       if (state.day && !viewSchedule._skipScroll) {
         const chunk = document.querySelector(`.day-chunk[data-day="${state.day}"]`);
         if (chunk) {
@@ -895,7 +898,9 @@
   }
 
   function renderDayTimeline(date, now) {
-    const timeline = el('div', { class: 'timeline' });
+    const timeline = el('div', {
+      class: `timeline${date === DAYS[0] ? ' is-start' : ''}${date === DAYS[DAYS.length - 1] ? ' is-end' : ''}`,
+    });
     const isToday = now && now.date === date;
     for (const item of clusterSlots(slotsForDay(date))) {
       if (item.kind === 'group') {
@@ -936,6 +941,36 @@
     return el('section', { class: `slot ${status}`.trim(), id: `slot-${slot.start.replace(':', '')}-${slot.blocks[0].date || ''}`, 'aria-label': `${slot.start}–${slot.end}` },
       el('div', { class: 'slot-time' }, el('span', { class: 't-start' }, slot.start), el('span', { class: 't-end' }, slot.end), el('span', { class: 'rail-dot' })),
       body);
+  }
+
+  function offsetY(el, ancestor) {
+    let y = 0;
+    for (let n = el; n && n !== ancestor; n = n.offsetParent) y += n.offsetTop;
+    return y;
+  }
+
+  function capTimelineRails() {
+    document.querySelectorAll('.timeline.is-start, .timeline.is-end').forEach(tl => {
+      const dots = tl.querySelectorAll('.rail-dot');
+      if (!dots.length) return;
+      if (tl.classList.contains('is-start')) {
+        const dot = dots[0];
+        tl.style.setProperty('--rail-cap-top', `${Math.max(0, Math.round(offsetY(dot, tl) + dot.offsetHeight / 2))}px`);
+      }
+      if (tl.classList.contains('is-end')) {
+        const dot = dots[dots.length - 1];
+        tl.style.setProperty('--rail-cap-bottom', `${Math.max(0, Math.round(tl.offsetHeight - offsetY(dot, tl) - dot.offsetHeight / 2))}px`);
+      }
+    });
+  }
+
+  function observeTimelineCaps() {
+    if (timelineCapObs) { timelineCapObs.disconnect(); timelineCapObs = null; }
+    const nodes = document.querySelectorAll('.timeline.is-start, .timeline.is-end');
+    if (!nodes.length) return;
+    timelineCapObs = new ResizeObserver(() => capTimelineRails());
+    nodes.forEach(n => timelineCapObs.observe(n));
+    capTimelineRails();
   }
 
   function observeDayChunks() {
@@ -1083,19 +1118,20 @@
     table.querySelectorAll('.overview-cell[data-start]').forEach(c => {
       c.classList.toggle('is-focus', !!(focus && c.dataset.day === focus));
     });
-    const ticks = new Set();
+    const starts = new Set();
+    const ends = new Set();
     if (focus) {
       table.querySelectorAll(`.overview-cell[data-day="${focus}"][data-start]`).forEach(c => {
-        ticks.add(Number(c.dataset.start));
-        ticks.add(Number(c.dataset.end));
+        starts.add(Number(c.dataset.start));
+        ends.add(Number(c.dataset.end));
       });
     }
     table.querySelectorAll('.overview-time[data-start]').forEach(n => {
       const a = Number(n.dataset.start), b = Number(n.dataset.end);
       const startEl = n.querySelector('.t-start');
       const endEl = n.querySelector('.t-end');
-      if (startEl) startEl.classList.toggle('is-idle', !!focus && !ticks.has(a));
-      if (endEl) endEl.classList.toggle('is-idle', !!focus && !ticks.has(b));
+      if (startEl) startEl.classList.toggle('is-idle', !!focus && !starts.has(a));
+      if (endEl) endEl.classList.toggle('is-idle', !!focus && !ends.has(b));
     });
   }
 

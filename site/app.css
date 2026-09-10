@@ -429,6 +429,8 @@ html[data-theme="dark"] .chip.plain[aria-pressed="true"] { background: var(--acc
   width: var(--rail-line);
   background: var(--border);
 }
+.timeline.is-start::before { top: var(--rail-cap-top, 10px); }
+.timeline.is-end::before { bottom: var(--rail-cap-bottom, 10px); }
 .slot { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 0 10px; align-items: start; position: relative; }
 .slot:not(:has(.parallel)),
 .slot:has(.parallel-grid.is-collapsed) { align-items: center; }

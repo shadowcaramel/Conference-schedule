@@ -4,16 +4,16 @@ overview: Replace overflowing Overview section chips with one plenary-like cell 
 todos:
   - id: sec-panes
     content: Render Overview sections as horizontal colored S# panes
-    status: completed
+    status: cancelled
   - id: align-hyphen
     content: Center Overview cell content; drop hyphenation
-    status: completed
+    status: cancelled
   - id: short-titles
     content: Overview-only short Opening/Closing/Welcome labels
-    status: completed
+    status: cancelled
   - id: verify-viewports
     content: Rebuild dist; desktop+mobile EN/RU clutter check
-    status: completed
+    status: cancelled
 isProject: false
 ---
 
