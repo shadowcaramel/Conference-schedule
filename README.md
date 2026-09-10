@@ -109,22 +109,28 @@ ID вида `POST-05` тоже не меняйте. «№ стенда» мож�
 
 ## Как отдать на сайт конференции
 
-**Вариант A — папка.** Скопируйте содержимое `site/` на сервер (или в каталог WordPress). Подключите страницу как обычный HTML.
+Живая программа: [http://nucleus.togudv.ru/timetable/](http://nucleus.togudv.ru/timetable/). На FTP уходит **только** содержимое `site/` (без Excel и исходников). Загрузка **по запросу**, не после каждой правки: сначала смотрите локально, потом публикуйте.
 
-**Вариант B — один файл.** Отправьте `dist/nucleus2026-programme.html`. Шрифт уже внутри.
+```text
+python tools/deploy.py --dry-run   # что изменилось, без загрузки
+python tools/deploy.py             # залить файлы с другим размером
+python tools/deploy.py --build     # сначала python tools/build.py, затем FTP
+```
 
-**Вариант C — iframe** (WordPress, страница «Information for Participants»):
+Учётные данные — в `.ftp.env` (скопируйте `.ftp.env.example`, файл в git не попадает). В Cursor достаточно сказать «выложи на сайт» / «deploy timetable».
+
+**Один файл.** Вместо папки можно отправить `dist/nucleus2026-programme.html` (шрифт уже внутри).
+
+**iframe** (WordPress, страница «Information for Participants»):
 
 ```html
 <iframe
-  src="https://nucleus.togudv.ru/programme/"
+  src="http://nucleus.togudv.ru/timetable/"
   title="NUCLEUS-2026 programme"
   style="width:100%;min-height:80vh;border:0;border-radius:16px;"
 ></iframe>
-<p><a href="https://nucleus.togudv.ru/programme/?lang=en">English programme</a></p>
+<p><a href="http://nucleus.togudv.ru/timetable/?lang=en">English programme</a></p>
 ```
-
-Подставьте реальный URL, который выдаст администратор. Английская ссылка — `?lang=en`.
 
 Локальная проверка без сервера: откройте `site/index.html`. Либо:
 
@@ -150,7 +156,7 @@ python tools/migrate.py --force
 
 - QR-код на стойку регистрации.
 - Тезисы / PDF по докладам.
-- Автодеплой на nucleus.togudv.ru.
+- Автозагрузка на FTP после каждой правки (публикация только вручную: `python tools/deploy.py`).
 - Синхронизация «Моего» между устройствами через сервер (нужен вход).
 
 Шрифт [Onest](https://github.com/googlefonts/onest) — SIL Open Font License, файлы в `site/assets/fonts/`.

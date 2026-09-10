@@ -1,0 +1,10 @@
+---
+description: Upload the programme to nucleus.togudv.ru only when the user explicitly asks.
+alwaysApply: true
+---
+
+# FTP deploy is on demand
+
+Do not upload to `nucleus.togudv.ru` after ordinary edits. Test locally (`site/index.html` or `python -m http.server 8080 --directory site`).
+
+When the user explicitly asks to publish, deploy, or upload the timetable, follow the `deploy-timetable` skill and run `python tools/deploy.py` (preview with `--dry-run`). Never commit `.ftp.env` or print the FTP password.
