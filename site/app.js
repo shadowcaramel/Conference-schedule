@@ -1173,6 +1173,18 @@
     activateOverviewCell(cell.dataset.day, Number(cell.dataset.start), Number(cell.dataset.end));
   }
 
+  function overviewBandLabel(band) {
+    if (band.kind === 'plenary') return t('slotGroupPlenary');
+    const b = band.items[0];
+    if (!b) return '';
+    if (b.type === 'opening' || b.type === 'closing') return BLOCK_TYPE_LABEL[state.lang][b.type];
+    if (b.type === 'social') {
+      const blob = `${(b.title && b.title.ru) || ''} ${(b.title && b.title.en) || ''}`;
+      if (/фуршет|welcome party/i.test(blob)) return state.lang === 'ru' ? 'Фуршет' : 'Welcome party';
+    }
+    return blockTitle(b);
+  }
+
   function renderOverviewCell(band, day) {
     if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
     const start = toMin(band.start);
@@ -1180,19 +1192,22 @@
     const picked = !!(state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start);
     const attrs = { role: 'button', tabindex: 0, dataset: { start: String(start), end: String(end), day }, onclick: overviewCellActivate, onkeydown: overviewCellActivate };
     if (band.kind === 'section') {
-      const inner = el('div', { class: 'overview-secs' });
       const seen = new Set();
+      const panes = [];
+      const names = [];
       for (const b of band.items) {
         if (seen.has(b.section)) continue;
         seen.add(b.section);
         const s = sectionsById[b.section];
-        inner.append(el('span', { class: 'overview-sec', dataset: { color: s ? s.color : 'slate' } },
-          el('span', { class: 'dot' }), s ? `S${s.id} · ${L(s.short)}` : `S${b.section}`));
+        const id = s ? s.id : b.section;
+        names.push(s ? `S${id} ${L(s.short)}` : `S${id}`);
+        panes.push(el('span', { class: 'overview-sec-pane', dataset: { color: s ? s.color : 'slate' } }, `S${id}`));
       }
-      return el('div', { class: `overview-cell sections${picked ? ' is-picked' : ''}`, ...attrs }, inner);
+      return el('div', { class: `overview-cell sections${picked ? ' is-picked' : ''}`, ...attrs, 'aria-label': names.join(', ') },
+        el('div', { class: 'overview-sec-split' }, ...panes));
     }
     const glyph = bandGlyph(band);
-    const label = band.kind === 'plenary' ? t('slotGroupPlenary') : blockTitle(band.items[0]);
+    const label = overviewBandLabel(band);
     const kindClass = band.kind === 'plenary' ? 'plenary-band' : `kind-${band.kind}`;
     return el('div', { class: `overview-cell ${kindClass}${picked ? ' is-picked' : ''}`, ...attrs },
       glyph ? icon(glyph) : null,
