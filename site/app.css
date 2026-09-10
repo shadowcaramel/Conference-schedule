@@ -291,10 +291,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .ctl:hover { background: var(--surface-2); color: var(--text); }
 .ctl:active { transform: scale(.96); }
 .ctl-icon { padding: 0; width: 40px; justify-content: center; }
-.ctl-icon.is-off { opacity: .45; }
-#btn-haptics[hidden] { display: none !important; }
-@media (min-width: 900px) { #btn-haptics { display: none; } }
-@media (hover: hover) and (pointer: fine) { #btn-haptics { display: none; } }
 .ctl .ico { width: 1.3em; height: 1.3em; }
 .ctl-label { display: none; }
 @media (min-width: 720px) { .ctl-label { display: inline; } }

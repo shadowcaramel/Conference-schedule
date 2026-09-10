@@ -10,6 +10,7 @@
 
   // Consecutive plenary/jubilee/sponsor cards get a group subtitle. Set false to flatten.
   const SLOT_GROUPS = true;
+  const HAPTICS_ON = true; // set false in a later update to disable for everyone
 
   // ------------------------------------------------------------------ helpers
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -74,7 +75,6 @@
     trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
     mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
-    vibrate: '<rect width="8" height="14" x="8" y="5" rx="1"/><path d="m2 8 2 2-2 2 2 2-2 2"/><path d="m22 8-2 2 2 2-2 2 2 2"/>',
     smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
     shareup: '<path d="M12 17V4"/><polyline points="7 9 12 4 17 9"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
   };
@@ -103,7 +103,6 @@
       skip: 'К содержанию', schedule: 'Расписание', sections: 'Секции', posters: 'Постеры', search: 'Поиск', my: 'Моё',
       changes: 'Изменения', changesTitle: 'Изменения в программе', noChanges: 'Изменений пока нет.',
       theme: 'Тема: светлая / тёмная', font: 'Размер шрифта', lang: 'Switch to English',
-      hapticsDays: 'Отклик: дни', hapticsScroll: 'Отклик: прокрутка', hapticsOff: 'Отклик: выкл',
       updated: 'Обновлено', today: 'Сегодня', now: 'Сейчас', next: 'Далее', at: 'в', until: 'до',
       day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', talks: 'докладов', talk: 'Доклад',
       plenaryTalk: 'Пленарный доклад', jubileeTalk: 'Юбилейный доклад', sponsorTalk: 'Доклад спонсора', section: 'Секция',
@@ -145,7 +144,6 @@
       skip: 'Skip to content', schedule: 'Schedule', sections: 'Sections', posters: 'Posters', search: 'Search', my: 'My',
       changes: 'Changes', changesTitle: 'Programme changes', noChanges: 'No changes yet.',
       theme: 'Theme: light / dark', font: 'Font size', lang: 'Переключить на русский',
-      hapticsDays: 'Haptics: days', hapticsScroll: 'Haptics: scroll', hapticsOff: 'Haptics: off',
       updated: 'Updated', today: 'Today', now: 'Now', next: 'Next', at: 'at', until: 'until',
       day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', talks: 'talks', talk: 'Talk',
       plenaryTalk: 'Plenary talk', jubileeTalk: 'Anniversary talk', sponsorTalk: 'Sponsor talk', section: 'Section',
@@ -223,7 +221,6 @@
     overviewFocus: null,          // focused overview column, or null = whole week
     overviewSel: null,            // { day, start, end } highlighted overview interval, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
-    haptics: (() => { const v = store.get('haptics', 'selection'); return v === 'scroll' || v === 'off' ? v : 'selection'; })(),
   };
   if (params.get('lang')) store.set('lang', state.lang);
   if (params.get('groups') === '0') document.documentElement.dataset.slotGroups = 'off';
@@ -515,16 +512,14 @@
   const isDesktop = () => window.matchMedia('(min-width: 900px)').matches;
   const isFinePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  const HAPTIC_MODES = ['selection', 'scroll', 'off'];
-  const HAPTIC_PATTERNS = { tick: 12, confirm: 18, success: [12, 40, 18], warn: [18, 40, 18, 40, 28] };
+  const HAPTIC_PATTERNS = { tick: 18, confirm: 18, success: [18, 40, 18], warn: [18, 40, 18, 40, 28] };
   const HAPTIC_COOLDOWN_MS = 80;
   let lastHapticAt = 0;
   let lastDayHapticAt = 0;
 
   function hapticsApiOk() { return typeof navigator.vibrate === 'function'; }
-  function canShowHapticsControl() { return hapticsApiOk() && !isDesktop() && !isFinePointer(); }
   function canHaptic() {
-    if (state.haptics === 'off') return false;
+    if (!HAPTICS_ON) return false;
     if (!hapticsApiOk()) return false;
     if (document.visibilityState !== 'visible') return false;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
@@ -541,32 +536,6 @@
     lastHapticAt = now;
     if (opts.day) lastDayHapticAt = now;
     return true;
-  }
-  function hapticsLabel() {
-    if (state.haptics === 'scroll') return t('hapticsScroll');
-    if (state.haptics === 'off') return t('hapticsOff');
-    return t('hapticsDays');
-  }
-  function applyHapticsControl() {
-    const btn = $('#btn-haptics');
-    if (!btn) return;
-    const show = canShowHapticsControl();
-    btn.hidden = !show;
-    btn.innerHTML = '';
-    btn.append(icon('vibrate'));
-    btn.setAttribute('aria-label', hapticsLabel());
-    btn.title = hapticsLabel();
-    btn.dataset.mode = state.haptics;
-    btn.classList.toggle('is-off', state.haptics === 'off');
-  }
-  function cycleHaptics() {
-    const i = HAPTIC_MODES.indexOf(state.haptics);
-    state.haptics = HAPTIC_MODES[(i < 0 ? 0 : i + 1) % HAPTIC_MODES.length];
-    store.set('haptics', state.haptics);
-    applyHapticsControl();
-    if (state.haptics !== 'off') haptic('tick', { force: true });
-    if (state.view === 'schedule' && state.layout === 'timeline') observeSlots();
-    else if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
   }
   function highlight(text, q) {
     if (!q) return text;
@@ -719,7 +688,6 @@
     $$('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
     const themeBtn = $('#btn-theme'); themeBtn.innerHTML = ''; themeBtn.append(icon(state.theme === 'dark' ? 'sun' : 'moon')); themeBtn.setAttribute('aria-label', t('theme')); themeBtn.title = t('theme');
     const fontBtn = $('#btn-font'); fontBtn.innerHTML = ''; fontBtn.append(icon('type')); fontBtn.setAttribute('aria-label', `${t('font')}: ${['A', 'A+', 'A++'][state.font - 1]}`); fontBtn.title = fontBtn.getAttribute('aria-label');
-    applyHapticsControl();
     const langBtn = $('#btn-lang'); langBtn.dataset.lang = state.lang; langBtn.setAttribute('aria-label', t('lang')); langBtn.title = t('lang');
     const ch = $('#btn-changes'); ch.innerHTML = ''; ch.append(icon('history'), el('span', { class: 'ctl-label' }, t('changes')), el('span', { class: 'badge', id: 'changes-badge', hidden: true }));
     ch.setAttribute('aria-label', t('changesTitle')); ch.title = t('changesTitle');
@@ -757,6 +725,7 @@
   }
   function setLayout(layout) {
     if (state.layout === layout) return;
+    haptic('tick');
     state.layout = layout;
     if (layout === 'overview') state.overviewFocus = null;
     else state.overviewSel = null;
@@ -829,6 +798,7 @@
   }
   function isExpanded(block) { return state.expanded.has(block.id) ? state.expanded.get(block.id) : isDesktop(); }
   function toggleAll(open) {
+    haptic('tick');
     for (const b of D.blocks) if (b.type === 'section') state.expanded.set(b.id, open);
     preserveScroll(() => { renderMain(); renderDaybar(); });
   }
@@ -858,10 +828,10 @@
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     if (secIds.length > 1) {
       const chips = el('div', { class: 'chips scroll', role: 'group', 'aria-label': t('filterSections') });
-      chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(state.filters.size === 0), onclick: () => { state.filters.clear(); preserveScroll(renderMain); } }, t('allSections')));
+      chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(state.filters.size === 0), onclick: () => { haptic('tick'); state.filters.clear(); preserveScroll(renderMain); } }, t('allSections')));
       for (const id of secIds) {
         const s = sectionsById[id];
-        chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.filters.has(id)), onclick: () => { state.filters.has(id) ? state.filters.delete(id) : state.filters.add(id); preserveScroll(renderMain); } },
+        chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.filters.has(id)), onclick: () => { haptic('tick'); state.filters.has(id) ? state.filters.delete(id) : state.filters.add(id); preserveScroll(renderMain); } },
           el('span', { class: 'dot' }), `${id} · ${L(s.short)}`));
       }
       frag.append(el('div', { class: 'filters' }, chips));
@@ -956,6 +926,7 @@
       grid.style.setProperty('--talk-rows', String(times.length));
       for (const b of sectionBlocks) grid.append(renderSectionCard(b, now, times));
       const toggle = el('button', { class: 'slot-collapse', type: 'button', onclick: () => {
+        haptic('tick');
         const open = !allOpen;
         for (const b of sectionBlocks) state.expanded.set(b.id, open);
         preserveScroll(() => { renderMain(); renderDaybar(); });
@@ -990,7 +961,7 @@
     if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
     slotObsReady = false;
     lastSlotId = null;
-    if (state.haptics !== 'scroll') return;
+    if (!canHaptic()) return;
     if (state.view !== 'schedule' || state.layout !== 'timeline') return;
     const slots = $$('.slot');
     if (!slots.length) return;
@@ -1161,6 +1132,7 @@
   }
 
   function activateOverviewCell(day, start, end) {
+    haptic('tick');
     const same = state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start;
     state.overviewSel = same ? null : { day, start, end };
     applyOverviewHighlight(document.querySelector('.overview'));
@@ -1256,7 +1228,7 @@
     if (!talk) return el('div', { class: 'row-card' }, icon('mic'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, t('tbc'))));
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
     const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${talk.title}`,
-      onclick: () => openDetail(talk.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id); } } },
+      onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } },
       el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
       el('h3', { class: 'ptitle' }, talk.title),
       el('div', { class: 'pspeaker' }, el('b', null, speakerName(talk)), talk.org ? el('span', null, talk.org) : null),
@@ -1282,6 +1254,7 @@
     const desktop = isDesktop();
     const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': desktop ? undefined : String(open), 'aria-controls': desktop ? undefined : listId, 'aria-label': desktop ? t('openSection') : undefined, onclick: () => {
       if (isDesktop()) { state.section = s.id; setView('sections'); return; }
+      haptic('tick');
       state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); card.classList.toggle('open', nowOpen);
       const grid = card.closest('.parallel-grid');
       if (grid) grid.classList.toggle('is-collapsed', ![...grid.querySelectorAll('.seccard')].some(c => c.classList.contains('open')));
@@ -1309,7 +1282,7 @@
     const isNow = now && talk.date === now.date && toMin(talk.start) <= now.minutes && now.minutes < toMin(talk.end);
     const sec = sectionsById[talk.section];
     const row = el('div', { class: `talk status-${talk.status}${isNow ? ' is-now' : ''}`, role: 'button', tabindex: 0, dataset: opts.colored && sec ? { color: sec.color } : null,
-      onclick: () => openDetail(talk.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id); } } });
+      onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } });
     const time = el('span', { class: 't-time' }, el('span', null, talk.start || '—'), el('span', { class: 'num' }, opts.numberLabel || `№${talk.number}`));
     const title = el('div', { class: 't-title' }, opts.q ? highlight(talk.title, opts.q) : talk.title, ' ', statusBadge(talk));
     const speaker = el('div', { class: 't-speaker' }, el('b', null, opts.q ? highlight(speakerName(talk), opts.q) : speakerName(talk)), talk.org ? el('span', { class: 'org' }, opts.q ? highlight(talk.org, opts.q) : talk.org) : null, opts.context ? el('span', { class: 'org' }, opts.context) : null);
@@ -1325,7 +1298,7 @@
     const chips = el('div', { class: 'chips scroll', role: 'tablist' });
     for (const s of ordered) {
       chips.append(el('button', { class: 'chip', type: 'button', role: 'tab', dataset: { color: s.color }, 'aria-pressed': String(state.section === s.id), 'aria-selected': String(state.section === s.id),
-        onclick: () => withTransition(() => { state.section = s.id; renderMain(); writeHash(); }) }, el('span', { class: 'dot' }), s.id === 'P' ? L(s.short) : `${s.id} · ${L(s.short)}`));
+        onclick: () => { haptic('tick'); withTransition(() => { state.section = s.id; renderMain(); writeHash(); }); } }, el('span', { class: 'dot' }), s.id === 'P' ? L(s.short) : `${s.id} · ${L(s.short)}`));
     }
     frag.append(el('div', { class: 'filters' }, chips));
 
@@ -1367,8 +1340,8 @@
 
     const secIds = Array.from(new Set(D.posters.map(p => p.section).filter(Boolean))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     const chips = el('div', { class: 'chips scroll' });
-    chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(!state.posterSection), onclick: () => { state.posterSection = ''; renderMain(); } }, t('allSections')));
-    for (const id of secIds) { const s = sectionsById[id]; if (!s) continue; chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.posterSection === id), onclick: () => { state.posterSection = state.posterSection === id ? '' : id; renderMain(); } }, el('span', { class: 'dot' }), `${id} · ${L(s.short)}`)); }
+    chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(!state.posterSection), onclick: () => { haptic('tick'); state.posterSection = ''; renderMain(); } }, t('allSections')));
+    for (const id of secIds) { const s = sectionsById[id]; if (!s) continue; chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.posterSection === id), onclick: () => { haptic('tick'); state.posterSection = state.posterSection === id ? '' : id; renderMain(); } }, el('span', { class: 'dot' }), `${id} · ${L(s.short)}`)); }
     frag.append(el('div', { class: 'filters' }, chips));
 
     const box = searchBox(state.posterQ, (v) => { state.posterQ = v; renderPosterList(); });
@@ -1396,7 +1369,7 @@
   }
   function renderPoster(p, q = '') {
     const s = sectionsById[p.section];
-    return el('article', { class: 'card hoverable poster', dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id); } } },
+    return el('article', { class: 'card hoverable poster', dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id, true); } } },
       el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null),
       el('div', { class: 'p-title' }, q ? highlight(p.title, q) : p.title),
       el('div', { class: 'p-speaker' }, el('b', null, q ? highlight(speakerName(p), q) : speakerName(p)), p.org ? ` · ${p.org}` : ''),
@@ -1462,7 +1435,7 @@
       const letters = Array.from(byLetter.keys()).sort((a, b) => a.localeCompare(b, locale()));
       for (const ch of letters) {
         wrap.append(el('div', { class: 'index-letter' }, el('div', { class: 'letter', 'aria-hidden': 'true' }, ch), el('div', { class: 'index-names' },
-          ...byLetter.get(ch).map(p => el('button', { class: 'name-chip', type: 'button', onclick: () => { const q = speakerName(p); state.q = q; $('.search-box input').value = q; $('.search-box .clear').hidden = false; writeHash(); renderResults(); } }, speakerName(p) || p.last, p.n > 1 ? el('span', { class: 'n' }, `×${p.n}`) : null)))));
+          ...byLetter.get(ch).map(p => el('button', { class: 'name-chip', type: 'button', onclick: () => { haptic('tick'); const q = speakerName(p); state.q = q; $('.search-box input').value = q; $('.search-box .clear').hidden = false; writeHash(); renderResults(); } }, speakerName(p) || p.last, p.n > 1 ? el('span', { class: 'n' }, `×${p.n}`) : null)))));
       }
       return wrap;
     }
@@ -1535,9 +1508,10 @@
   }
 
   // ------------------------------------------------------------------ detail sheet
-  function openDetail(id) {
+  function openDetail(id, fromUser) {
     const talk = D.talks[id]; const poster = postersById[id];
     const item = talk || poster; if (!item) return;
+    if (fromUser) haptic('tick');
     openTalkId = id; writeHash();
     const dlg = $('#detail'); dlg.innerHTML = '';
     const sec = sectionsById[item.section];
@@ -1576,6 +1550,7 @@
   }
 
   function openChanges() {
+    haptic('tick');
     const dlg = $('#changes-dialog'); dlg.innerHTML = '';
     const list = el('div', { class: 'changes' });
     if (!D.changes.length) list.append(el('p', { class: 'muted' }, t('noChanges')));
@@ -1677,10 +1652,9 @@
     return DAYS[0];
   }
 
-  $('#btn-font').addEventListener('click', () => { state.font = state.font >= 3 ? 1 : state.font + 1; store.set('font', state.font); applyChrome(); });
-  $('#btn-haptics').addEventListener('click', cycleHaptics);
-  $('#btn-theme').addEventListener('click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; store.set('theme', state.theme); applyChrome(); });
-  $('#btn-lang').addEventListener('click', () => { state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); withTransition(renderAll); });
+  $('#btn-font').addEventListener('click', () => { haptic('tick'); state.font = state.font >= 3 ? 1 : state.font + 1; store.set('font', state.font); applyChrome(); });
+  $('#btn-theme').addEventListener('click', () => { haptic('tick'); state.theme = state.theme === 'dark' ? 'light' : 'dark'; store.set('theme', state.theme); applyChrome(); });
+  $('#btn-lang').addEventListener('click', () => { haptic('tick'); state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); withTransition(renderAll); });
   $('#btn-changes').addEventListener('click', openChanges);
   $('#brand').addEventListener('click', (e) => { e.preventDefault(); setView('schedule'); });
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -1701,11 +1675,9 @@
   window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); });
   window.addEventListener('beforeprint', renderPrint);
   window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
-    applyHapticsControl();
     syncInstallUi();
     if (state.view === 'schedule') { preserveScroll(() => { renderMain(); renderDaybar(); }); }
   });
-  window.matchMedia('(hover: hover) and (pointer: fine)').addEventListener('change', applyHapticsControl);
   setInterval(() => { if (state.view === 'schedule' && state.layout === 'timeline' && confNow().date === state.day) { preserveScroll(renderMain); } }, 60000);
 
   // boot
