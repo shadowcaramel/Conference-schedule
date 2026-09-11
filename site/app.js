@@ -757,7 +757,7 @@
       for (const v of VIEWS) {
         const id = v.view || v.id;
         const btn = el('button', { class: cls, type: 'button', role: 'tab', 'aria-selected': String(state.view === id), dataset: { view: id }, onclick: () => setView(id) },
-          icon(v.icon, id === 'my' && state.favs.size ? 'filled' : ''), el('span', null, t(id)),
+          icon(v.icon, id === 'my' && state.favs.size ? 'filled' : ''), el('span', { class: 'label' }, t(id)),
           id === 'my' ? el('span', { class: 'count', hidden: state.favs.size === 0 }, String(state.favs.size)) : null);
         nav.append(btn);
       }

@@ -977,5 +977,57 @@ html.is-standalone [data-install-btn] { display: none !important; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
 
+/* ---------- Compact chrome (short landscape / short viewport) ------------- */
+@media (max-height: 540px) {
+  :root {
+    --topbar-h: 44px;
+    --daybar-h: 40px;
+  }
+  body { padding-bottom: 0; }
+  .topbar-inner { gap: 8px; padding: 0 12px; }
+  .brand { flex: 0 1 auto; gap: 8px; }
+  .brand-sub { display: none; }
+  .brand-title { font-size: 0.95rem; white-space: nowrap; }
+  .brand-mark { width: 28px; height: 28px; border-radius: 9px; }
+  .brand-mark::after { inset: 8px; }
+  .nav-desktop {
+    display: flex;
+    margin-left: 8px;
+    gap: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+  }
+  .nav-desktop .tab {
+    gap: 5px;
+    padding: 4px 10px;
+    font-size: var(--fs-xs);
+  }
+  .nav-desktop .tab .ico { width: 1.15em; height: 1.15em; }
+  .bottom-nav { display: none; }
+  .ctl-label { display: none; }
+  .ctl { height: 32px; min-width: 32px; padding: 0 8px; }
+  .ctl-icon { width: 32px; }
+  .ctl .ico { width: 1.15em; height: 1.15em; }
+  .daybar-inner { padding: 0 12px; gap: 4px; }
+  .daypill { min-width: 48px; height: 32px; padding: 0 10px; }
+  .daypill .dow { font-size: 0.68rem; }
+  .daypill .dom { font-size: var(--fs-sm); }
+  .daypill.is-today::after { right: 6px; top: 5px; width: 5px; height: 5px; }
+  .daybar .btn.sm { min-height: 32px; padding: 0 10px; }
+  .seg-btn { min-height: 28px; padding: 0 10px; }
+  .main { padding-top: 10px; }
+  .toast { bottom: 16px; }
+  .install-banner { bottom: 16px; }
+}
+@media (max-height: 540px) and (max-width: 667px) {
+  .nav-desktop .tab { position: relative; padding: 4px 10px; gap: 0; }
+  .nav-desktop .tab .label { display: none; }
+  .nav-desktop .tab .count {
+    position: absolute; top: 0; right: 2px;
+    min-width: 14px; height: 14px; padding: 0 3px; font-size: 9px;
+  }
+}
+
 /* ---------- View transitions (progressive enhancement) --------------------- */
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 220ms; }

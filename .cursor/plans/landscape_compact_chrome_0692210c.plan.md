@@ -4,13 +4,13 @@ overview: On short landscape viewports (real phones like the vivo X200 Ultra), h
 todos:
   - id: compact-css
     content: "Add max-height 540px compact-chrome rules in site/app.css: top nav on, bottom nav off, shorter topbar/daybar tokens, compact brand/controls/daypills, toast/install offsets"
-    status: pending
+    status: completed
   - id: nav-fit
     content: Fit five tabs in row 1 (compact labeled pills; icon-only fallback if they overflow at ~667px). Add a label class in renderNav only if needed.
-    status: pending
+    status: completed
   - id: verify-viewports
     content: "Verify in browser: 19.5:9 and 20:9 landscape (both sides of the 900px width split), matching portraits, and desktop; check schedule, a non-daybar view, and toast position"
-    status: pending
+    status: completed
 isProject: false
 ---
 
