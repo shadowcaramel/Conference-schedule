@@ -452,7 +452,8 @@ def read_posters(wb) -> list[dict]:
                        f"POST-{n:02d}: «{title}» → «{new_title}»")
         note = f"Соавтор/пометка в исходнике: {extra}" if extra else ""
         posters.append({"id": f"POST-{n:02d}", "last": last, "first": first, "org": "",
-                        "title": new_title, "section": sec, "board": "", "note_ru": note, "note_en": ""})
+                        "title": new_title, "section": sec, "board": "", "status": "",
+                        "note_ru": note, "note_en": ""})
     return posters
 
 
@@ -707,8 +708,12 @@ def write_workbook(path: Path, talks: list[dict], plenary: list[dict], blocks: l
     ws = wb.create_sheet(SHEET_POSTERS)
     ws.append(COLS_POSTERS)
     for p in posters:
-        ws.append([p["id"], p["last"], p["first"], p["org"], "", p["title"], p["section"], p["board"], p["note_ru"], p["note_en"]])
-    style_header(ws, len(COLS_POSTERS), [10, 20, 24, 18, 22, 80, 8, 10, 30, 30])
+        ws.append([p["id"], p["last"], p["first"], p["org"], "", p["title"], p["section"], p["board"],
+                   p.get("status", ""), p["note_ru"], p["note_en"]])
+    style_header(ws, len(COLS_POSTERS), [10, 20, 24, 18, 22, 80, 8, 10, 12, 30, 30])
+    dv_post = DataValidation(type="list", formula1='"отменён,перенесён"', allow_blank=True)
+    ws.add_data_validation(dv_post)
+    dv_post.add(f"I2:I{max(ws.max_row, 2) + 200}")
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
         row[5].alignment = Alignment(wrap_text=True, vertical="top")
 

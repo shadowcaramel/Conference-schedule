@@ -628,6 +628,7 @@ html[data-theme="dark"] .sechead .chev { background: hsl(0 0% 100% / .08); }
 .talk.is-now { background: var(--now-soft); }
 .talk.is-now::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--now); }
 .talk.status-cancelled .t-title { text-decoration: line-through; color: var(--text-3); }
+.poster.status-cancelled .p-title { text-decoration: line-through; color: var(--text-3); }
 .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: 650; }
 .status-badge.cancelled { background: hsl(2 80% 95%); color: var(--danger); }
 .status-badge.moved { background: var(--warn-soft); color: var(--warn); }

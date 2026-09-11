@@ -42,6 +42,7 @@ from common import (  # noqa: E402
     SITE_DIR,
     TALK_STATUSES,
     clean,
+    expand_room,
     fmt_time,
     from_minutes,
     minutes,
@@ -187,7 +188,7 @@ def build_model(wb) -> dict:
             "full": bilingual(rec["Полное название (RU)"], rec["Полное название (EN)"]),
             "chair": bilingual(rec["Председатель (RU)"], rec["Председатель (EN)"]),
             "color": clean(rec["Цвет"]) or "slate",
-            "room": clean(rec["Аудитория"]),
+            "room": expand_room(rec["Аудитория"]),
         })
         if not clean(rec["Краткое название (EN)"]):
             diag.warn(f"Секции: у секции {sid} нет английского краткого названия")
@@ -303,7 +304,7 @@ def build_model(wb) -> dict:
             talk_ids.append(tid)
         if btype in ("plenary", "jubilee", "sponsor", "section") and not talk_ids:
             diag.warn(f"Блоки, строка {row}: блок {date:%d.%m} {fmt_time(start)} типа «{btype_ru}» без докладов")
-        room = clean(rec["Аудитория"])
+        room = expand_room(rec["Аудитория"])
         if not room and sec:
             room = next((s["room"] for s in sections if s["id"] == sec), "")
         title = bilingual(rec["Название (RU)"], rec["Название (EN)"])
@@ -350,8 +351,10 @@ def build_model(wb) -> dict:
                 continue
             if a["section"] and a["section"] == b["section"] and a["type"] == b["type"] == "section":
                 diag.warn(f"Секция {a['section']} {a['date']}: блоки {a['start']}–{a['end']} и {b['start']}–{b['end']} пересекаются")
-            if a["room"] and a["room"] == b["room"]:
-                diag.warn(f"Аудитория «{a['room']}» {a['date']}: блоки {a['start']}–{a['end']} и {b['start']}–{b['end']} пересекаются")
+            ra = a["room"]["ru"] if isinstance(a["room"], dict) else a["room"]
+            rb = b["room"]["ru"] if isinstance(b["room"], dict) else b["room"]
+            if ra and ra == rb:
+                diag.warn(f"Аудитория «{ra}» {a['date']}: блоки {a['start']}–{a['end']} и {b['start']}–{b['end']} пересекаются")
 
     for t in talks.values():
         if t["blockId"] is None:
@@ -373,10 +376,14 @@ def build_model(wb) -> dict:
         sec = norm_number(rec["Секция"])
         if sec and sec not in section_ids:
             diag.warn(f"Постеры, строка {rec['_row']} ({pid}): неизвестная секция «{sec}»")
+        status_raw = clean(rec["Статус"]).lower()
+        if status_raw not in TALK_STATUSES:
+            diag.warn(f"Постеры, строка {rec['_row']} ({pid}): неизвестный статус «{status_raw}» — игнорируется")
         posters.append({
             "id": pid, "last": clean(rec["Фамилия"]), "first": clean(rec["Имя"]), "org": clean(rec["Организация"]),
             "email": clean(rec["Email"]),
             "title": clean(rec["Название"]), "section": sec, "board": norm_number(rec["№ стенда"]),
+            "status": TALK_STATUSES.get(status_raw, "ok"),
             "note": bilingual(rec["Примечание (RU)"], rec["Примечание (EN)"]),
         })
 

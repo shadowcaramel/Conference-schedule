@@ -295,12 +295,16 @@
     }
     return `${t('section')} ${talk.section} · ${t('talk').toLowerCase()} ${talk.number}`;
   }
-  const speakerName = (x) => [x.first, x.last].filter(Boolean).join(' ').trim();
-  const speakerShort = (x) => x.last || x.first || '';
-  function isFav(id) { return state.favs.has(id); }
-  const roomOf = (b) => b.room || (b.section && sectionsById[b.section] && sectionsById[b.section].room) || '';
-  const roomLabel = (b) => roomOf(b) || t('tbc');
-  const chairLabel = (s) => (s && L(s.chair)) || t('tbc');
+    const speakerName = (x) => [x.first, x.last].filter(Boolean).join(' ').trim();
+    const speakerShort = (x) => x.last || x.first || '';
+    function isFav(id) { return state.favs.has(id); }
+    function roomText(r) {
+      if (!r) return '';
+      return typeof r === 'string' ? r : L(r);
+    }
+    const roomOf = (b) => roomText(b && b.room) || roomText(b && b.section && sectionsById[b.section] && sectionsById[b.section].room);
+    const roomLabel = (b) => roomOf(b) || t('tbc');
+    const chairLabel = (s) => (s && L(s.chair)) || t('tbc');
   function slotGroupsOn() {
     return SLOT_GROUPS && document.documentElement.dataset.slotGroups !== 'off';
   }
@@ -1384,9 +1388,10 @@
     return card;
   }
 
-  function statusBadge(talk) {
-    if (talk.status === 'cancelled') return el('span', { class: 'status-badge cancelled' }, t('cancelled'));
-    if (talk.status === 'moved') return el('span', { class: 'status-badge moved' }, t('moved'));
+  function statusBadge(item) {
+    if (!item) return null;
+    if (item.status === 'cancelled') return el('span', { class: 'status-badge cancelled' }, t('cancelled'));
+    if (item.status === 'moved') return el('span', { class: 'status-badge moved' }, t('moved'));
     return null;
   }
 
@@ -1456,7 +1461,7 @@
       el('div', { class: 'kicker' }, s.id === 'P' ? t('plenarySection') : `${t('section')} ${s.id}`),
       el('h2', null, L(s.short)),
       L(s.full) !== L(s.short) ? el('p', { class: 'full' }, L(s.full)) : null,
-      el('div', { class: 'meta' }, el('span', null, icon('user'), ` ${t('chair')}: ${chairLabel(s)}`), el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), el('span', null, icon('pin'), ` ${s.room || t('tbc')}`))));
+      el('div', { class: 'meta' }, el('span', null, icon('user'), ` ${t('chair')}: ${chairLabel(s)}`), el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), roomText(s.room) ? el('span', null, icon('pin'), ` ${roomText(s.room)}`) : null)));
 
     // group by day
     const byDay = new Map();
@@ -1516,8 +1521,8 @@
   }
   function renderPoster(p, q = '') {
     const s = sectionsById[p.section];
-    return el('article', { class: 'card hoverable poster', dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id, true); } } },
-      el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null),
+    return el('article', { class: `card hoverable poster status-${p.status || 'ok'}`, dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id, true); } } },
+      el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null, statusBadge(p)),
       el('div', { class: 'p-title' }, q ? highlight(p.title, q) : p.title),
       el('div', { class: 'p-speaker' }, el('b', null, q ? highlight(speakerName(p), q) : speakerName(p)), p.org ? ` · ${p.org}` : ''),
       starButton(p.id));
@@ -1667,7 +1672,7 @@
       el('span', null, poster ? (poster.board ? `${t('poster')} · ${t('board')} ${poster.board}` : t('poster')) : talkKicker(talk)),
       sec ? el('span', { class: 'sec-chip', dataset: { color: sec.color } }, el('span', { class: 'dot' }), L(sec.short)) : null,
       talk && talk.topic && sectionsById[talk.topic] ? el('span', { class: 'sec-chip', dataset: { color: sectionsById[talk.topic].color } }, el('span', { class: 'dot' }), L(sectionsById[talk.topic].short)) : null,
-      talk ? statusBadge(talk) : null);
+      talk ? statusBadge(talk) : statusBadge(poster));
     const facts = el('div', { class: 'facts' });
     const fact = (k, v) => v ? facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, k), el('span', { class: 'v' }, v))) : null;
     if (block) { fact(t('date'), fmtShort(block.date)); }

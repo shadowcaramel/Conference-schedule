@@ -80,6 +80,7 @@ COLS_POSTERS = [
     "Название",
     "Секция",
     "№ стенда",
+    "Статус",
     "Примечание (RU)",
     "Примечание (EN)",
 ]
@@ -108,6 +109,15 @@ TALK_STATUSES = {
     "отменен": "cancelled",
     "перенесён": "moved",
     "перенесен": "moved",
+}
+
+# Spreadsheet stores a short campus code; build.py expands it for the site.
+# Numbers stay in Russian (ц/л) because that is what is on the signs.
+ROOM_LABELS = {
+    "235ц": {"ru": "235ц, Актовый зал", "en": "235ц, Assembly Hall"},
+    "144ц": {"ru": "144ц, Библиотека", "en": "144ц, Library"},
+    "117л": {"ru": "117л, Интеллектуальный центр", "en": "117л, Intellectual Center"},
+    "315л": {"ru": "315л", "en": "315л"},
 }
 
 PLENARY_SECTION = "P"
@@ -178,6 +188,20 @@ def parse_date(value) -> dt.date | None:
         except ValueError:
             continue
     return None
+
+
+def expand_room(value) -> dict | str:
+    """Turn a campus code (or already-expanded label) into a bilingual room dict.
+
+    Empty cells stay ``""``. Unknown text is used as-is for both languages.
+    """
+    text = clean(value)
+    if not text:
+        return ""
+    for code, labels in ROOM_LABELS.items():
+        if text == code or text.startswith(code):
+            return {"ru": labels["ru"], "en": labels["en"]}
+    return {"ru": text, "en": text}
 
 
 def fmt_time(t: dt.time | None) -> str:
