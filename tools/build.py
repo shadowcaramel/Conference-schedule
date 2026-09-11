@@ -241,7 +241,8 @@ def build_model(wb) -> dict:
             diag.warn(f"Доклады, строка {row} ({tid}): тематика «{topic}» не соответствует ни одной секции")
         talks[tid] = {
             "id": tid, "section": sec, "number": num, "last": clean(rec["Фамилия"]),
-            "first": clean(rec["Имя"]), "org": clean(rec["Организация"]), "email": clean(rec["Email"]),
+            "first": clean(rec["Имя"]), "middle": clean(rec["Отчество"]),
+            "org": clean(rec["Организация"]), "email": clean(rec["Email"]),
             "title": title,
             "duration": duration, "startOverride": start_override,
             "status": TALK_STATUSES.get(status_raw, "ok"), "topic": topic,
@@ -380,7 +381,8 @@ def build_model(wb) -> dict:
         if status_raw not in TALK_STATUSES:
             diag.warn(f"Постеры, строка {rec['_row']} ({pid}): неизвестный статус «{status_raw}» — игнорируется")
         posters.append({
-            "id": pid, "last": clean(rec["Фамилия"]), "first": clean(rec["Имя"]), "org": clean(rec["Организация"]),
+            "id": pid, "last": clean(rec["Фамилия"]), "first": clean(rec["Имя"]),
+            "middle": clean(rec["Отчество"]), "org": clean(rec["Организация"]),
             "email": clean(rec["Email"]),
             "title": clean(rec["Название"]), "section": sec, "board": norm_number(rec["№ стенда"]),
             "status": TALK_STATUSES.get(status_raw, "ok"),

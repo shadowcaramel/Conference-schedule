@@ -295,7 +295,7 @@
     }
     return `${t('section')} ${talk.section} · ${t('talk').toLowerCase()} ${talk.number}`;
   }
-    const speakerName = (x) => [x.first, x.last].filter(Boolean).join(' ').trim();
+    const speakerName = (x) => [x.first, x.middle, x.last].filter(Boolean).join(' ').trim();
     const speakerShort = (x) => x.last || x.first || '';
     function isFav(id) { return state.favs.has(id); }
     function roomText(r) {
@@ -1503,7 +1503,7 @@
     function renderPosterList() {
       listHost.innerHTML = '';
       const q = norm(state.posterQ);
-      const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || norm(`${p.title} ${p.first} ${p.last} ${p.org}`).includes(q)));
+      const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || norm(`${p.title} ${p.first} ${p.middle || ''} ${p.last} ${p.org}`).includes(q)));
       if (!items.length) { listHost.append(el('div', { class: 'empty' }, icon('search'), el('h3', null, t('nothingFound')))); return; }
       const bySec = new Map();
       for (const p of items) { const k = p.section || '?'; if (!bySec.has(k)) bySec.set(k, []); bySec.get(k).push(p); }
@@ -1548,9 +1548,9 @@
       host.innerHTML = '';
       const q = norm(state.q);
       if (q.length < 2) { host.append(speakerIndex()); return; }
-      const talks = Object.values(D.talks).filter(tk => norm(`${tk.title} ${tk.first} ${tk.last} ${tk.org} ${tk.id} ${tk.number}`).includes(q))
+      const talks = Object.values(D.talks).filter(tk => norm(`${tk.title} ${tk.first} ${tk.middle || ''} ${tk.last} ${tk.org} ${tk.id} ${tk.number}`).includes(q))
         .sort((a, b) => (a.date || '9').localeCompare(b.date || '9') || (a.start || '').localeCompare(b.start || ''));
-      const posters = D.posters.filter(p => norm(`${p.title} ${p.first} ${p.last} ${p.org} ${p.id}`).includes(q));
+      const posters = D.posters.filter(p => norm(`${p.title} ${p.first} ${p.middle || ''} ${p.last} ${p.org} ${p.id}`).includes(q));
       const total = talks.length + posters.length;
       host.append(el('p', { class: 'result-count' }, total ? `${t('results')}: ${total}` : t('nothingFound')));
       if (!total) return;
@@ -1577,9 +1577,9 @@
     }
     function speakerIndex() {
       const people = new Map();
-      const add = (x) => { const key = norm(`${x.last}|${x.first}`); if (!people.has(key)) people.set(key, { last: x.last, first: x.first, n: 0 }); people.get(key).n++; };
+      const add = (x) => { const key = norm(`${x.last}|${x.first}|${x.middle || ''}`); if (!people.has(key)) people.set(key, { last: x.last, first: x.first, middle: x.middle || '', n: 0 }); people.get(key).n++; };
       Object.values(D.talks).forEach(add); D.posters.forEach(add);
-      const list = Array.from(people.values()).filter(p => p.last).sort((a, b) => a.last.localeCompare(b.last, locale()) || a.first.localeCompare(b.first, locale()));
+      const list = Array.from(people.values()).filter(p => p.last).sort((a, b) => a.last.localeCompare(b.last, locale()) || a.first.localeCompare(b.first, locale()) || (a.middle || '').localeCompare(b.middle || '', locale()));
       const byLetter = new Map();
       for (const p of list) { const ch = p.last[0].toUpperCase(); if (!byLetter.has(ch)) byLetter.set(ch, []); byLetter.get(ch).push(p); }
       const wrap = el('div', { class: 'index' });
@@ -1682,8 +1682,6 @@
     if (sec && sec.id !== 'P') fact(t('chair'), chairLabel(sec));
     if (item.email) {
       facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, t('email')), el('a', { class: 'v', href: `mailto:${item.email}` }, item.email)));
-    } else {
-      fact(t('email'), t('tbc'));
     }
     const body = el('div', { class: 'sheet-body' },
       el('h2', { id: 'detail-title' }, item.title || '—'),
