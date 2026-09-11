@@ -825,7 +825,7 @@
     clearTimeout(scrollToDay._t);
     scrollToDay._t = setTimeout(() => { ignoreDayObs = false; }, 500);
   }
-  function scrollToSlot(el) {
+  function scrollToSlot(el, opts = {}) {
     if (!el) return;
     const chunk = el.closest('.day-chunk');
     const day = chunk?.dataset.day;
@@ -835,7 +835,8 @@
     const head = chunk?.querySelector('.day-chunk-head');
     const dateH = head ? head.offsetHeight : 0;
     const y = window.scrollY + el.getBoundingClientRect().top - chrome - dateH - 8;
-    window.scrollTo({ top: Math.max(0, y), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    const behavior = opts.behavior || (prefersReducedMotion() ? 'auto' : 'smooth');
+    window.scrollTo({ top: Math.max(0, y), behavior });
     clearTimeout(scrollToSlot._t);
     scrollToSlot._t = setTimeout(() => {
       if (day && day !== state.day) {
@@ -945,11 +946,35 @@
     return frag;
   }
 
+  function visibleAnchorId() {
+    if (state.view !== 'schedule' || state.layout !== 'timeline') return null;
+    const chrome = ($('#topbar')?.getBoundingClientRect().bottom) || 0;
+    const head = document.querySelector(`.day-chunk[data-day="${state.day}"] .day-chunk-head`);
+    const cut = (head?.getBoundingClientRect().bottom || chrome) + 8;
+    const below = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.height > 2 && r.bottom > cut + 24;
+    };
+    const fine = $$('.slot .talk, .slot .plenary, .slot .row-card').find(below);
+    const hit = fine || $$('.slot .sechead').find(below) || $$('.slot').find(below);
+    if (!hit) return null;
+    if (hit.id) return hit.id;
+    return hit.closest('[id]')?.id || null;
+  }
   function preserveScroll(fn) {
     const y = window.scrollY;
+    const anchorId = visibleAnchorId();
     viewSchedule._skipScroll = true;
     fn();
-    window.scrollTo(0, y);
+    const restore = () => {
+      if (anchorId) {
+        const el = document.getElementById(anchorId);
+        if (el) { scrollToSlot(el, { behavior: 'auto' }); return; }
+      }
+      window.scrollTo(0, y);
+    };
+    restore();
+    requestAnimationFrame(restore);
   }
 
   function clusterSlots(slots) {
@@ -1349,7 +1374,7 @@
     const talk = D.talks[b.talks[0]];
     if (!talk) return el('div', { class: 'row-card' }, icon('mic'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, t('tbc'))));
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
-    const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${talk.title}`,
+    const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${talk.title}`,
       onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } },
       el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
       el('h3', { class: 'ptitle' }, talk.title),
@@ -1374,7 +1399,7 @@
     const listId = `talks-${b.id}`;
     const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}${open ? ' open' : ''}`, dataset: { color: s.color, block: b.id }, id: listId });
     const desktop = isDesktop();
-    const head = el('button', { class: 'sechead', type: 'button', 'aria-expanded': desktop ? undefined : String(open), 'aria-controls': desktop ? undefined : listId, 'aria-label': desktop ? t('openSection') : undefined, onclick: () => {
+    const head = el('button', { class: 'sechead', type: 'button', id: `sh-${b.id}`, 'aria-expanded': desktop ? undefined : String(open), 'aria-controls': desktop ? undefined : listId, 'aria-label': desktop ? t('openSection') : undefined, onclick: () => {
       if (isDesktop()) { state.section = s.id; setView('sections'); return; }
       haptic('tick');
       state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); card.classList.toggle('open', nowOpen);
@@ -1403,7 +1428,7 @@
   function renderTalkRow(talk, now, opts = {}) {
     const isNow = now && talk.date === now.date && toMin(talk.start) <= now.minutes && now.minutes < toMin(talk.end);
     const sec = sectionsById[talk.section];
-    const row = el('div', { class: `talk status-${talk.status}${isNow ? ' is-now' : ''}`, role: 'button', tabindex: 0, dataset: opts.colored && sec ? { color: sec.color } : null,
+    const row = el('div', { class: `talk status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, role: 'button', tabindex: 0, dataset: { ...(opts.colored && sec ? { color: sec.color } : {}), talk: talk.id },
       onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } });
     const time = el('span', { class: 't-time' }, el('span', null, talk.start || '—'), el('span', { class: 'num' }, opts.numberLabel || `№${talk.number}`));
     const title = el('div', { class: 't-title' }, opts.q ? highlight(talk.title, opts.q) : talk.title, ' ', statusBadge(talk));
@@ -1963,7 +1988,7 @@
 
   $('#btn-font').addEventListener('click', () => { haptic('tick'); state.font = state.font >= 3 ? 1 : state.font + 1; store.set('font', state.font); applyChrome(); });
   $('#btn-theme').addEventListener('click', () => { haptic('tick'); state.theme = state.theme === 'dark' ? 'light' : 'dark'; store.set('theme', state.theme); applyChrome(); });
-  $('#btn-lang').addEventListener('click', () => { haptic('tick'); state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); withTransition(renderAll); });
+  $('#btn-lang').addEventListener('click', () => { haptic('tick'); state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); preserveScroll(renderAll); });
   $('#btn-changes').addEventListener('click', openChanges);
   $('#brand').addEventListener('click', (e) => { e.preventDefault(); setView('schedule'); });
   window.addEventListener('beforeinstallprompt', (e) => {
