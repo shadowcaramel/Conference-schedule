@@ -512,6 +512,37 @@
   }
   const isDesktop = () => window.matchMedia('(min-width: 900px)').matches;
   const isFinePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const isCoarseMobile = () => !isDesktop() && !isFinePointer();
+  const isMobileSheet = () => window.matchMedia('(max-width: 720px)').matches;
+  const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const anySheetOpen = () => $$('dialog.sheet').some(d => d.open);
+
+  function lockBodyScroll() {
+    if (isDesktop()) return;
+    if (document.documentElement.classList.contains('is-sheet-open')) return;
+    const y = window.scrollY;
+    document.documentElement.classList.add('is-sheet-open');
+    document.body.style.top = `-${y}px`;
+    document.body.dataset.scrollY = String(y);
+  }
+  function unlockBodyScroll() {
+    const apply = () => {
+      if (anySheetOpen()) return;
+      if (!document.documentElement.classList.contains('is-sheet-open')) return;
+      const y = Number(document.body.dataset.scrollY || 0);
+      document.documentElement.classList.remove('is-sheet-open');
+      document.body.style.top = '';
+      delete document.body.dataset.scrollY;
+      window.scrollTo(0, y);
+    };
+    apply();
+    requestAnimationFrame(apply);
+  }
+  function showSheet(dlg) {
+    if (!dlg.open) dlg.showModal();
+    lockBodyScroll();
+    dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+  }
 
   const HAPTIC_PATTERNS = { tick: 18, confirm: 18, success: [18, 40, 18], warn: [18, 40, 18, 40, 28] };
   const HAPTIC_COOLDOWN_MS = 80;
@@ -667,8 +698,7 @@
           el('li', { class: 'install-step' }, icon(ic), el('span', null, text)))),
       ),
       el('div', { class: 'sheet-actions' }, ...actions)));
-    if (!dlg.open) dlg.showModal();
-    dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+    showSheet(dlg);
   }
   function registerSW() {
     if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
@@ -1599,9 +1629,8 @@
       (talk && talk.date) || (poster && posterBlock) ? el('button', { class: 'btn', type: 'button', onclick: () => downloadICS([item], `${id}.ics`) }, icon('calplus'), t('addToCalendar')) : null,
       el('button', { class: 'btn ghost', type: 'button', onclick: async () => { const url = pageUrl(`#view=${state.view}${state.view === 'schedule' && state.day ? '&day=' + state.day : ''}&talk=${id}`); if (await copyText(url)) { haptic('success'); toast(t('linkCopied')); } } }, icon('link'), t('copyLink')));
     dlg.append(el('div', { class: 'sheet-inner' }, el('div', { class: 'grabber' }), el('div', { class: 'sheet-head' }, kicker, el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))), body, actions));
-    if (!dlg.open) dlg.showModal();
-    dlg.onclose = () => { openTalkId = null; writeHash(); };
-    dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+    showSheet(dlg);
+    dlg.onclose = () => { openTalkId = null; writeHash(); unlockBodyScroll(); };
   }
 
   function openChanges() {
@@ -1613,8 +1642,7 @@
     dlg.append(el('div', { class: 'sheet-inner' }, el('div', { class: 'grabber' }),
       el('div', { class: 'sheet-head' }, el('h2', { id: 'changes-title', style: 'font-size:var(--fs-xl)' }, t('changesTitle')), el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))),
       el('div', { class: 'sheet-body' }, el('p', { class: 'muted small' }, `${t('updated')}: ${fmtStamp(D.generatedAt)}`), list)));
-    dlg.showModal();
-    dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+    showSheet(dlg);
     state.lastSeenChanges = D.changes.length ? D.changes[0].at : D.generatedAt; store.set('lastSeenChanges', state.lastSeenChanges); updateChangesBadge();
   }
 
@@ -1699,6 +1727,195 @@
     clone.style.marginBottom = `${(s - 1) * h}px`;
   }
 
+  // ------------------------------------------------------------------ mobile gestures
+  function bindMobileGestures() {
+    const DAY_EDGE = 16;
+    const DAY_MIN_DX = 64;
+    const DAY_RATIO = 1.6;
+    const SHEET_MIN = 80;
+    const SHEET_FLICK = 0.65;
+    const IGNORE = '.daybar-inner, .chips.scroll, .overview-wrap, .bottom-nav, .topbar, dialog';
+
+    const daySwipe = { tracking: false, swiped: false, id: 0, x: 0, y: 0 };
+    const sheetDrag = {
+      dlg: null, id: 0, startX: 0, startY: 0, lastY: 0, lastT: 0,
+      dy: 0, vel: 0, dragging: false, fromBody: false,
+    };
+
+    function resetSheetDrag() {
+      const dlg = sheetDrag.dlg;
+      if (dlg) {
+        dlg.classList.remove('is-dragging', 'is-dismissing');
+        dlg.style.transform = '';
+      }
+      sheetDrag.dlg = null;
+      sheetDrag.id = 0;
+      sheetDrag.dragging = false;
+      sheetDrag.dy = 0;
+      sheetDrag.vel = 0;
+    }
+
+    function dismissSheet(dlg, fromY) {
+      const reduced = prefersReducedMotion();
+      dlg.classList.remove('is-dragging');
+      if (reduced) {
+        dlg.style.transform = '';
+        if (dlg.open) dlg.close();
+        return;
+      }
+      dlg.classList.add('is-dismissing');
+      const h = dlg.getBoundingClientRect().height || window.innerHeight;
+      requestAnimationFrame(() => { dlg.style.transform = `translateY(${Math.max(fromY, h)}px)`; });
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        dlg.removeEventListener('transitionend', finish);
+        dlg.classList.remove('is-dismissing');
+        dlg.style.transform = '';
+        if (dlg.open) dlg.close();
+      };
+      dlg.addEventListener('transitionend', finish);
+      setTimeout(finish, 320);
+    }
+
+    function sheetOrigin(e) {
+      const t = e.target;
+      if (!(t instanceof Element)) return null;
+      const sheet = t.closest('dialog.sheet');
+      if (!sheet || !sheet.open) return null;
+      if (t.closest('.sheet-close, .sheet-actions, a, button')) return null;
+      if (t.closest('.grabber, .sheet-head')) return { sheet, fromBody: false };
+      const body = t.closest('.sheet-body');
+      if (body && body.scrollTop <= 0) return { sheet, fromBody: true };
+      return null;
+    }
+
+    document.addEventListener('pointerdown', (e) => {
+      daySwipe.tracking = false;
+      if (isMobileSheet()) {
+        const origin = sheetOrigin(e);
+        if (origin) {
+          sheetDrag.dlg = origin.sheet;
+          sheetDrag.fromBody = origin.fromBody;
+          sheetDrag.id = e.pointerId;
+          sheetDrag.startX = e.clientX;
+          sheetDrag.startY = e.clientY;
+          sheetDrag.lastY = e.clientY;
+          sheetDrag.lastT = performance.now();
+          sheetDrag.dy = 0;
+          sheetDrag.vel = 0;
+          sheetDrag.dragging = false;
+          return;
+        }
+      }
+
+      if (!isCoarseMobile()) return;
+      if (state.view !== 'schedule' || state.layout !== 'timeline') return;
+      if (anySheetOpen()) return;
+      if (e.clientX < DAY_EDGE) return;
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      const main = $('#main');
+      if (!main || !main.contains(t)) return;
+      if (t.closest(IGNORE)) return;
+      daySwipe.tracking = true;
+      daySwipe.swiped = false;
+      daySwipe.id = e.pointerId;
+      daySwipe.x = e.clientX;
+      daySwipe.y = e.clientY;
+    }, { passive: true });
+
+    window.addEventListener('pointermove', (e) => {
+      if (sheetDrag.dlg && e.pointerId === sheetDrag.id) {
+        const ddy = e.clientY - sheetDrag.startY;
+        const ddx = e.clientX - sheetDrag.startX;
+        if (!sheetDrag.dragging) {
+          if (Math.abs(ddy) < 8 && Math.abs(ddx) < 8) return;
+          if (Math.abs(ddx) > Math.abs(ddy)) { resetSheetDrag(); return; }
+          if (sheetDrag.fromBody && ddy <= 0) { resetSheetDrag(); return; }
+          sheetDrag.dragging = true;
+          sheetDrag.vel = 0;
+          sheetDrag.lastY = e.clientY;
+          sheetDrag.lastT = performance.now();
+          sheetDrag.dlg.classList.add('is-dragging');
+          try { sheetDrag.dlg.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+        }
+        const now = performance.now();
+        const dt = now - sheetDrag.lastT;
+        if (dt > 0) sheetDrag.vel = (e.clientY - sheetDrag.lastY) / dt;
+        sheetDrag.lastY = e.clientY;
+        sheetDrag.lastT = now;
+        sheetDrag.dy = Math.max(0, ddy);
+        if (!prefersReducedMotion()) sheetDrag.dlg.style.transform = `translateY(${sheetDrag.dy}px)`;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    function endDaySwipe(e) {
+      if (!daySwipe.tracking || e.pointerId !== daySwipe.id) return;
+      daySwipe.tracking = false;
+      const dx = e.clientX - daySwipe.x;
+      const dy = e.clientY - daySwipe.y;
+      if (Math.abs(dx) < DAY_MIN_DX || Math.abs(dx) < Math.abs(dy) * DAY_RATIO) return;
+      if (state.view !== 'schedule' || state.layout !== 'timeline') return;
+      if (anySheetOpen()) return;
+      const i = DAYS.indexOf(state.day);
+      if (i < 0) return;
+      const next = dx < 0 ? DAYS[i + 1] : DAYS[i - 1];
+      daySwipe.swiped = true;
+      setTimeout(() => { daySwipe.swiped = false; }, 400);
+      if (next) setDay(next);
+    }
+
+    function endSheetDrag(e) {
+      if (!sheetDrag.dlg || e.pointerId !== sheetDrag.id) return;
+      const dlg = sheetDrag.dlg;
+      const dy = sheetDrag.dy;
+      const vel = (performance.now() - sheetDrag.lastT > 80) ? 0 : sheetDrag.vel;
+      const dragging = sheetDrag.dragging;
+      sheetDrag.dlg = null;
+      sheetDrag.id = 0;
+      sheetDrag.dragging = false;
+      if (!dragging) {
+        dlg.classList.remove('is-dragging');
+        dlg.style.transform = '';
+        return;
+      }
+      if (dy >= SHEET_MIN || vel > SHEET_FLICK) {
+        dismissSheet(dlg, dy);
+        return;
+      }
+      dlg.classList.remove('is-dragging');
+      dlg.style.transform = '';
+    }
+
+    window.addEventListener('pointerup', (e) => {
+      endSheetDrag(e);
+      endDaySwipe(e);
+    }, { passive: true });
+    window.addEventListener('pointercancel', (e) => {
+      if (sheetDrag.dlg && e.pointerId === sheetDrag.id) resetSheetDrag();
+      if (e.pointerId === daySwipe.id) daySwipe.tracking = false;
+    }, { passive: true });
+
+    document.addEventListener('click', (e) => {
+      if (!daySwipe.swiped) return;
+      e.preventDefault();
+      e.stopPropagation();
+      daySwipe.swiped = false;
+    }, true);
+
+    $$('dialog.sheet').forEach(dlg => {
+      dlg.addEventListener('close', () => {
+        if (sheetDrag.dlg === dlg) resetSheetDrag();
+        dlg.classList.remove('is-dragging', 'is-dismissing');
+        dlg.style.transform = '';
+        requestAnimationFrame(() => unlockBodyScroll());
+      });
+    });
+  }
+
   // ------------------------------------------------------------------ wiring
   function pickInitialDay() {
     const today = confNow().date;
@@ -1732,7 +1949,10 @@
   window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
     syncInstallUi();
     if (state.view === 'schedule') { preserveScroll(() => { renderMain(); renderDaybar(); }); }
+    if (isDesktop()) unlockBodyScroll();
+    else if (anySheetOpen()) lockBodyScroll();
   });
+  bindMobileGestures();
   setInterval(() => { if (state.view === 'schedule' && state.layout === 'timeline' && confNow().date === state.day) { preserveScroll(renderMain); } }, 60000);
 
   // boot
