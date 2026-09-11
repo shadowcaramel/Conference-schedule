@@ -745,7 +745,15 @@
   }
   function updateChangesBadge() {
     const unseen = D.changes.filter(c => c.at > (state.lastSeenChanges || '')).length;
-    $$('.changes-badge').forEach(badge => { badge.hidden = unseen === 0; badge.textContent = String(unseen); });
+    $$('.changes-badge').forEach(badge => {
+      badge.hidden = unseen === 0;
+      badge.textContent = '';
+      const btn = badge.closest('button');
+      if (!btn) return;
+      const label = unseen > 0 ? `${t('changesTitle')} (${unseen})` : t('changesTitle');
+      btn.setAttribute('aria-label', label);
+      btn.title = label;
+    });
   }
   const VIEWS = [
     { id: 'schedule', icon: 'calendar' }, { id: 'sections', icon: 'grid' }, { id: 'poster', icon: 'poster', view: 'posters' },
@@ -816,6 +824,27 @@
     chunk.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     clearTimeout(scrollToDay._t);
     scrollToDay._t = setTimeout(() => { ignoreDayObs = false; }, 500);
+  }
+  function scrollToSlot(el) {
+    if (!el) return;
+    const chunk = el.closest('.day-chunk');
+    const day = chunk?.dataset.day;
+    ignoreDayObs = true;
+    if (day) setDay(day, { scroll: false });
+    const chrome = ($('#topbar')?.getBoundingClientRect().bottom) || 0;
+    const head = chunk?.querySelector('.day-chunk-head');
+    const dateH = head ? head.offsetHeight : 0;
+    const y = window.scrollY + el.getBoundingClientRect().top - chrome - dateH - 8;
+    window.scrollTo({ top: Math.max(0, y), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    clearTimeout(scrollToSlot._t);
+    scrollToSlot._t = setTimeout(() => {
+      if (day && day !== state.day) {
+        state.day = day;
+        renderDaybar();
+        writeHash(false);
+      }
+      ignoreDayObs = false;
+    }, 600);
   }
 
   // ------------------------------------------------------------------ day bar
@@ -1022,15 +1051,23 @@
     capTimelineRails();
   }
 
+  function dayAtProbe() {
+    const probe = (($('#topbar')?.getBoundingClientRect().bottom) || 0) + 8;
+    let day = null;
+    for (const c of $$('.day-chunk')) {
+      if (c.getBoundingClientRect().top <= probe) day = c.dataset.day;
+      else break;
+    }
+    return day;
+  }
+
   function observeDayChunks() {
     if (dayObserver) { dayObserver.disconnect(); dayObserver = null; }
     const chunks = $$('.day-chunk');
     if (!chunks.length) return;
-    dayObserver = new IntersectionObserver((entries) => {
+    dayObserver = new IntersectionObserver(() => {
       if (ignoreDayObs) return;
-      const hit = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (!hit) return;
-      const day = hit.target.dataset.day;
+      const day = dayAtProbe();
       if (day && day !== state.day) {
         haptic('tick', { day: true });
         state.day = day;
@@ -1280,7 +1317,7 @@
     const item = (b) => {
       const s = b.section ? sectionsById[b.section] : null;
       const label = b.type === 'section' ? `${t('section')} ${b.section} · ${blockTitle(b)}` : (b.talks.length === 1 && D.talks[b.talks[0]] ? `${blockTitle(b)}: ${speakerShort(D.talks[b.talks[0]])}` : blockTitle(b));
-      return el('a', { class: 'now-item', href: `#slot-${b.start.replace(':', '')}-${b.date}`, dataset: s ? { color: s.color } : null, onclick: (e) => { e.preventDefault(); const target = document.getElementById(`slot-${b.start.replace(':', '')}-${b.date}`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+      return el('a', { class: 'now-item', href: `#slot-${b.start.replace(':', '')}-${b.date}`, dataset: s ? { color: s.color } : null, onclick: (e) => { e.preventDefault(); scrollToSlot(document.getElementById(`slot-${b.start.replace(':', '')}-${b.date}`)); } },
         s ? el('span', { class: 'dot' }) : null, label, el('span', { class: 'muted xs' }, ` ${t('until')} ${b.end}`));
     };
     if (current.length) {

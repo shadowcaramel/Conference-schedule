@@ -314,9 +314,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   .ctl-icon { padding: 0; }
 }
 .badge {
-  position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px;
-  border-radius: var(--r-pill); background: var(--now); color: #fff; font-size: 11px; font-weight: 700;
-  display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+  position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; min-width: 8px; padding: 0;
+  border-radius: 50%; background: var(--now); font-size: 0; line-height: 0;
 }
 
 /* ---------- Day bar ------------------------------------------------------- */
@@ -340,7 +339,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .daypill:hover { background: var(--surface-2); color: var(--text); }
 .daypill[aria-selected="true"] { background: var(--text); color: var(--bg); }
 html[data-theme="dark"] .daypill[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
-.daypill.is-today::after { content: ""; position: absolute; right: 8px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--now); box-shadow: 0 0 0 2px var(--bg); }
+.daypill.is-today::after { content: ""; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 7px; height: 7px; border-radius: 50%; background: var(--now); box-shadow: 0 0 0 2px var(--bg); }
 .daypill[aria-selected="true"].is-today::after { box-shadow: 0 0 0 2px var(--text); }
 .day-week {
   display: flex; align-items: center; gap: 2px; flex: 0 0 auto;
@@ -452,7 +451,7 @@ html[data-theme="dark"] .chip.plain[aria-pressed="true"] { background: var(--acc
 }
 .timeline.is-start::before { top: var(--rail-cap-top, 10px); }
 .timeline.is-end::before { bottom: var(--rail-cap-bottom, 10px); }
-.slot { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 0 10px; align-items: start; position: relative; }
+.slot { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 0 10px; align-items: start; position: relative; scroll-margin-top: calc(var(--topbar-h) + var(--daybar-h) + 2.1rem + 8px); }
 .slot:not(:has(.parallel)),
 .slot:has(.parallel-grid.is-collapsed) { align-items: center; }
 .slot:has(.parallel-grid:not(.is-collapsed)) { align-items: stretch; }
@@ -1013,7 +1012,7 @@ html.is-standalone [data-install-btn] { display: none !important; }
   .daypill { min-width: 48px; height: 32px; padding: 0 10px; }
   .daypill .dow { font-size: 0.68rem; }
   .daypill .dom { font-size: var(--fs-sm); }
-  .daypill.is-today::after { right: 6px; top: 5px; width: 5px; height: 5px; }
+  .daypill.is-today::after { right: 6px; top: 50%; transform: translateY(-50%); width: 5px; height: 5px; }
   .daybar .btn.sm { min-height: 32px; padding: 0 10px; }
   .seg-btn { min-height: 28px; padding: 0 10px; }
   .main { padding-top: 10px; }
