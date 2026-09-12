@@ -36,6 +36,12 @@
     return node;
   }
 
+  function emailLabel(email) {
+    const i = String(email).lastIndexOf('@');
+    if (i < 1) return [email];
+    return [email.slice(0, i), el('wbr'), email.slice(i)];
+  }
+
   const ICONS = {
     calendar: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
     grid: '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
@@ -465,12 +471,12 @@
     if (isPoster) {
       if (!posterBlock) return null;
       date = posterBlock.date; start = posterBlock.start; end = posterBlock.end; location = roomOf(posterBlock);
-      summary = `[${t('poster')}${item.board ? ' ' + item.board : ''}] ${item.title}`;
+      summary = `[${t('poster')}${item.board ? ' ' + item.board : ''}] ${displayTitle(item.title)}`;
     } else {
       if (!item.date) return null;
       date = item.date; start = item.start; end = item.end;
       const b = blocksById[item.blockId]; location = b ? roomOf(b) : '';
-      summary = `${item.title}`;
+      summary = `${displayTitle(item.title)}`;
     }
     const sec = sectionsById[item.section];
     desc = [speakerName(item), item.org, sec ? `${t('section')} ${sec.id}: ${L(sec.full)}` : '', isPoster ? t('posterSession') : talkKicker(item)].filter(Boolean).join('\n');
@@ -580,6 +586,60 @@
     return [text.slice(0, idx), el('mark', null, text.slice(idx, idx + q.length)), text.slice(idx + q.length)];
   }
   const norm = (s) => String(s || '').toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+  const SUPER_FOLD = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '⁺': '+', '⁻': '-', '⁼': '=', '⁽': '(', '⁾': ')', 'ₙ': 'n', '⸴': ',', 'ᵐ': 'm', '√': 'sqrt',
+    'ψ': 'psi', 'ν': 'nu',
+  };
+  const SUPER_GLYPH = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '⁺': '+', '⁻': '-', '⁼': '=', '⁽': '(', '⁾': ')', 'ⁿ': 'n', 'ᵐ': 'm', '⸴': ',',
+  };
+  const SUB_GLYPH = {
+    '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+    '₊': '+', '₋': '-', '₌': '=', '₍': '(', '₎': ')',
+    'ₙ': 'n', 'ₐ': 'a', 'ₑ': 'e', 'ₒ': 'o', 'ₓ': 'x', 'ₕ': 'h', 'ₖ': 'k', 'ₗ': 'l', 'ₘ': 'm', 'ₚ': 'p', 'ₛ': 's', 'ₜ': 't',
+  };
+  function foldTitle(s) {
+    return String(s || '').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ₙ⸴ᵐ√ψν]/g, ch => SUPER_FOLD[ch] || ch);
+  }
+  // Leftover TeX (S4-03) if Excel still has dollars; no-op once Название is Unicode.
+  function displayTitle(s) {
+    return String(s || '').split('$J/\\psi$').join('J/ψ');
+  }
+  function titleHaystack(s) {
+    const shown = displayTitle(s);
+    const folded = foldTitle(shown);
+    return folded === shown ? shown : `${shown} ${folded}`;
+  }
+  function titleParts(s) {
+    const str = displayTitle(s);
+    const out = [];
+    const push = (type, text) => {
+      if (!text) return;
+      const last = out[out.length - 1];
+      if (last && last.type === type) last.text += text;
+      else out.push({ type, text });
+    };
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      if (SUPER_GLYPH[ch]) { push('sup', SUPER_GLYPH[ch]); continue; }
+      if (SUB_GLYPH[ch]) { push('sub', SUB_GLYPH[ch]); continue; }
+      if (ch === ' ' && out.length && out[out.length - 1].type === 'sup') {
+        let j = i + 1;
+        while (j < str.length && str[j] === ' ') j++;
+        if (j < str.length && SUPER_GLYPH[str[j]]) { push('sup', ' '); continue; }
+      }
+      push('text', ch);
+    }
+    return out;
+  }
+  function titleNodes(s, q = '') {
+    return titleParts(s).map(p => {
+      const body = q ? highlight(p.text, q) : p.text;
+      return p.type === 'text' ? body : el(p.type, null, body);
+    });
+  }
 
   // ------------------------------------------------------------------ install / PWA
   let deferredPrompt = null;
@@ -1378,10 +1438,10 @@
     const talk = D.talks[b.talks[0]];
     if (!talk) return el('div', { class: 'row-card' }, icon('mic'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, t('tbc'))));
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
-    const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${talk.title}`,
+    const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${displayTitle(talk.title)}`,
       onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } },
       el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
-      el('h3', { class: 'ptitle' }, talk.title),
+      el('h3', { class: 'ptitle' }, ...titleNodes(talk.title)),
       el('div', { class: 'pspeaker' }, el('b', null, speakerName(talk)), talk.org ? el('span', null, talk.org) : null),
       el('div', { class: 'pmeta' }, el('span', { class: 'tnum' }, icon('clock'), ` ${talk.start}–${talk.end} · ${talk.duration} ${t('min')}`), el('span', { class: 'room' }, icon('pin'), ` ${roomLabel(b)}`)),
       starButton(talk.id));
@@ -1436,7 +1496,7 @@
     const row = el('div', { class: `talk status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, role: 'button', tabindex: 0, dataset: { ...(opts.colored && sec ? { color: sec.color } : {}), talk: talk.id },
       onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } });
     const time = el('span', { class: 't-time' }, el('span', null, talk.start || '—'), el('span', { class: 'num' }, opts.numberLabel || `№${talk.number}`));
-    const title = el('div', { class: 't-title' }, opts.q ? highlight(talk.title, opts.q) : talk.title, ' ', statusBadge(talk));
+    const title = el('div', { class: 't-title' }, ...titleNodes(talk.title, opts.q), ' ', statusBadge(talk));
     const speaker = el('div', { class: 't-speaker' }, el('b', null, opts.q ? highlight(speakerName(talk), opts.q) : speakerName(talk)), talk.org ? el('span', { class: 'org' }, opts.q ? highlight(talk.org, opts.q) : talk.org) : null, opts.context ? el('span', { class: 'org' }, opts.context) : null);
     row.append(time, title, speaker, starButton(talk.id));
     return row;
@@ -1503,7 +1563,7 @@
     function renderPosterList() {
       listHost.innerHTML = '';
       const q = norm(state.posterQ);
-      const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || norm(`${p.title} ${p.first} ${p.middle || ''} ${p.last} ${p.org}`).includes(q)));
+      const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || norm(`${titleHaystack(p.title)} ${p.first} ${p.middle || ''} ${p.last} ${p.org}`).includes(q)));
       if (!items.length) { listHost.append(el('div', { class: 'empty' }, icon('search'), el('h3', null, t('nothingFound')))); return; }
       const bySec = new Map();
       for (const p of items) { const k = p.section || '?'; if (!bySec.has(k)) bySec.set(k, []); bySec.get(k).push(p); }
@@ -1523,7 +1583,7 @@
     const s = sectionsById[p.section];
     return el('article', { class: `card hoverable poster status-${p.status || 'ok'}`, dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id, true); } } },
       el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null, statusBadge(p)),
-      el('div', { class: 'p-title' }, q ? highlight(p.title, q) : p.title),
+      el('div', { class: 'p-title' }, ...titleNodes(p.title, q)),
       el('div', { class: 'p-speaker' }, el('b', null, q ? highlight(speakerName(p), q) : speakerName(p)), p.org ? ` · ${p.org}` : ''),
       starButton(p.id));
   }
@@ -1548,9 +1608,9 @@
       host.innerHTML = '';
       const q = norm(state.q);
       if (q.length < 2) { host.append(speakerIndex()); return; }
-      const talks = Object.values(D.talks).filter(tk => norm(`${tk.title} ${tk.first} ${tk.middle || ''} ${tk.last} ${tk.org} ${tk.id} ${tk.number}`).includes(q))
+      const talks = Object.values(D.talks).filter(tk => norm(`${titleHaystack(tk.title)} ${tk.first} ${tk.middle || ''} ${tk.last} ${tk.org} ${tk.id} ${tk.number}`).includes(q))
         .sort((a, b) => (a.date || '9').localeCompare(b.date || '9') || (a.start || '').localeCompare(b.start || ''));
-      const posters = D.posters.filter(p => norm(`${p.title} ${p.first} ${p.middle || ''} ${p.last} ${p.org} ${p.id}`).includes(q));
+      const posters = D.posters.filter(p => norm(`${titleHaystack(p.title)} ${p.first} ${p.middle || ''} ${p.last} ${p.org} ${p.id}`).includes(q));
       const total = talks.length + posters.length;
       host.append(el('p', { class: 'result-count' }, total ? `${t('results')}: ${total}` : t('nothingFound')));
       if (!total) return;
@@ -1681,10 +1741,10 @@
     fact(t('roomLong'), block ? roomLabel(block) : t('tbc'));
     if (sec && sec.id !== 'P') fact(t('chair'), chairLabel(sec));
     if (item.email) {
-      facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, t('email')), el('a', { class: 'v', href: `mailto:${item.email}` }, item.email)));
+      facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, t('email')), el('a', { class: 'v', href: `mailto:${item.email}` }, ...emailLabel(item.email))));
     }
     const body = el('div', { class: 'sheet-body' },
-      el('h2', { id: 'detail-title' }, item.title || '—'),
+      el('h2', { id: 'detail-title' }, ...(item.title ? titleNodes(item.title) : ['—'])),
       el('div', { class: 'speaker' }, el('b', null, speakerName(item)), item.org ? el('span', { class: 'org' }, item.org) : null),
       facts,
       L(item.note) ? el('div', { class: 'sheet-note' }, L(item.note)) : null,
@@ -1752,17 +1812,17 @@
           const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
           if (talks.length === 1 && b.type !== 'section') {
             const tk = talks[0];
-            blk.append(el('div', { class: 'p-block-title' }, `${title}. ${tk.title}`), el('div', { class: 'p-block-meta' }, [speakerName(tk), tk.org, meta].filter(Boolean).join(' · ')));
+            blk.append(el('div', { class: 'p-block-title' }, `${title}. `, ...titleNodes(tk.title)), el('div', { class: 'p-block-meta' }, [speakerName(tk), tk.org, meta].filter(Boolean).join(' · ')));
           } else {
             blk.append(el('div', { class: 'p-block-title' }, title), meta ? el('div', { class: 'p-block-meta' }, meta) : null);
-            for (const tk of talks) blk.append(el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, tk.start), el('span', null, el('div', { class: 'pt-title' }, `${tk.number}. ${tk.title}`), el('div', { class: 'pt-speaker' }, [speakerName(tk), tk.org].filter(Boolean).join(', ')))));
+            for (const tk of talks) blk.append(el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, tk.start), el('span', null, el('div', { class: 'pt-title' }, `${tk.number}. `, ...titleNodes(tk.title)), el('div', { class: 'pt-speaker' }, [speakerName(tk), tk.org].filter(Boolean).join(', ')))));
           }
           body.append(blk);
         }
         root.append(el('div', { class: `p-slot${hasTalks ? ' allow-break' : ''}` }, el('div', { class: 'p-time' }, slot.start, el('small', null, slot.end)), body));
       }
     }
-    root.append(el('h2', null, t('posters')), el('div', { class: 'p-posters' }, ...D.posters.map(p => el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, p.board || ''), el('span', null, el('div', { class: 'pt-title' }, p.title), el('div', { class: 'pt-speaker' }, [speakerName(p), p.org, sectionsById[p.section] ? L(sectionsById[p.section].short) : ''].filter(Boolean).join(' · ')))))));
+    root.append(el('h2', null, t('posters')), el('div', { class: 'p-posters' }, ...D.posters.map(p => el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, p.board || ''), el('span', null, el('div', { class: 'pt-title' }, ...titleNodes(p.title)), el('div', { class: 'pt-speaker' }, [speakerName(p), p.org, sectionsById[p.section] ? L(sectionsById[p.section].short) : ''].filter(Boolean).join(' · ')))))));
   }
 
   function renderPrintOverview(root) {
