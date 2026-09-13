@@ -1,9 +1,10 @@
 /* ЯДРО-2026 programme — service worker.
-   Network-first so conference-day updates are not hidden behind yesterday's cache.
+   data.js and navigations: network-first so conference-day edits show up.
+   CSS / JS / fonts / icons: cache-first, refresh in the background.
    HTTPS / localhost only; the page never registers this file on plain HTTP. */
 'use strict';
 
-const CACHE = 'nucleus2026-v1';
+const CACHE = 'nucleus2026-v2';
 const PRECACHE = [
   './',
   './index.html',
@@ -13,14 +14,13 @@ const PRECACHE = [
   './manifest.json',
   './assets/icons/icon.svg',
   './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
-  './assets/icons/apple-touch-icon.png',
   './assets/fonts/onest-cyrillic.woff2',
-  './assets/fonts/onest-cyrillic-ext.woff2',
   './assets/fonts/onest-latin.woff2',
-  './assets/fonts/onest-latin-ext.woff2',
-  './assets/fonts/onest-math.woff2',
 ];
+
+function isProgrammeData(url) {
+  return url.pathname.endsWith('data.js');
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -48,19 +48,30 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    try {
-      const fresh = await fetch(req);
-      if (fresh && fresh.ok && (url.protocol === 'http:' || url.protocol === 'https:')) {
-        cache.put(req, fresh.clone()).catch(() => {});
+    const cacheable = url.protocol === 'http:' || url.protocol === 'https:';
+    const put = (fresh) => {
+      if (cacheable && fresh && fresh.ok) cache.put(req, fresh.clone()).catch(() => {});
+    };
+
+    const networkFirst = req.mode === 'navigate' || isProgrammeData(url);
+    if (networkFirst) {
+      try {
+        const fresh = await fetch(req);
+        put(fresh);
+        return fresh;
+      } catch {
+        const cached = await cache.match(req);
+        if (cached) return cached;
+        if (req.mode === 'navigate') {
+          return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
+        }
+        return Response.error();
       }
-      return fresh;
-    } catch {
-      const cached = await cache.match(req);
-      if (cached) return cached;
-      if (req.mode === 'navigate') {
-        return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
-      }
-      return Response.error();
     }
+
+    const cached = await cache.match(req);
+    const refresh = fetch(req).then((fresh) => { put(fresh); return fresh; }).catch(() => null);
+    if (cached) return cached;
+    return (await refresh) || Response.error();
   })());
 });

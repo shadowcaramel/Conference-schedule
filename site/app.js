@@ -8,6 +8,23 @@
   const D = window.PROGRAMME;
   if (!D) { document.body.textContent = 'data.js not found — run tools/build.py'; return; }
 
+  (function hydrateProgramme() {
+    const bi = (o) => {
+      if (!o || typeof o !== 'object') return { ru: o || '', en: o || '' };
+      return { ru: o.ru || o.en || '', en: o.en || o.ru || '' };
+    };
+    for (const t of Object.values(D.talks || {})) {
+      if (!t.status) t.status = 'ok';
+    }
+    for (const p of D.posters || []) {
+      if (!p.status) p.status = 'ok';
+    }
+    for (const b of D.blocks || []) {
+      if (!b.talks) b.talks = [];
+      b.title = bi(b.title);
+    }
+  })();
+
   // Consecutive plenary/jubilee/sponsor cards get a group subtitle. Set false to flatten.
   const SLOT_GROUPS = true;
   const HAPTICS_ON = true; // set false in a later update to disable for everyone
@@ -88,7 +105,7 @@
 
   const BLOCK_ICON = { break: 'coffee', lunch: 'lunch', registration: 'door', opening: 'flag', closing: 'flag', poster: 'poster', social: 'sparkles', plenary: 'mic', jubilee: 'mic', sponsor: 'mic', section: 'users' };
   function socialIcon(block) {
-    const t = (block.title.ru + ' ' + block.title.en).toLowerCase();
+    const t = `${(block.title && block.title.ru) || ''} ${(block.title && block.title.en) || ''}`.toLowerCase();
     if (/теплоход|boat|экскурс|excursion|ship/.test(t)) return 'ship';
     if (/концерт|concert|music/.test(t)) return 'music';
     if (/банкет|dinner|фуршет|party|reception/.test(t)) return 'wine';
@@ -204,8 +221,21 @@
   const blocksById = Object.fromEntries(D.blocks.map(b => [b.id, b]));
   const postersById = Object.fromEntries(D.posters.map(p => [p.id, p]));
   const posterBlock = D.blocks.find(b => b.type === 'poster') || null;
+  const TALK_LIST = Object.values(D.talks);
   const DAYS = D.days.map(d => d.date);
   const CONF_DAYS = new Set(DAYS);
+  const SECTION_FILTER_IDS = Array.from(new Set(D.blocks.filter(b => b.type === 'section').map(b => b.section)))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const blocksByDate = new Map();
+  for (const b of D.blocks) {
+    const list = blocksByDate.get(b.date);
+    if (list) list.push(b);
+    else blocksByDate.set(b.date, [b]);
+  }
+  const blocksOn = (date) => blocksByDate.get(date) || [];
+  const slotsByDate = new Map();
+  const bandsByDate = new Map();
+  const daySummaryMemo = new Map();
 
   const params = new URLSearchParams(location.search);
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -323,8 +353,9 @@
   }
 
   function slotsForDay(date) {
-    // group blocks by start time, keep parallel section blocks together
-    const blocks = D.blocks.filter(b => b.date === date);
+    const hit = slotsByDate.get(date);
+    if (hit) return hit;
+    const blocks = blocksOn(date);
     const groups = new Map();
     for (const b of blocks) {
       const key = b.start + '|' + (b.type === 'section' ? 'S' : b.id);
@@ -333,11 +364,16 @@
       g.blocks.push(b);
       if (b.end > g.end) g.end = b.end;
     }
-    return Array.from(groups.values()).sort((a, b) => a.start.localeCompare(b.start) || a.blocks[0].type.localeCompare(b.blocks[0].type));
+    const slots = Array.from(groups.values()).sort((a, b) => a.start.localeCompare(b.start) || a.blocks[0].type.localeCompare(b.blocks[0].type));
+    slotsByDate.set(date, slots);
+    return slots;
   }
 
   function daySummary(date) {
-    const blocks = D.blocks.filter(b => b.date === date).slice().sort((a, b) => a.start.localeCompare(b.start) || a.type.localeCompare(b.type));
+    const key = state.lang + '|' + date;
+    const hit = daySummaryMemo.get(key);
+    if (hit) return hit;
+    const blocks = blocksOn(date).slice().sort((a, b) => a.start.localeCompare(b.start) || a.type.localeCompare(b.type));
     const plenary = blocks.filter(b => ['plenary', 'jubilee'].includes(b.type)).length;
     const sectionSlots = new Set(blocks.filter(b => b.type === 'section').map(b => b.start)).size;
     const sectionCount = blocks.filter(b => b.type === 'section').length;
@@ -355,6 +391,7 @@
         parts.push(blockTitle(b));
       }
     }
+    daySummaryMemo.set(key, parts);
     return parts;
   }
 
@@ -446,7 +483,6 @@
     return el('button', {
       class: 'star', type: 'button', dataset: { id }, 'aria-pressed': String(on),
       'aria-label': on ? t('unstar') : t('star'), title: on ? t('unstar') : t('star'),
-      onclick: (e) => { e.stopPropagation(); toggleFav(id, e.currentTarget); },
     }, icon('star'));
   }
 
@@ -661,6 +697,29 @@
       const body = q ? highlight(p.text, q) : p.text;
       return p.type === 'text' ? body : el(p.type, null, body);
     });
+  }
+
+  const talkHay = new Map();
+  const posterHay = new Map();
+  for (const tk of TALK_LIST) {
+    talkHay.set(tk.id, norm(`${titleHaystack(tk.title)} ${tk.first || ''} ${tk.middle || ''} ${tk.last || ''} ${tk.org || ''} ${tk.id} ${tk.number || ''}`));
+  }
+  for (const p of D.posters) {
+    posterHay.set(p.id, norm(`${titleHaystack(p.title)} ${p.first || ''} ${p.middle || ''} ${p.last || ''} ${p.org || ''} ${p.id}`));
+  }
+  let speakerPeopleCache = null;
+  function speakerPeople() {
+    if (speakerPeopleCache) return speakerPeopleCache;
+    const people = new Map();
+    const add = (x) => {
+      const key = norm(`${x.last}|${x.first}|${x.middle || ''}`);
+      if (!people.has(key)) people.set(key, { last: x.last, first: x.first, middle: x.middle || '', n: 0 });
+      people.get(key).n++;
+    };
+    TALK_LIST.forEach(add);
+    D.posters.forEach(add);
+    speakerPeopleCache = Array.from(people.values()).filter(p => p.last);
+    return speakerPeopleCache;
   }
 
   // ------------------------------------------------------------------ install / PWA
@@ -963,10 +1022,57 @@
     requestAnimationFrame(() => { const act = $('.daypill[aria-selected="true"]', tabs); if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); });
   }
   function isExpanded(block) { return state.expanded.has(block.id) ? state.expanded.get(block.id) : isDesktop(); }
+  function talkTimesForBlocks(sectionBlocks) {
+    return Array.from(new Set(sectionBlocks.flatMap(b => b.talks.map(id => D.talks[id]).filter(Boolean).map(tk => tk.start)))).sort();
+  }
+  function fillSectionTalks(card, b, times, now) {
+    if (!card || card.dataset.talksReady === '1') return;
+    const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
+    const nowArg = now && now.date === b.date ? now : null;
+    if (times && times.length) {
+      const byStart = Object.fromEntries(talks.filter(tk => tk.start).map(tk => [tk.start, tk]));
+      for (const start of times) {
+        const tk = byStart[start];
+        card.append(tk ? renderTalkRow(tk, nowArg) : el('div', { class: 'talk-slot empty', 'aria-hidden': 'true' }));
+      }
+    } else {
+      card.append(el('div', { class: 'collapsible open' }, el('div', { class: 'collapsible-inner' }, el('div', { class: 'talks' }, ...talks.map(tk => renderTalkRow(tk, nowArg))))));
+    }
+    card.dataset.talksReady = '1';
+  }
+  function applySlotSectionOpen(grid, sectionBlocks, times, open, now) {
+    if (!grid) return;
+    for (const b of sectionBlocks) {
+      const card = grid.querySelector(`.seccard[data-block="${CSS.escape(b.id)}"]`);
+      if (!card) continue;
+      if (open) fillSectionTalks(card, b, times, now);
+      card.classList.toggle('open', open);
+      const head = card.querySelector('.sechead');
+      if (head && head.hasAttribute('aria-expanded')) head.setAttribute('aria-expanded', String(open));
+    }
+    grid.classList.toggle('is-collapsed', !open);
+    const toggle = grid.parentElement && grid.parentElement.querySelector('.slot-collapse');
+    if (toggle) toggle.replaceChildren(icon(open ? 'collapse' : 'expand'), t(open ? 'hideTalks' : 'showTalks'));
+  }
+  function syncSectionFilters() {
+    $$('.filters .chip[data-filter]').forEach(btn => {
+      const id = btn.dataset.filter;
+      btn.setAttribute('aria-pressed', id ? String(state.filters.has(id)) : String(state.filters.size === 0));
+    });
+    $$('#main .seccard').forEach(card => {
+      const id = card.dataset.section;
+      card.classList.toggle('dimmed', state.filters.size > 0 && !state.filters.has(id));
+    });
+  }
   function toggleAll(open) {
     haptic('tick');
     for (const b of D.blocks) if (b.type === 'section') state.expanded.set(b.id, open);
-    preserveScroll(() => { renderMain(); renderDaybar(); });
+    const now = confNow();
+    $$('#main .parallel-grid').forEach(grid => {
+      const sectionBlocks = $$('.seccard', grid).map(c => blocksById[c.dataset.block]).filter(Boolean);
+      applySlotSectionOpen(grid, sectionBlocks, talkTimesForBlocks(sectionBlocks), open, now);
+    });
+    renderDaybar();
   }
 
   // ------------------------------------------------------------------ main views
@@ -991,14 +1097,13 @@
     const frag = document.createDocumentFragment();
     const now = confNow();
 
-    const secIds = Array.from(new Set(D.blocks.filter(b => b.type === 'section').map(b => b.section)))
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const secIds = SECTION_FILTER_IDS;
     if (secIds.length > 1) {
       const chips = el('div', { class: 'chips scroll', role: 'group', 'aria-label': t('filterSections') });
-      chips.append(el('button', { class: 'chip plain', type: 'button', 'aria-pressed': String(state.filters.size === 0), onclick: () => { haptic('tick'); state.filters.clear(); preserveScroll(renderMain); } }, t('allSections')));
+      chips.append(el('button', { class: 'chip plain', type: 'button', dataset: { filter: '' }, 'aria-pressed': String(state.filters.size === 0), onclick: () => { haptic('tick'); state.filters.clear(); syncSectionFilters(); } }, t('allSections')));
       for (const id of secIds) {
         const s = sectionsById[id];
-        chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color }, 'aria-pressed': String(state.filters.has(id)), onclick: () => { haptic('tick'); state.filters.has(id) ? state.filters.delete(id) : state.filters.add(id); preserveScroll(renderMain); } },
+        chips.append(el('button', { class: 'chip', type: 'button', dataset: { color: s.color, filter: id }, 'aria-pressed': String(state.filters.has(id)), onclick: () => { haptic('tick'); state.filters.has(id) ? state.filters.delete(id) : state.filters.add(id); syncSectionFilters(); } },
           el('span', { class: 'dot' }), `${id} · ${L(s.short)}`));
       }
       frag.append(el('div', { class: 'filters' }, chips));
@@ -1112,7 +1217,7 @@
     const others = slot.blocks.filter(b => b.type !== 'section');
     for (const b of others) body.append(renderBlock(b, now));
     if (sectionBlocks.length) {
-      const times = Array.from(new Set(sectionBlocks.flatMap(b => b.talks.map(id => D.talks[id]).filter(Boolean).map(tk => tk.start)))).sort();
+      const times = talkTimesForBlocks(sectionBlocks);
       const allOpen = sectionBlocks.every(b => isExpanded(b));
       const collapsed = isDesktop() ? !allOpen : !sectionBlocks.some(b => isExpanded(b));
       const grid = el('div', { class: `parallel-grid cols-${Math.min(sectionBlocks.length, 4)}${collapsed ? ' is-collapsed' : ''}` });
@@ -1121,13 +1226,15 @@
       for (const b of sectionBlocks) grid.append(renderSectionCard(b, now, times));
       const toggle = el('button', { class: 'slot-collapse', type: 'button', onclick: () => {
         haptic('tick');
-        const open = !allOpen;
+        const open = !sectionBlocks.every(b => isExpanded(b));
         for (const b of sectionBlocks) state.expanded.set(b.id, open);
-        preserveScroll(() => { renderMain(); renderDaybar(); });
+        applySlotSectionOpen(grid, sectionBlocks, times, open, now);
+        renderDaybar();
       } }, icon(allOpen ? 'collapse' : 'expand'), t(allOpen ? 'hideTalks' : 'showTalks'));
       body.append(el('div', { class: 'parallel' }, toggle, grid));
     }
-    return el('section', { class: `slot ${status}`.trim(), id: `slot-${slot.start.replace(':', '')}-${slot.blocks[0].date || ''}`, 'aria-label': `${slot.start}–${slot.end}` },
+    const date = slot.blocks[0].date || '';
+    return el('section', { class: `slot ${status}`.trim(), id: `slot-${slot.start.replace(':', '')}-${date}`, 'aria-label': `${slot.start}–${slot.end}`, dataset: { start: slot.start, end: slot.end, date } },
       el('div', { class: 'slot-time' }, el('span', { class: 't-start' }, slot.start), el('span', { class: 't-end' }, slot.end), el('span', { class: 'rail-dot' })),
       body);
   }
@@ -1214,7 +1321,9 @@
   }
 
   function mergeDayBands(date) {
-    const blocks = D.blocks.filter(b => b.date === date).slice().sort((a, b) => a.start.localeCompare(b.start) || a.type.localeCompare(b.type));
+    const hit = bandsByDate.get(date);
+    if (hit) return hit;
+    const blocks = blocksOn(date).slice().sort((a, b) => a.start.localeCompare(b.start) || a.type.localeCompare(b.type));
     const bands = [];
     let i = 0;
     while (i < blocks.length) {
@@ -1236,6 +1345,7 @@
         i++;
       }
     }
+    bandsByDate.set(date, bands);
     return bands;
   }
 
@@ -1420,7 +1530,7 @@
   }
 
   function nowCard(date, now) {
-    const blocks = D.blocks.filter(b => b.date === date);
+    const blocks = blocksOn(date);
     const current = blocks.filter(b => toMin(b.start) <= now.minutes && now.minutes < toMin(b.end));
     const upcoming = blocks.filter(b => toMin(b.start) > now.minutes);
     if (!current.length && !upcoming.length) return null;
@@ -1442,11 +1552,85 @@
     return card;
   }
 
+  function itemIsNow(item, now) {
+    return !!(now && item && item.date === now.date && item.start && item.end
+      && toMin(item.start) <= now.minutes && now.minutes < toMin(item.end));
+  }
+
+  function refreshNowMarkers() {
+    if (state.view !== 'schedule' || state.layout !== 'timeline') return;
+    const now = confNow();
+    $$('#main .slot[data-start]').forEach(node => {
+      let status = '';
+      if (now.date === node.dataset.date) {
+        const s = toMin(node.dataset.start), e = toMin(node.dataset.end);
+        status = now.minutes >= e ? 'is-past' : now.minutes >= s ? 'is-now' : '';
+      }
+      node.classList.toggle('is-past', status === 'is-past');
+      node.classList.toggle('is-now', status === 'is-now');
+    });
+    $$('#main .talk[data-talk], #main .plenary[data-talk]').forEach(node => {
+      node.classList.toggle('is-now', itemIsNow(D.talks[node.dataset.talk], now));
+    });
+    const today = now.date;
+    $$('#main .now-card').forEach(n => {
+      if (n.closest('.day-chunk')?.dataset.day !== today) n.remove();
+    });
+    if (!CONF_DAYS.has(today)) return;
+    const chunk = document.querySelector(`#main .day-chunk[data-day="${today}"]`);
+    if (!chunk) return;
+    const next = nowCard(today, now);
+    const prev = chunk.querySelector('.now-card');
+    if (!next) { prev?.remove(); return; }
+    if (prev) prev.replaceWith(next);
+    else {
+      const sub = chunk.querySelector('.page-sub');
+      (sub || chunk.querySelector('.day-chunk-head'))?.after(next);
+    }
+  }
+
+  function bindMainClicks() {
+    const main = $('#main');
+    if (!main || main.dataset.bound === '1') return;
+    main.dataset.bound = '1';
+    main.addEventListener('click', (e) => {
+      const star = e.target.closest('.star');
+      if (star && main.contains(star)) {
+        e.preventDefault();
+        toggleFav(star.dataset.id, star);
+        return;
+      }
+      if (e.target.closest('.sechead, .slot-collapse, .filters, .chip, .name-chip, .now-item')) return;
+      const posterRow = e.target.closest('.poster-row');
+      if (posterRow && main.contains(posterRow)) {
+        setView('posters');
+        return;
+      }
+      const item = e.target.closest('[data-talk]');
+      if (item && main.contains(item)) openDetail(item.dataset.talk, true);
+    });
+    main.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('.star, .sechead, .slot-collapse, button, a, input, textarea')) return;
+      const posterRow = e.target.closest('.poster-row');
+      if (posterRow && e.target === posterRow) {
+        e.preventDefault();
+        setView('posters');
+        return;
+      }
+      const item = e.target.closest('[data-talk]');
+      if (item && e.target === item) {
+        e.preventDefault();
+        openDetail(item.dataset.talk, true);
+      }
+    });
+  }
+
   function renderBlock(b, now) {
     const type = b.type;
     if (['plenary', 'jubilee', 'sponsor'].includes(type)) return renderPlenary(b, now);
     if (type === 'poster') {
-      return el('div', { class: 'row-card poster-row card hoverable', role: 'button', tabindex: 0, onclick: () => setView('posters'), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setView('posters'); } } },
+      return el('div', { class: 'row-card poster-row card hoverable', role: 'button', tabindex: 0, dataset: { action: 'posters' } },
         icon('poster'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, [`${D.posters.length} ${t('posterCount')}`, roomOf(b) ? `${t('room')} ${roomOf(b)}` : '', L(b.note)].filter(Boolean).join(' · '))),
         el('span', { class: 'ico', style: 'margin-left:auto;color:var(--text-3)', html: `<svg viewBox="0 0 24 24">${ICONS.arrow}</svg>` }));
     }
@@ -1460,8 +1644,7 @@
     const talk = D.talks[b.talks[0]];
     if (!talk) return el('div', { class: 'row-card' }, icon('mic'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, t('tbc'))));
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
-    const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${displayTitle(talk.title)}`,
-      onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } },
+    const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${displayTitle(talk.title)}`, dataset: { talk: talk.id } },
       el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
       el('h3', { class: 'ptitle' }, ...titleNodes(talk.title)),
       el('div', { class: 'pspeaker' }, el('b', null, speakerName(talk)), talk.org ? el('span', null, talk.org) : null),
@@ -1484,12 +1667,16 @@
     const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
     const range = talks.length ? (talks.length > 1 ? `${talks[0].number}–${talks[talks.length - 1].number}` : talks[0].number) : '';
     const listId = `talks-${b.id}`;
-    const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}${open ? ' open' : ''}`, dataset: { color: s.color, block: b.id }, id: listId });
+    const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}${open ? ' open' : ''}`, dataset: { color: s.color, block: b.id, section: b.section }, id: listId });
     const desktop = isDesktop();
     const head = el('button', { class: 'sechead', type: 'button', id: `sh-${b.id}`, 'aria-expanded': desktop ? undefined : String(open), 'aria-controls': desktop ? undefined : listId, 'aria-label': desktop ? t('openSection') : undefined, onclick: () => {
       if (isDesktop()) { state.section = s.id; setView('sections'); return; }
       haptic('tick');
-      state.expanded.set(b.id, !isExpanded(b)); const nowOpen = isExpanded(b); head.setAttribute('aria-expanded', String(nowOpen)); card.classList.toggle('open', nowOpen);
+      const nowOpen = !isExpanded(b);
+      state.expanded.set(b.id, nowOpen);
+      if (nowOpen) fillSectionTalks(card, b, times, now || confNow());
+      head.setAttribute('aria-expanded', String(nowOpen));
+      card.classList.toggle('open', nowOpen);
       const grid = card.closest('.parallel-grid');
       if (grid) grid.classList.toggle('is-collapsed', ![...grid.querySelectorAll('.seccard')].some(c => c.classList.contains('open')));
     } },
@@ -1500,23 +1687,14 @@
         el('span', null, icon('pin'), ` ${roomLabel(b)}`),
         el('span', null, icon('user'), ` ${chairLabel(s)}`)));
     card.append(head);
-    if (times && times.length) {
-      const byStart = Object.fromEntries(talks.filter(tk => tk.start).map(tk => [tk.start, tk]));
-      for (const start of times) {
-        const tk = byStart[start];
-        card.append(tk ? renderTalkRow(tk, now) : el('div', { class: 'talk-slot empty', 'aria-hidden': 'true' }));
-      }
-    } else {
-      card.append(el('div', { class: 'collapsible open', id: listId }, el('div', { class: 'collapsible-inner' }, el('div', { class: 'talks' }, ...talks.map(tk => renderTalkRow(tk, now))))));
-    }
+    if (open || desktop) fillSectionTalks(card, b, times, now);
     return card;
   }
 
   function renderTalkRow(talk, now, opts = {}) {
-    const isNow = now && talk.date === now.date && toMin(talk.start) <= now.minutes && now.minutes < toMin(talk.end);
+    const isNow = now && talk.date === now.date && talk.start && talk.end && toMin(talk.start) <= now.minutes && now.minutes < toMin(talk.end);
     const sec = sectionsById[talk.section];
-    const row = el('div', { class: `talk status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, role: 'button', tabindex: 0, dataset: { ...(opts.colored && sec ? { color: sec.color } : {}), talk: talk.id },
-      onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } });
+    const row = el('div', { class: `talk status-${talk.status || 'ok'}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, role: 'button', tabindex: 0, dataset: { ...(opts.colored && sec ? { color: sec.color } : {}), talk: talk.id } });
     const time = el('span', { class: 't-time' }, el('span', null, talk.start || '—'), el('span', { class: 'num' }, opts.numberLabel || `№${talk.number}`));
     const meta = el('div', { class: 't-meta' }, time, starButton(talk.id));
     const title = el('div', { class: 't-title' }, ...titleNodes(talk.title, opts.q), ' ', statusBadge(talk));
@@ -1586,7 +1764,7 @@
     function renderPosterList() {
       listHost.innerHTML = '';
       const q = norm(state.posterQ);
-      const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || norm(`${titleHaystack(p.title)} ${p.first} ${p.middle || ''} ${p.last} ${p.org}`).includes(q)));
+      const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || (posterHay.get(p.id) || '').includes(q)));
       if (!items.length) { listHost.append(el('div', { class: 'empty' }, icon('search'), el('h3', null, t('nothingFound')))); return; }
       const bySec = new Map();
       for (const p of items) { const k = p.section || '?'; if (!bySec.has(k)) bySec.set(k, []); bySec.get(k).push(p); }
@@ -1604,7 +1782,7 @@
   }
   function renderPoster(p, q = '') {
     const s = sectionsById[p.section];
-    return el('article', { class: `card hoverable poster status-${p.status || 'ok'}`, dataset: { color: s ? s.color : 'slate' }, role: 'button', tabindex: 0, onclick: () => openDetail(p.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p.id, true); } } },
+    return el('article', { class: `card hoverable poster status-${p.status || 'ok'}`, dataset: { color: s ? s.color : 'slate', talk: p.id }, role: 'button', tabindex: 0 },
       el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null, statusBadge(p)),
       el('div', { class: 'p-title' }, ...titleNodes(p.title, q)),
       el('div', { class: 'p-speaker' }, el('b', null, q ? highlight(speakerName(p), q) : speakerName(p)), p.org ? ` · ${p.org}` : ''),
@@ -1631,9 +1809,9 @@
       host.innerHTML = '';
       const q = norm(state.q);
       if (q.length < 2) { host.append(speakerIndex()); return; }
-      const talks = Object.values(D.talks).filter(tk => norm(`${titleHaystack(tk.title)} ${tk.first} ${tk.middle || ''} ${tk.last} ${tk.org} ${tk.id} ${tk.number}`).includes(q))
+      const talks = TALK_LIST.filter(tk => (talkHay.get(tk.id) || '').includes(q))
         .sort((a, b) => (a.date || '9').localeCompare(b.date || '9') || (a.start || '').localeCompare(b.start || ''));
-      const posters = D.posters.filter(p => norm(`${titleHaystack(p.title)} ${p.first} ${p.middle || ''} ${p.last} ${p.org} ${p.id}`).includes(q));
+      const posters = D.posters.filter(p => (posterHay.get(p.id) || '').includes(q));
       const total = talks.length + posters.length;
       host.append(el('p', { class: 'result-count' }, total ? `${t('results')}: ${total}` : t('nothingFound')));
       if (!total) return;
@@ -1659,10 +1837,7 @@
       }
     }
     function speakerIndex() {
-      const people = new Map();
-      const add = (x) => { const key = norm(`${x.last}|${x.first}|${x.middle || ''}`); if (!people.has(key)) people.set(key, { last: x.last, first: x.first, middle: x.middle || '', n: 0 }); people.get(key).n++; };
-      Object.values(D.talks).forEach(add); D.posters.forEach(add);
-      const list = Array.from(people.values()).filter(p => p.last).sort((a, b) => a.last.localeCompare(b.last, locale()) || a.first.localeCompare(b.first, locale()) || (a.middle || '').localeCompare(b.middle || '', locale()));
+      const list = speakerPeople().slice().sort((a, b) => a.last.localeCompare(b.last, locale()) || a.first.localeCompare(b.first, locale()) || (a.middle || '').localeCompare(b.middle || '', locale()));
       const byLetter = new Map();
       for (const p of list) { const ch = p.last[0].toUpperCase(); if (!byLetter.has(ch)) byLetter.set(ch, []); byLetter.get(ch).push(p); }
       const wrap = el('div', { class: 'index' });
@@ -2179,7 +2354,14 @@
     else if (anySheetOpen()) lockBodyScroll();
   });
   bindMobileGestures();
-  setInterval(() => { if (state.view === 'schedule' && state.layout === 'timeline' && confNow().date === state.day) { preserveScroll(renderMain); } }, 60000);
+  bindMainClicks();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshNowMarkers();
+  });
+  setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    refreshNowMarkers();
+  }, 60000);
 
   // boot
   applyHash();
