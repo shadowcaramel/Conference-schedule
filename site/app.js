@@ -1518,9 +1518,10 @@
     const row = el('div', { class: `talk status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, role: 'button', tabindex: 0, dataset: { ...(opts.colored && sec ? { color: sec.color } : {}), talk: talk.id },
       onclick: () => openDetail(talk.id, true), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(talk.id, true); } } });
     const time = el('span', { class: 't-time' }, el('span', null, talk.start || '—'), el('span', { class: 'num' }, opts.numberLabel || `№${talk.number}`));
+    const meta = el('div', { class: 't-meta' }, time, starButton(talk.id));
     const title = el('div', { class: 't-title' }, ...titleNodes(talk.title, opts.q), ' ', statusBadge(talk));
     const speaker = el('div', { class: 't-speaker' }, el('b', null, opts.q ? highlight(speakerName(talk), opts.q) : speakerName(talk)), talk.org ? el('span', { class: 'org' }, opts.q ? highlight(talk.org, opts.q) : talk.org) : null, opts.context ? el('span', { class: 'org' }, opts.context) : null);
-    row.append(time, title, speaker, starButton(talk.id));
+    row.append(meta, title, speaker);
     return row;
   }
 
