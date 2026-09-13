@@ -216,7 +216,7 @@ body {
   min-height: 100dvh;
 }
 @media (min-width: 900px) { body { padding-bottom: 0; } }
-html.is-sheet-open { overflow: hidden; overscroll-behavior: none; }
+html.is-sheet-open { overflow: hidden; overscroll-behavior: none; scroll-behavior: auto; }
 html.is-sheet-open body {
   position: fixed; left: 0; right: 0; width: 100%; overflow: hidden;
 }
@@ -770,6 +770,7 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
     content: ""; position: absolute; left: 50%; top: 50%; width: 40px; height: 5px;
     transform: translate(-50%, -50%); border-radius: 3px; background: var(--border-2);
   }
+  .sheet-inner { touch-action: none; }
   .sheet-head { touch-action: none; }
   .sheet-body { overscroll-behavior: contain; }
 }

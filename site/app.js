@@ -383,8 +383,10 @@
     if (push) history.pushState(null, '', hash); else history.replaceState(null, '', hash);
   }
   let openTalkId = null;
+  let sheetOpener = null;
   let suppressHash = false;
   let ignoreDayObs = false;
+  let holdDayObsT = 0;
   let dayObserver = null;
   let slotObserver = null;
   let timelineCapObs = null;
@@ -527,30 +529,50 @@
   const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const anySheetOpen = () => $$('dialog.sheet').some(d => d.open);
 
+  function holdDayObs(ms = 400) {
+    ignoreDayObs = true;
+    clearTimeout(holdDayObsT);
+    holdDayObsT = setTimeout(() => { ignoreDayObs = false; }, ms);
+  }
+  function pinWindowScroll(y) {
+    window.scrollTo(0, Math.max(0, y));
+  }
+  function restoreSheetOpener() {
+    const node = sheetOpener;
+    if (!node || !node.isConnected || typeof node.focus !== 'function') return;
+    try { node.focus({ preventScroll: true }); } catch { try { node.focus(); } catch { /* ignore */ } }
+  }
   function lockBodyScroll() {
     if (isDesktop()) return;
     if (document.documentElement.classList.contains('is-sheet-open')) return;
+    holdDayObs(400);
     const y = window.scrollY;
     document.documentElement.classList.add('is-sheet-open');
     document.body.style.top = `-${y}px`;
     document.body.dataset.scrollY = String(y);
   }
   function unlockBodyScroll() {
-    const apply = () => {
-      if (anySheetOpen()) return;
-      if (!document.documentElement.classList.contains('is-sheet-open')) return;
-      const y = Number(document.body.dataset.scrollY || 0);
-      document.documentElement.classList.remove('is-sheet-open');
-      document.body.style.top = '';
-      delete document.body.dataset.scrollY;
-      window.scrollTo(0, y);
-    };
-    apply();
-    requestAnimationFrame(apply);
+    if (anySheetOpen()) return;
+    const html = document.documentElement;
+    if (!html.classList.contains('is-sheet-open')) return;
+    const y = Number(document.body.dataset.scrollY || 0);
+    html.style.scrollBehavior = 'auto';
+    holdDayObs(400);
+    html.classList.remove('is-sheet-open');
+    document.body.style.top = '';
+    delete document.body.dataset.scrollY;
+    restoreSheetOpener();
+    sheetOpener = null;
+    pinWindowScroll(y);
+    requestAnimationFrame(() => {
+      pinWindowScroll(y);
+      html.style.scrollBehavior = '';
+    });
   }
   function showSheet(dlg) {
-    if (!dlg.open) dlg.showModal();
+    if (document.activeElement instanceof HTMLElement) sheetOpener = document.activeElement;
     lockBodyScroll();
+    if (!dlg.open) dlg.showModal();
     dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
   }
 
@@ -1861,10 +1883,13 @@
     const SHEET_FLICK = 0.65;
     const IGNORE = '.daybar-inner, .chips.scroll, .overview-wrap, .bottom-nav, .topbar, dialog';
 
+    const SLOP = 8;
+    const FLICK_WINDOW = 280;
     const daySwipe = { tracking: false, swiped: false, id: 0, x: 0, y: 0 };
     const sheetDrag = {
-      dlg: null, id: 0, startX: 0, startY: 0, lastY: 0, lastT: 0,
-      dy: 0, vel: 0, dragging: false, fromBody: false,
+      dlg: null, body: null, id: 0, startX: 0, startY: 0, lastY: 0, lastT: 0, startT: 0,
+      dy: 0, vel: 0, dragging: false, fromHandle: false, mode: null,
+      startScroll: 0, dragOriginY: null,
     };
 
     function resetSheetDrag() {
@@ -1874,10 +1899,28 @@
         dlg.style.transform = '';
       }
       sheetDrag.dlg = null;
+      sheetDrag.body = null;
       sheetDrag.id = 0;
       sheetDrag.dragging = false;
+      sheetDrag.mode = null;
       sheetDrag.dy = 0;
       sheetDrag.vel = 0;
+      sheetDrag.dragOriginY = null;
+    }
+
+    function beginSheetDrag(e) {
+      if (sheetDrag.dragging) return;
+      sheetDrag.dragging = true;
+      sheetDrag.mode = 'drag';
+      if (sheetDrag.dragOriginY == null) sheetDrag.dragOriginY = sheetDrag.startY;
+      sheetDrag.dlg.classList.add('is-dragging');
+      try { sheetDrag.dlg.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    }
+
+    function applySheetDragY(clientY) {
+      const originY = sheetDrag.dragOriginY == null ? sheetDrag.startY : sheetDrag.dragOriginY;
+      sheetDrag.dy = Math.max(0, clientY - originY);
+      if (!prefersReducedMotion()) sheetDrag.dlg.style.transform = `translateY(${sheetDrag.dy}px)`;
     }
 
     function dismissSheet(dlg, fromY) {
@@ -1910,10 +1953,17 @@
       const sheet = t.closest('dialog.sheet');
       if (!sheet || !sheet.open) return null;
       if (t.closest('.sheet-close, .sheet-actions, a, button')) return null;
-      if (t.closest('.grabber, .sheet-head')) return { sheet, fromBody: false };
-      const body = t.closest('.sheet-body');
-      if (body && body.scrollTop <= 0) return { sheet, fromBody: true };
-      return null;
+      const inner = t.closest('.sheet-inner');
+      if (!inner) return null;
+      return {
+        sheet,
+        body: inner.querySelector('.sheet-body'),
+        fromHandle: !!t.closest('.grabber, .sheet-head'),
+      };
+    }
+
+    function isDownFlick(ddy, vel, elapsed) {
+      return ddy > 0 && vel > SHEET_FLICK && elapsed < FLICK_WINDOW;
     }
 
     document.addEventListener('pointerdown', (e) => {
@@ -1921,16 +1971,22 @@
       if (isMobileSheet()) {
         const origin = sheetOrigin(e);
         if (origin) {
+          const now = performance.now();
           sheetDrag.dlg = origin.sheet;
-          sheetDrag.fromBody = origin.fromBody;
+          sheetDrag.body = origin.body;
+          sheetDrag.fromHandle = origin.fromHandle;
           sheetDrag.id = e.pointerId;
           sheetDrag.startX = e.clientX;
           sheetDrag.startY = e.clientY;
           sheetDrag.lastY = e.clientY;
-          sheetDrag.lastT = performance.now();
+          sheetDrag.lastT = now;
+          sheetDrag.startT = now;
+          sheetDrag.startScroll = origin.body ? origin.body.scrollTop : 0;
+          sheetDrag.dragOriginY = null;
           sheetDrag.dy = 0;
           sheetDrag.vel = 0;
           sheetDrag.dragging = false;
+          sheetDrag.mode = null;
           return;
         }
       }
@@ -1952,27 +2008,53 @@
     }, { passive: true });
 
     window.addEventListener('pointermove', (e) => {
-      if (sheetDrag.dlg && e.pointerId === sheetDrag.id) {
-        const ddy = e.clientY - sheetDrag.startY;
-        const ddx = e.clientX - sheetDrag.startX;
-        if (!sheetDrag.dragging) {
-          if (Math.abs(ddy) < 8 && Math.abs(ddx) < 8) return;
-          if (Math.abs(ddx) > Math.abs(ddy)) { resetSheetDrag(); return; }
-          if (sheetDrag.fromBody && ddy <= 0) { resetSheetDrag(); return; }
-          sheetDrag.dragging = true;
-          sheetDrag.vel = 0;
-          sheetDrag.lastY = e.clientY;
-          sheetDrag.lastT = performance.now();
-          sheetDrag.dlg.classList.add('is-dragging');
+      if (!sheetDrag.dlg || e.pointerId !== sheetDrag.id) return;
+      const ddy = e.clientY - sheetDrag.startY;
+      const ddx = e.clientX - sheetDrag.startX;
+      const now = performance.now();
+      const dt = now - sheetDrag.lastT;
+      if (dt > 0) sheetDrag.vel = (e.clientY - sheetDrag.lastY) / dt;
+      sheetDrag.lastY = e.clientY;
+      sheetDrag.lastT = now;
+      const elapsed = now - sheetDrag.startT;
+      const flick = isDownFlick(ddy, sheetDrag.vel, elapsed);
+
+      if (!sheetDrag.mode) {
+        if (Math.abs(ddy) < SLOP && Math.abs(ddx) < SLOP) return;
+        if (Math.abs(ddx) > Math.abs(ddy)) { resetSheetDrag(); return; }
+        const scrollTop = sheetDrag.body ? sheetDrag.body.scrollTop : 0;
+        if (sheetDrag.fromHandle || (ddy > 0 && (scrollTop <= 0 || flick))) {
+          beginSheetDrag(e);
+        } else {
+          sheetDrag.mode = 'scroll';
           try { sheetDrag.dlg.setPointerCapture(e.pointerId); } catch { /* ignore */ }
         }
-        const now = performance.now();
-        const dt = now - sheetDrag.lastT;
-        if (dt > 0) sheetDrag.vel = (e.clientY - sheetDrag.lastY) / dt;
-        sheetDrag.lastY = e.clientY;
-        sheetDrag.lastT = now;
-        sheetDrag.dy = Math.max(0, ddy);
-        if (!prefersReducedMotion()) sheetDrag.dlg.style.transform = `translateY(${sheetDrag.dy}px)`;
+      }
+
+      if (sheetDrag.mode === 'scroll') {
+        const body = sheetDrag.body;
+        if (!body) { resetSheetDrag(); return; }
+        if (flick) {
+          body.scrollTop = sheetDrag.startScroll;
+          sheetDrag.dragOriginY = sheetDrag.startY;
+          beginSheetDrag(e);
+        } else {
+          const next = sheetDrag.startScroll - ddy;
+          if (next <= 0 && ddy > 0) {
+            body.scrollTop = 0;
+            sheetDrag.dragOriginY = sheetDrag.startY + sheetDrag.startScroll;
+            beginSheetDrag(e);
+          } else {
+            const max = Math.max(0, body.scrollHeight - body.clientHeight);
+            body.scrollTop = Math.max(0, Math.min(max, next));
+            e.preventDefault();
+            return;
+          }
+        }
+      }
+
+      if (sheetDrag.mode === 'drag') {
+        applySheetDragY(e.clientY);
         e.preventDefault();
       }
     }, { passive: false });
@@ -1996,13 +2078,31 @@
     function endSheetDrag(e) {
       if (!sheetDrag.dlg || e.pointerId !== sheetDrag.id) return;
       const dlg = sheetDrag.dlg;
+      const body = sheetDrag.body;
+      const startScroll = sheetDrag.startScroll;
+      const startY = sheetDrag.startY;
+      const startT = sheetDrag.startT;
       const dy = sheetDrag.dy;
       const vel = (performance.now() - sheetDrag.lastT > 80) ? 0 : sheetDrag.vel;
       const dragging = sheetDrag.dragging;
+      const mode = sheetDrag.mode;
       sheetDrag.dlg = null;
+      sheetDrag.body = null;
       sheetDrag.id = 0;
       sheetDrag.dragging = false;
-      if (!dragging) {
+      sheetDrag.mode = null;
+      sheetDrag.dragOriginY = null;
+
+      const elapsed = performance.now() - startT;
+      const ddy = e.clientY - startY;
+      const flick = isDownFlick(ddy, vel, elapsed);
+
+      if (mode === 'scroll' || !dragging) {
+        if (flick) {
+          if (body) body.scrollTop = startScroll;
+          dismissSheet(dlg, Math.max(0, ddy));
+          return;
+        }
         dlg.classList.remove('is-dragging');
         dlg.style.transform = '';
         return;
