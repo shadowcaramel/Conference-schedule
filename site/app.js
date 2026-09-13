@@ -255,7 +255,7 @@
     expanded: new Map(),          // blockId -> bool (user override)
     layout: 'timeline',           // 'timeline' | 'overview'
     overviewFocus: null,          // focused overview column, or null = whole week
-    overviewSel: null,            // { day, start, end } highlighted overview interval, or null
+    overviewSel: null,            // { day, start, end, section? } highlighted overview cell, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
   };
   if (params.get('lang')) store.set('lang', state.lang);
@@ -1335,11 +1335,8 @@
         }
         bands.push({ start, end, kind: 'plenary', items });
       } else if (b.type === 'section') {
-        const start = b.start; let end = b.end; const items = [b]; i++;
-        while (i < blocks.length && blocks[i].type === 'section') {
-          items.push(blocks[i]); if (blocks[i].end > end) end = blocks[i].end; i++;
-        }
-        bands.push({ start, end, kind: 'section', items });
+        bands.push({ start: b.start, end: b.end, kind: 'section', items: [b] });
+        i++;
       } else {
         bands.push({ start: b.start, end: b.end, kind: b.type, items: [b] });
         i++;
@@ -1358,6 +1355,32 @@
       }
     }
     return Array.from(mins).sort((a, b) => a - b);
+  }
+
+  function overviewSectionClusters(bands) {
+    const sections = bands.filter(b => b.kind === 'section').slice().sort((a, b) => {
+      const t = a.start.localeCompare(b.start);
+      if (t) return t;
+      return String(a.items[0] && a.items[0].section).localeCompare(String(b.items[0] && b.items[0].section), undefined, { numeric: true });
+    });
+    const clusters = [];
+    for (const band of sections) {
+      const start = toMin(band.start);
+      const end = toMin(band.end);
+      const last = clusters[clusters.length - 1];
+      if (last && start < last.end) {
+        last.items.push(band);
+        if (end > last.end) last.end = end;
+      } else {
+        clusters.push({ start, end, items: [band] });
+      }
+    }
+    return clusters;
+  }
+
+  function overviewSelMatches(day, start, section) {
+    const sel = state.overviewSel;
+    return !!(sel && sel.day === day && sel.start === start && String(sel.section || '') === String(section || ''));
   }
 
   function viewOverview() {
@@ -1390,22 +1413,59 @@
         class: 'overview-time', role: 'rowheader',
         'aria-label': `${fromMin(start)}–${fromMin(end)}`,
         dataset: { tick: String(start), start: String(start), end: String(end) }
-      }, el('span', { class: 't-start' }, fromMin(start)), el('span', { class: 't-end' }, fromMin(end)));
+      },
+        el('span', { class: 't-start', dataset: { min: String(start) } }, fromMin(start)),
+        el('span', { class: 't-end', dataset: { min: String(end) } }, fromMin(end)));
       label.style.gridColumn = '1';
       label.style.gridRow = String(i + 2);
       table.append(label);
     }
     DAYS.forEach((d, di) => {
-      for (const band of byDay[d]) {
+      const wrap = el('div', { class: 'overview-day', dataset: { day: d } });
+      wrap.style.gridColumn = String(di + 2);
+      wrap.style.gridRow = '2 / -1';
+      const bands = byDay[d];
+      const clusterOf = new Map();
+      for (const cl of overviewSectionClusters(bands)) {
+        for (const band of cl.items) clusterOf.set(band, cl);
+      }
+      const placed = new Set();
+      for (const band of bands) {
+        if (band.kind === 'section') {
+          const cl = clusterOf.get(band);
+          if (!cl || placed.has(cl)) continue;
+          placed.add(cl);
+          const r0 = ticks.indexOf(cl.start);
+          const r1 = ticks.indexOf(cl.end);
+          if (r0 < 0 || r1 < 0 || r1 <= r0) continue;
+          const cluster = el('div', { class: 'overview-sec-cluster' });
+          cluster.style.gridColumn = '1';
+          cluster.style.gridRow = `${r0 + 1} / ${r1 + 1}`;
+          cluster.style.setProperty('--secs', String(cl.items.length));
+          for (let i = 0; i < cl.items.length; i++) {
+            const secBand = cl.items[i];
+            const s0 = ticks.indexOf(toMin(secBand.start));
+            const s1 = ticks.indexOf(toMin(secBand.end));
+            if (s0 < 0 || s1 < 0 || s1 <= s0) continue;
+            const cell = renderOverviewCell(secBand, d);
+            if (d === focus) cell.classList.add('is-focus');
+            cell.style.gridColumn = String(i + 1);
+            cell.style.gridRow = `${s0 - r0 + 1} / ${s1 - r0 + 1}`;
+            cluster.append(cell);
+          }
+          wrap.append(cluster);
+          continue;
+        }
         const r0 = ticks.indexOf(toMin(band.start));
         const r1 = ticks.indexOf(toMin(band.end));
         if (r0 < 0 || r1 < 0 || r1 <= r0) continue;
         const cell = renderOverviewCell(band, d);
         if (d === focus) cell.classList.add('is-focus');
-        cell.style.gridColumn = String(di + 2);
-        cell.style.gridRow = `${r0 + 2} / ${r1 + 2}`;
-        table.append(cell);
+        cell.style.gridColumn = '1';
+        cell.style.gridRow = `${r0 + 1} / ${r1 + 1}`;
+        wrap.append(cell);
       }
+      table.append(wrap);
     });
     applyOverviewDayFocus(table);
     applyOverviewHighlight(table);
@@ -1425,20 +1485,36 @@
     table.querySelectorAll('.overview-cell[data-start]').forEach(c => {
       c.classList.toggle('is-focus', !!(focus && c.dataset.day === focus));
     });
+    applyOverviewTimeIdle(table);
+  }
+
+  function overviewTickMembership(table) {
+    const focus = state.overviewFocus;
     const starts = new Set();
     const ends = new Set();
-    if (focus) {
-      table.querySelectorAll(`.overview-cell[data-day="${focus}"][data-start]`).forEach(c => {
-        starts.add(Number(c.dataset.start));
-        ends.add(Number(c.dataset.end));
-      });
+    const sel = focus
+      ? `.overview-cell[data-day="${focus}"][data-start]`
+      : '.overview-cell[data-start]';
+    table.querySelectorAll(sel).forEach(c => {
+      starts.add(Number(c.dataset.start));
+      ends.add(Number(c.dataset.end));
+    });
+    if (state.overviewSel) {
+      starts.add(state.overviewSel.start);
+      ends.add(state.overviewSel.end);
     }
-    table.querySelectorAll('.overview-time[data-start]').forEach(n => {
-      const a = Number(n.dataset.start), b = Number(n.dataset.end);
-      const startEl = n.querySelector('.t-start');
-      const endEl = n.querySelector('.t-end');
-      if (startEl) startEl.classList.toggle('is-idle', !!focus && !starts.has(a));
-      if (endEl) endEl.classList.toggle('is-idle', !!focus && !ends.has(b));
+    return { starts, ends };
+  }
+
+  function applyOverviewTimeIdle(table) {
+    if (!table) return;
+    const focus = state.overviewFocus;
+    const { starts, ends } = overviewTickMembership(table);
+    table.querySelectorAll('.overview-time .t-start').forEach(n => {
+      n.classList.toggle('is-idle', !!focus && !starts.has(Number(n.dataset.min)));
+    });
+    table.querySelectorAll('.overview-time .t-end').forEach(n => {
+      n.classList.toggle('is-idle', !!focus && !ends.has(Number(n.dataset.min)));
     });
   }
 
@@ -1449,35 +1525,43 @@
     const old = table.querySelector('.overview-range');
     if (old) old.remove();
     const sel = state.overviewSel;
-    if (!sel) return;
+    if (!sel) {
+      applyOverviewTimeIdle(table);
+      return;
+    }
     table.querySelectorAll('.overview-cell[data-start]').forEach(c => {
-      if (c.dataset.day === sel.day && Number(c.dataset.start) === sel.start) c.classList.add('is-picked');
+      if (overviewSelMatches(c.dataset.day, Number(c.dataset.start), c.dataset.section)) c.classList.add('is-picked');
+    });
+    table.querySelectorAll('.overview-time .t-start').forEach(n => {
+      if (Number(n.dataset.min) === sel.start) n.classList.add('is-hl');
+    });
+    table.querySelectorAll('.overview-time .t-end').forEach(n => {
+      if (Number(n.dataset.min) === sel.end) n.classList.add('is-hl');
     });
     const times = [...table.querySelectorAll('.overview-time[data-start]')].sort(
       (a, b) => Number(a.dataset.start) - Number(b.dataset.start)
     );
-    const hlRows = [];
-    for (const n of times) {
+    const hlRows = times.filter(n => {
       const a = Number(n.dataset.start), b = Number(n.dataset.end);
-      const startEl = n.querySelector('.t-start');
-      const endEl = n.querySelector('.t-end');
-      if (startEl && a >= sel.start && a < sel.end) startEl.classList.add('is-hl');
-      if (endEl && b > sel.start && b <= sel.end) endEl.classList.add('is-hl');
-      if (a < sel.end && b > sel.start) hlRows.push(n);
+      return a < sel.end && b > sel.start;
+    });
+    if (!hlRows.length) {
+      applyOverviewTimeIdle(table);
+      return;
     }
-    if (!hlRows.length) return;
     const r0 = parseInt(hlRows[0].style.gridRow, 10);
     const r1 = parseInt(hlRows[hlRows.length - 1].style.gridRow, 10) + 1;
     const bar = el('div', { class: 'overview-range', 'aria-hidden': 'true' });
     bar.style.gridColumn = '1';
     bar.style.gridRow = `${r0} / ${r1}`;
     table.prepend(bar);
+    applyOverviewTimeIdle(table);
   }
 
-  function activateOverviewCell(day, start, end) {
+  function activateOverviewCell(day, start, end, section) {
     haptic('tick');
-    const same = state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start;
-    state.overviewSel = same ? null : { day, start, end };
+    const same = overviewSelMatches(day, start, section);
+    state.overviewSel = same ? null : { day, start, end, section: section || '' };
     applyOverviewHighlight(document.querySelector('.overview'));
   }
 
@@ -1485,7 +1569,7 @@
     if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
     if (e.type === 'keydown') e.preventDefault();
     const cell = e.currentTarget;
-    activateOverviewCell(cell.dataset.day, Number(cell.dataset.start), Number(cell.dataset.end));
+    activateOverviewCell(cell.dataset.day, Number(cell.dataset.start), Number(cell.dataset.end), cell.dataset.section);
   }
 
   function overviewBandLabel(band) {
@@ -1504,22 +1588,24 @@
     if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
     const start = toMin(band.start);
     const end = toMin(band.end);
-    const picked = !!(state.overviewSel && state.overviewSel.day === day && state.overviewSel.start === start);
-    const attrs = { role: 'button', tabindex: 0, dataset: { start: String(start), end: String(end), day }, onclick: overviewCellActivate, onkeydown: overviewCellActivate };
+    const sectionId = band.kind === 'section' && band.items[0] ? String(band.items[0].section || '') : '';
+    const picked = overviewSelMatches(day, start, sectionId);
+    const attrs = {
+      role: 'button', tabindex: 0,
+      dataset: { start: String(start), end: String(end), day, ...(sectionId ? { section: sectionId } : {}) },
+      onclick: overviewCellActivate, onkeydown: overviewCellActivate
+    };
     if (band.kind === 'section') {
-      const seen = new Set();
-      const panes = [];
-      const names = [];
-      for (const b of band.items) {
-        if (seen.has(b.section)) continue;
-        seen.add(b.section);
-        const s = sectionsById[b.section];
-        const id = s ? s.id : b.section;
-        names.push(s ? `S${id} ${L(s.short)}` : `S${id}`);
-        panes.push(el('span', { class: 'overview-sec-pane', dataset: { color: s ? s.color : 'slate' } }, `S${id}`));
-      }
-      return el('div', { class: `overview-cell sections${picked ? ' is-picked' : ''}`, ...attrs, 'aria-label': names.join(', ') },
-        el('div', { class: 'overview-sec-split' }, ...panes));
+      const b = band.items[0];
+      const s = b && sectionsById[b.section];
+      const id = s ? s.id : sectionId;
+      const name = s ? `S${id} ${L(s.short)}` : `S${id}`;
+      return el('div', {
+        class: `overview-cell section-block${picked ? ' is-picked' : ''}`,
+        ...attrs,
+        dataset: { ...attrs.dataset, color: s ? s.color : 'slate' },
+        'aria-label': name
+      }, `S${id}`);
     }
     const glyph = bandGlyph(band);
     const label = overviewBandLabel(band);

@@ -4,7 +4,7 @@
    HTTPS / localhost only; the page never registers this file on plain HTTP. */
 'use strict';
 
-const CACHE = 'nucleus2026-v2';
+const CACHE = 'nucleus2026-v4';
 const PRECACHE = [
   './',
   './index.html',
@@ -19,7 +19,8 @@ const PRECACHE = [
 ];
 
 function isProgrammeData(url) {
-  return url.pathname.endsWith('data.js');
+  const path = url.pathname;
+  return path.endsWith('data.js') || path.endsWith('app.js') || path.endsWith('app.css');
 }
 
 self.addEventListener('install', (event) => {

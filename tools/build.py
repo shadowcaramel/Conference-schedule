@@ -323,7 +323,7 @@ def build_model(wb) -> dict:
 
         # compute per-talk times
         cursor = minutes(start)
-        total = 0
+        packed_end = cursor
         for tid in talk_ids:
             t = talks[tid]
             dur = t["duration"] or DEFAULT_DURATION.get(btype, 15)
@@ -334,11 +334,18 @@ def build_model(wb) -> dict:
             t["start"] = fmt_time(from_minutes(cursor))
             t["end"] = fmt_time(from_minutes(cursor + dur))
             t["blockId"] = block_id
+            packed_end = max(packed_end, cursor + dur)
             cursor += dur
-            total += dur
-        if talk_ids and cursor > minutes(end):
+        if btype == "section" and talk_ids:
+            sheet_end = fmt_time(end)
+            packed = fmt_time(from_minutes(packed_end))
+            if packed != sheet_end:
+                diag.warn(f"Блоки, строка {row}: секция {sec} {date:%d.%m} в книге {fmt_time(start)}–{sheet_end}, "
+                          f"по докладам ({len(talk_ids)}×) до {packed} — на сайте конец блока по докладам")
+            block["end"] = packed
+        elif talk_ids and packed_end > minutes(end):
             diag.warn(f"Блоки, строка {row}: доклады блока {date:%d.%m} {fmt_time(start)}–{fmt_time(end)} "
-                      f"(секция {sec}) заканчиваются в {fmt_time(from_minutes(cursor))}, позже конца блока")
+                      f"(секция {sec}) заканчиваются в {fmt_time(from_minutes(packed_end))}, позже конца блока")
 
     blocks.sort(key=lambda b: (b["date"], b["start"], b["type"] != "section", b["section"].zfill(2)))
 
