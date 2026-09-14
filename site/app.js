@@ -1723,13 +1723,13 @@
     if (['plenary', 'jubilee', 'sponsor'].includes(type)) return renderPlenary(b, now);
     if (type === 'poster') {
       return el('div', { class: 'row-card poster-row card hoverable', role: 'button', tabindex: 0, dataset: { action: 'posters' } },
-        icon('poster'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, [`${D.posters.length} ${t('posterCount')}`, roomOf(b) ? `${t('room')} ${roomOf(b)}` : '', L(b.note)].filter(Boolean).join(' · '))),
+        icon('poster'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, [`${D.posters.length} ${t('posterCount')}`, roomOf(b) || '', L(b.note)].filter(Boolean).join(' · '))),
         el('span', { class: 'ico', style: 'margin-left:auto;color:var(--text-3)', html: `<svg viewBox="0 0 24 24">${ICONS.arrow}</svg>` }));
     }
     const cls = type === 'social' ? 'social' : (type === 'opening' || type === 'closing' || type === 'registration') ? 'milestone' : '';
     const ic = type === 'social' ? socialIcon(b) : BLOCK_ICON[type] || 'info';
     return el('div', { class: `row-card ${cls}`.trim() }, icon(ic),
-      el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), (roomOf(b) || L(b.note)) ? el('div', { class: 'row-meta' }, [roomOf(b) ? `${t('room')} ${roomOf(b)}` : '', L(b.note)].filter(Boolean).join(' · ')) : null));
+      el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), (roomOf(b) || L(b.note)) ? el('div', { class: 'row-meta' }, [roomOf(b) || '', L(b.note)].filter(Boolean).join(' · ')) : null));
   }
 
   function sponsorOf(talk) {
@@ -1885,7 +1885,7 @@
   function viewPosters() {
     const frag = document.createDocumentFragment();
     const sub = [];
-    if (posterBlock) sub.push(`${fmtLong(posterBlock.date)}, ${posterBlock.start}–${posterBlock.end}`, roomOf(posterBlock) ? `${t('roomLong')} ${roomOf(posterBlock)}` : '', L(posterBlock.note));
+    if (posterBlock) sub.push(`${fmtLong(posterBlock.date)}, ${posterBlock.start}–${posterBlock.end}`, roomOf(posterBlock) || '', L(posterBlock.note));
     sub.push(`${D.posters.length} ${t('posterCount')}`);
     frag.append(el('div', { class: 'page-head' }, el('div', null, el('h1', { class: 'page-title' }, t('posters')), el('p', { class: 'page-sub' }, sub.filter(Boolean).flatMap((x, i) => i ? [el('span', { class: 'sep' }, '·'), el('span', null, x)] : [el('span', null, x)])))));
     if (!D.posters.some(p => p.board)) frag.append(el('div', { class: 'hint' }, icon('info'), el('span', null, t('posterHint'))));
@@ -1962,7 +1962,7 @@
         const card = el('div', { class: 'card' });
         for (const tk of list) {
           const b = tk.blockId ? blocksById[tk.blockId] : null;
-          const ctx = tk.section === 'P' ? talkKicker(tk) : `${t('section')} ${tk.section}${b && roomOf(b) ? ` · ${t('room')} ${roomOf(b)}` : ''}`;
+          const ctx = tk.section === 'P' ? talkKicker(tk) : `${t('section')} ${tk.section}${b && roomOf(b) ? ` · ${roomOf(b)}` : ''}`;
           card.append(renderTalkRow(tk, now.date === date ? now : null, { q, context: ctx, colored: true }));
         }
         group.append(card); host.append(group);
@@ -2031,7 +2031,7 @@
       for (const tk of list) {
         const others = list.filter(o => o !== tk && o.start && tk.start && toMin(o.start) < toMin(tk.end) && toMin(tk.start) < toMin(o.end));
         const b = tk.blockId ? blocksById[tk.blockId] : null;
-        const ctx = tk.section === 'P' ? talkKicker(tk) : `${t('section')} ${tk.section}${b && roomOf(b) ? ` · ${t('room')} ${roomOf(b)}` : ''}`;
+        const ctx = tk.section === 'P' ? talkKicker(tk) : `${t('section')} ${tk.section}${b && roomOf(b) ? ` · ${roomOf(b)}` : ''}`;
         const row = renderTalkRow(tk, now.date === date ? now : null, { context: ctx, colored: true });
         if (others.length) $('.t-speaker', row).append(el('span', { class: 'conflict' }, icon('warn'), ` ${t('conflict')} ${others.map(o => speakerShort(o)).join(', ')}`));
         card.append(row);
@@ -2151,7 +2151,7 @@
           const blk = el('div', { class: 'p-block' });
           const title = b.type === 'section' ? `${t('section')} ${b.section} · ${blockTitle(b)}` : blockTitle(b);
           const ch = L(b.chair) || (b.type === 'section' && sectionsById[b.section] ? chairLabel(sectionsById[b.section]) : '');
-          const meta = [`${t('room')} ${roomLabel(b)}`, ch ? `${t('chair')}: ${ch}` : '', L(b.note)].filter(Boolean).join(' · ');
+          const meta = [roomLabel(b), ch ? `${t('chair')}: ${ch}` : '', L(b.note)].filter(Boolean).join(' · ');
           const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
           if (talks.length === 1 && b.type !== 'section') {
             const tk = talks[0];
