@@ -871,7 +871,10 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
 .overview-time .t-end {
   font-size: 0.64rem; font-weight: 500; color: var(--text-3);
 }
-.overview-time .t-start.is-idle, .overview-time .t-end.is-idle { opacity: 0; }
+.overview-time .t-start.is-idle, .overview-time .t-end.is-idle {
+  opacity: 0; position: absolute; pointer-events: none;
+}
+.overview-time:has(.t-start.is-idle):not(:has(.t-end.is-idle)) { justify-content: flex-end; }
 .overview-time .t-start.is-hl { color: var(--accent); opacity: 1; }
 .overview-time .t-end.is-hl { color: var(--accent); opacity: .8; }
 .overview-cell {

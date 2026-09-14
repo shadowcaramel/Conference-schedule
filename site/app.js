@@ -643,6 +643,21 @@
     if (opts.day) lastDayHapticAt = now;
     return true;
   }
+  let hapticsArmed = false;
+  function hapticsHasActivation() {
+    try { return !!(navigator.userActivation && navigator.userActivation.hasBeenActive); }
+    catch { return false; }
+  }
+  function armHaptics() {
+    if (hapticsArmed || !canHaptic()) return;
+    try { navigator.vibrate(0); } catch { /* ignore */ }
+    if (hapticsHasActivation()) hapticsArmed = true;
+  }
+  function bindHapticUnlock() {
+    const opts = { capture: true, passive: true };
+    document.addEventListener('pointerup', armHaptics, opts);
+    document.addEventListener('click', armHaptics, opts);
+  }
   function highlight(text, q) {
     if (!q) return text;
     const idx = norm(text).indexOf(q);
@@ -746,6 +761,7 @@
     return /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
   function isAndroid() { return /Android/i.test(navigator.userAgent || ''); }
+  function isMobileClient() { return isIos() || isAndroid(); }
   function isSafariLike() {
     const ua = navigator.userAgent || '';
     return /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome|Android/i.test(ua);
@@ -1127,7 +1143,7 @@
       frag.append(chunk);
     }
     requestAnimationFrame(() => {
-      observeSlots();
+      observeHapticScroll();
       observeTimelineCaps();
       if (state.day && !viewSchedule._skipScroll) {
         const chunk = document.querySelector(`.day-chunk[data-day="${state.day}"]`);
@@ -1304,19 +1320,22 @@
     });
   }
 
-  function observeSlots() {
+  function observeHapticScroll() {
     if (slotObserver) { slotObserver.disconnect(); slotObserver = null; }
     slotObsReady = false;
     lastSlotId = null;
     if (!canHaptic()) return;
-    if (state.view !== 'schedule' || state.layout !== 'timeline') return;
-    const slots = $$('.slot');
-    if (!slots.length) return;
+    let nodes = [];
+    if (state.view === 'schedule' && state.layout === 'timeline') nodes = $$('.slot');
+    else if (state.view === 'sections') nodes = $$('#main .talk');
+    else if (state.view === 'posters') nodes = $$('#main .poster');
+    else return;
+    if (!nodes.length) return;
     slotObserver = new IntersectionObserver((entries) => {
       if (ignoreDayObs) return;
       const hit = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
       if (!hit) return;
-      const id = hit.target.id;
+      const id = hit.target.id || hit.target.dataset.talk || '';
       if (!id) return;
       const changed = id !== lastSlotId;
       lastSlotId = id;
@@ -1324,7 +1343,7 @@
       if (performance.now() - lastDayHapticAt < HAPTIC_COOLDOWN_MS) return;
       haptic('tick');
     }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, 0.15, 0.4] });
-    slots.forEach(s => slotObserver.observe(s));
+    nodes.forEach(n => slotObserver.observe(n));
     requestAnimationFrame(() => requestAnimationFrame(() => { slotObsReady = true; }));
   }
 
@@ -1517,12 +1536,19 @@
   function applyOverviewTimeIdle(table) {
     if (!table) return;
     const focus = state.overviewFocus;
+    const sel = state.overviewSel;
     const { starts, ends } = overviewTickMembership(table);
     table.querySelectorAll('.overview-time .t-start').forEach(n => {
-      n.classList.toggle('is-idle', !!focus && !starts.has(Number(n.dataset.min)));
+      const T = Number(n.dataset.min);
+      const reserveAsEnd = !!(sel && T === sel.end && T !== sel.start);
+      n.classList.toggle('is-idle', reserveAsEnd || !starts.has(T));
     });
     table.querySelectorAll('.overview-time .t-end').forEach(n => {
-      n.classList.toggle('is-idle', !!focus && !ends.has(Number(n.dataset.min)));
+      const T = Number(n.dataset.min);
+      const isSelEnd = !!(sel && T === sel.end);
+      const endOnly = ends.has(T) && !starts.has(T);
+      const show = isSelEnd || (!!focus && endOnly && !(sel && T === sel.start));
+      n.classList.toggle('is-idle', !show);
     });
   }
 
@@ -1787,7 +1813,7 @@
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
     const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${displayTitle(talk.title)}`, dataset: { talk: talk.id } },
       el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
-      el('h3', { class: 'ptitle' }, el('span', { class: 'ptitle-text' }, ...titleNodes(talk.title)), sponsorLogo(talk)),
+      el('h3', { class: 'ptitle' }, el('span', { class: 'ptitle-text' }, ...titleNodes(talk.title)), isMobileClient() ? null : sponsorLogo(talk)),
       el('div', { class: 'pspeaker' }, el('b', null, speakerName(talk)), talk.org ? el('span', null, talk.org) : null),
       el('div', { class: 'pmeta' }, el('span', { class: 'tnum' }, icon('clock'), ` ${talk.start}–${talk.end} · ${talk.duration} ${t('min')}`), el('span', { class: 'room' }, icon('pin'), ` ${roomLabel(b)}`)),
       starButton(talk.id));
@@ -1880,6 +1906,7 @@
       }
       frag.append(group);
     }
+    requestAnimationFrame(() => observeHapticScroll());
     return frag;
   }
 
@@ -1906,7 +1933,11 @@
       listHost.innerHTML = '';
       const q = norm(state.posterQ);
       const items = D.posters.filter(p => (!state.posterSection || p.section === state.posterSection) && (!q || (posterHay.get(p.id) || '').includes(q)));
-      if (!items.length) { listHost.append(el('div', { class: 'empty' }, icon('search'), el('h3', null, t('nothingFound')))); return; }
+      if (!items.length) {
+        listHost.append(el('div', { class: 'empty' }, icon('search'), el('h3', null, t('nothingFound'))));
+        if (listHost.isConnected) observeHapticScroll();
+        return;
+      }
       const bySec = new Map();
       for (const p of items) { const k = p.section || '?'; if (!bySec.has(k)) bySec.set(k, []); bySec.get(k).push(p); }
       for (const [sid, ps] of Array.from(bySec.entries()).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))) {
@@ -1917,13 +1948,15 @@
         for (const p of ps) list.append(renderPoster(p, q));
         group.append(list); listHost.append(group);
       }
+      if (listHost.isConnected) observeHapticScroll();
     }
     renderPosterList();
+    requestAnimationFrame(() => observeHapticScroll());
     return frag;
   }
   function renderPoster(p, q = '') {
     const s = sectionsById[p.section];
-    return el('article', { class: `card hoverable poster status-${p.status || 'ok'}`, dataset: { color: s ? s.color : 'slate', talk: p.id }, role: 'button', tabindex: 0 },
+    return el('article', { class: `card hoverable poster status-${p.status || 'ok'}`, id: `t-${p.id}`, dataset: { color: s ? s.color : 'slate', talk: p.id }, role: 'button', tabindex: 0 },
       el('div', { class: 'p-kicker' }, el('span', { class: 'board' }, p.board ? `${t('board')} ${p.board}` : t('poster')), s ? el('span', { class: 'sec-chip', dataset: { color: s.color } }, el('span', { class: 'dot' }), L(s.short)) : null, statusBadge(p)),
       el('div', { class: 'p-title' }, ...titleNodes(p.title, q)),
       el('div', { class: 'p-speaker' }, el('b', null, q ? highlight(speakerName(p), q) : speakerName(p)), p.org ? ` · ${p.org}` : ''),
@@ -2176,11 +2209,17 @@
     const clone = live.cloneNode(true);
     clone.classList.add('print-overview-grid');
     clone.classList.remove('is-day-focus');
-    clone.querySelectorAll('.is-picked, .is-hl, .is-focus, .is-active, .is-idle').forEach(n => {
-      n.classList.remove('is-picked', 'is-hl', 'is-focus', 'is-active', 'is-idle');
+    clone.querySelectorAll('.is-picked, .is-hl, .is-focus, .is-active').forEach(n => {
+      n.classList.remove('is-picked', 'is-hl', 'is-focus', 'is-active');
     });
     const range = clone.querySelector('.overview-range');
     if (range) range.remove();
+    const weekStarts = new Set();
+    clone.querySelectorAll('.overview-cell[data-start]').forEach(c => weekStarts.add(c.dataset.start));
+    clone.querySelectorAll('.overview-time .t-start').forEach(n => {
+      n.classList.toggle('is-idle', !weekStarts.has(n.dataset.min));
+    });
+    clone.querySelectorAll('.overview-time .t-end').forEach(n => n.classList.add('is-idle'));
     const stage = el('div', { class: 'print-overview-stage' });
     stage.append(clone);
     root.append(stage);
@@ -2504,6 +2543,7 @@
   });
   bindMobileGestures();
   bindMainClicks();
+  bindHapticUnlock();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') refreshNowMarkers();
   });
