@@ -430,7 +430,7 @@
   let suppressHash = false;
   let ignoreDayObs = false;
   let holdDayObsT = 0;
-  let dayObserver = null;
+  let daySpyRaf = 0;
   let slotObserver = null;
   let timelineCapObs = null;
   let slotObsReady = false;
@@ -1127,7 +1127,6 @@
       frag.append(chunk);
     }
     requestAnimationFrame(() => {
-      observeDayChunks();
       observeSlots();
       observeTimelineCaps();
       if (state.day && !viewSchedule._skipScroll) {
@@ -1285,21 +1284,24 @@
     return day;
   }
 
-  function observeDayChunks() {
-    if (dayObserver) { dayObserver.disconnect(); dayObserver = null; }
-    const chunks = $$('.day-chunk');
-    if (!chunks.length) return;
-    dayObserver = new IntersectionObserver(() => {
-      if (ignoreDayObs) return;
-      const day = dayAtProbe();
-      if (day && day !== state.day) {
-        haptic('tick', { day: true });
-        state.day = day;
-        renderDaybar();
-        writeHash(false);
-      }
-    }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, 0.15, 0.4] });
-    chunks.forEach(c => dayObserver.observe(c));
+  function syncDayFromScroll() {
+    if (ignoreDayObs) return;
+    if (state.view !== 'schedule' || state.layout !== 'timeline') return;
+    const day = dayAtProbe();
+    if (day && day !== state.day) {
+      haptic('tick', { day: true });
+      state.day = day;
+      renderDaybar();
+      writeHash(false);
+    }
+  }
+
+  function scheduleDaySpy() {
+    if (daySpyRaf) return;
+    daySpyRaf = requestAnimationFrame(() => {
+      daySpyRaf = 0;
+      syncDayFromScroll();
+    });
   }
 
   function observeSlots() {
@@ -2490,6 +2492,8 @@
       try { window.matchMedia(`(display-mode: ${mode})`).addEventListener('change', syncInstallUi); } catch { /* old Safari */ }
     });
   }
+  window.addEventListener('scroll', scheduleDaySpy, { passive: true });
+  window.addEventListener('resize', scheduleDaySpy);
   window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); });
   window.addEventListener('beforeprint', renderPrint);
   window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
