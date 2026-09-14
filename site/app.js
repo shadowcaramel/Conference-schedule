@@ -28,6 +28,7 @@
   // Consecutive plenary/jubilee/sponsor cards get a group subtitle. Set false to flatten.
   const SLOT_GROUPS = true;
   const HAPTICS_ON = true; // set false in a later update to disable for everyone
+  const TOUR_ON = true; // set false in a later update to disable for everyone
   const ASSET_V = '11'; // bump with index.html ?v= when logos/CSS/JS change
 
   // ------------------------------------------------------------------ helpers
@@ -101,6 +102,7 @@
     arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
     smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
     shareup: '<path d="M12 17V4"/><polyline points="7 9 12 4 17 9"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
+    help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
   };
   const icon = (name, cls = '') => el('span', { class: `ico ${cls}`.trim(), 'aria-hidden': 'true', html: `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>` });
 
@@ -163,6 +165,20 @@
       installIframe: 'Страница встроена в другой сайт. Сначала откройте её в отдельной вкладке — затем можно добавить ярлык.',
       installOpenTab: 'Открыть в новой вкладке', installLater: 'Не сейчас',
       installBanner: 'Добавьте программу на Домашний экран — так удобнее в дни конференции.',
+      tourHelp: 'Справка по сайту', tourSkip: 'Пропустить', tourNext: 'Далее', tourBack: 'Назад',
+      tourStart: 'Начать', tourDone: 'Готово', tourShowOverview: 'Показать сетку',
+      tourWelcomeTitle: 'Программа ЯДРО-2026',
+      tourWelcomeBody: 'Четыре короткие подсказки о главных экранах. Можно пропустить и открыть снова через «?».',
+      tourNavTitle: 'Разделы',
+      tourNavBody: 'Расписание, секции, постеры, поиск и «Моё» — личное расписание.',
+      tourDaysTitle: 'Дни конференции',
+      tourDaysBody: 'Листайте дни здесь. Точка отмечает сегодняшний день.',
+      tourLayoutTitle: 'Лента и сетка',
+      tourLayoutBody: 'Проведите эту полоску влево: справа скрыты вид «Сетка» и «Развернуть все».',
+      tourOverviewTitle: 'Сетка на неделю',
+      tourOverviewBody: 'Проведите таблицу в сторону, чтобы увидеть все дни.',
+      tourStarTitle: 'Моё расписание',
+      tourStarBody: 'Нажмите ★ у доклада — он появится в «Моё». Отметки хранятся в этом браузере; оттуда можно поделиться или выгрузить в календарь.',
     },
     en: {
       skip: 'Skip to content', schedule: 'Schedule', sections: 'Sections', posters: 'Posters', search: 'Search', my: 'My',
@@ -204,6 +220,20 @@
       installIframe: 'This page is embedded. Open it in a new tab first, then add the shortcut.',
       installOpenTab: 'Open in a new tab', installLater: 'Not now',
       installBanner: 'Add the programme to your Home Screen — easier during the conference.',
+      tourHelp: 'Site guide', tourSkip: 'Skip', tourNext: 'Next', tourBack: 'Back',
+      tourStart: 'Start', tourDone: 'Done', tourShowOverview: 'Show Overview',
+      tourWelcomeTitle: 'ЯДРО-2026 programme',
+      tourWelcomeBody: 'Four short tips for the main screens. Skip anytime and reopen from “?”.',
+      tourNavTitle: 'Sections',
+      tourNavBody: 'Schedule, sections, posters, search, and My — your personal timetable.',
+      tourDaysTitle: 'Conference days',
+      tourDaysBody: 'Switch days here. A dot marks today.',
+      tourLayoutTitle: 'Timeline and Overview',
+      tourLayoutBody: 'Swipe this strip left: Overview and Expand all sit off to the right.',
+      tourOverviewTitle: 'Week grid',
+      tourOverviewBody: 'Swipe the grid sideways to see every day.',
+      tourStarTitle: 'My schedule',
+      tourStarBody: 'Tap ★ on a talk to add it to My. Stars stay in this browser; from My you can share or export to a calendar.',
     },
   };
   const BLOCK_TYPE_LABEL = {
@@ -258,6 +288,21 @@
     overviewFocus: null,          // focused overview column, or null = whole week
     overviewSel: null,            // { day, start, end, section? } highlighted overview cell, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
+  };
+  let skipTourDeepLink = false;
+  const tour = {
+    active: false,
+    index: 0,
+    sub: null,
+    stepId: '',
+    replay: false,
+    savedView: null,
+    savedLayout: null,
+    layoutBeforeOverview: null,
+    gen: 0,
+    target: null,
+    paintRaf: 0,
+    bound: false,
   };
   if (params.get('lang')) store.set('lang', state.lang);
   if (params.get('groups') === '0') document.documentElement.dataset.slotGroups = 'off';
@@ -438,6 +483,7 @@
 
   function applyHash() {
     const h = readHash();
+    if (h.talk || h.my) skipTourDeepLink = true;
     if (h.my) {
       const ids = h.my.split(',').filter(id => D.talks[id] || postersById[id]);
       let added = 0;
@@ -774,6 +820,7 @@
   }
   function canNativeInstall() { return !!deferredPrompt; }
   function showInstallHint() {
+    if (tour.active) return false;
     if (isStandalone()) return false;
     const hint = store.get('installHint', '');
     if (hint === 'dismissed' || hint === 'installed') return false;
@@ -873,6 +920,348 @@
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 
+  // ------------------------------------------------------------------ new-user tour
+  function waitFrames(n = 2) {
+    return new Promise((resolve) => {
+      const step = () => { n -= 1; if (n <= 0) resolve(); else requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    });
+  }
+  function waitMs(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+  function tourNavTarget() {
+    const bottom = $('#bottom-nav');
+    if (bottom && getComputedStyle(bottom).display !== 'none') return bottom;
+    return $('#nav-desktop');
+  }
+  function tourStarTarget() {
+    return $('#main .plenary .star') || $('#main .star') || $('.tab[data-view="my"]');
+  }
+  function tourSteps() {
+    return [
+      { id: 'welcome', titleKey: 'tourWelcomeTitle', bodyKey: 'tourWelcomeBody' },
+      { id: 'nav', titleKey: 'tourNavTitle', bodyKey: 'tourNavBody', target: tourNavTarget },
+      { id: 'days', titleKey: 'tourDaysTitle', bodyKey: 'tourDaysBody', target: () => $('[data-tour="days"]'), needSchedule: true },
+      { id: 'layout', titleKey: 'tourLayoutTitle', bodyKey: 'tourLayoutBody', target: () => $('[data-tour="layout"]'), needSchedule: true, reveal: 'daybar', showOverview: true },
+      { id: 'star', titleKey: 'tourStarTitle', bodyKey: 'tourStarBody', target: tourStarTarget, needSchedule: true, needTimeline: true, needStar: true },
+    ];
+  }
+  function tourRoot() {
+    let n = $('#tour-root');
+    if (!n) {
+      n = el('div', { id: 'tour-root', hidden: true });
+      document.body.append(n);
+    }
+    return n;
+  }
+  function ensureTourDom() {
+    const root = tourRoot();
+    if ($('.tour-card', root)) return root;
+    root.replaceChildren(
+      el('div', { class: 'tour-layer', 'aria-hidden': 'true' }, el('div', { class: 'tour-spot is-welcome' })),
+      el('div', { class: 'tour-card', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'tour-title' }),
+    );
+    return root;
+  }
+  function bindTourChrome() {
+    if (tour.bound) return;
+    tour.bound = true;
+    document.addEventListener('keydown', onTourKey, true);
+    window.addEventListener('scroll', scheduleTourPaint, { passive: true, capture: true });
+    window.addEventListener('resize', scheduleTourPaint);
+  }
+  function onTourKey(e) {
+    if (!tour.active) return;
+    if (e.key === 'Escape') { e.preventDefault(); endTour('skipped'); return; }
+    if (e.key !== 'Tab') return;
+    const card = $('.tour-card', tourRoot());
+    if (!card) return;
+    const nodes = $$('button', card).filter((b) => !b.disabled);
+    if (!nodes.length) return;
+    const first = nodes[0], last = nodes[nodes.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || !card.contains(active))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (active === last || !card.contains(active))) { e.preventDefault(); first.focus(); }
+  }
+  function scheduleTourPaint() {
+    if (!tour.active) return;
+    if (tour.paintRaf) return;
+    tour.paintRaf = requestAnimationFrame(() => {
+      tour.paintRaf = 0;
+      if (!tour.active) return;
+      const target = tour.target && tour.target.isConnected ? tour.target : currentTourTarget();
+      tour.target = target;
+      tourPlace(target);
+    });
+  }
+  function currentTourTarget() {
+    if (tour.sub === 'overview') return $('[data-tour="overview"]') || $('.overview-wrap');
+    const step = tourSteps()[tour.index];
+    return step && step.target ? step.target() : null;
+  }
+  function tourPlace(target) {
+    const root = tourRoot();
+    const spot = $('.tour-spot', root);
+    const card = $('.tour-card', root);
+    if (!spot || !card) return;
+    const pad = 8;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const nav = $('#bottom-nav');
+    const navH = nav && getComputedStyle(nav).display !== 'none' ? nav.getBoundingClientRect().height : 0;
+    const safeBottom = vh - navH - 12;
+    const safeTop = 12;
+    if (!target) {
+      spot.classList.add('is-welcome');
+      spot.style.top = '40%';
+      spot.style.left = '50%';
+      spot.style.width = '0px';
+      spot.style.height = '0px';
+      const cw = card.offsetWidth, ch = card.offsetHeight;
+      card.style.left = `${Math.max(12, (vw - cw) / 2)}px`;
+      card.style.top = `${Math.max(safeTop, Math.min((vh - navH - ch) / 2, safeBottom - ch))}px`;
+      return;
+    }
+    spot.classList.remove('is-welcome');
+    const r = target.getBoundingClientRect();
+    const left = Math.max(6, r.left - pad);
+    const top = Math.max(6, r.top - pad);
+    const width = Math.max(24, Math.min(vw - left - 6, r.width + pad * 2));
+    const height = Math.max(24, Math.min(vh - top - 6, r.height + pad * 2));
+    spot.style.left = `${left}px`;
+    spot.style.top = `${top}px`;
+    spot.style.width = `${width}px`;
+    spot.style.height = `${height}px`;
+    spot.style.borderRadius = `${Math.min(18, Math.max(10, height / 4))}px`;
+    const cw = card.offsetWidth, ch = card.offsetHeight;
+    let cardTop = r.bottom + pad + 10;
+    if (cardTop + ch > safeBottom) cardTop = r.top - ch - pad - 10;
+    if (cardTop < safeTop) cardTop = safeTop;
+    if (cardTop + ch > safeBottom) cardTop = Math.max(safeTop, safeBottom - ch);
+    let cardLeft = r.left;
+    cardLeft = Math.min(cardLeft, vw - cw - 12);
+    cardLeft = Math.max(12, cardLeft);
+    card.style.left = `${cardLeft}px`;
+    card.style.top = `${cardTop}px`;
+  }
+  function overflowAncestor(node) {
+    let n = node && node.parentElement;
+    while (n && n !== document.body) {
+      const s = getComputedStyle(n);
+      if (/(auto|scroll)/.test(s.overflowX) && n.scrollWidth > n.clientWidth + 4) return n;
+      if (/(auto|scroll)/.test(s.overflowY) && n.scrollHeight > n.clientHeight + 4) return n;
+      n = n.parentElement;
+    }
+    return null;
+  }
+  async function revealTourTarget(el) {
+    if (!el) return;
+    const reduced = prefersReducedMotion();
+    const box = overflowAncestor(el);
+    if (box) {
+      const br = box.getBoundingClientRect();
+      const tr = el.getBoundingClientRect();
+      if (tr.right > br.right - 4 || tr.left < br.left + 4) {
+        box.scrollLeft += (tr.left - br.left) - (br.width - tr.width) / 2;
+      }
+      if (tr.bottom > br.bottom - 4 || tr.top < br.top + 4) {
+        box.scrollTop += (tr.top - br.top) - 8;
+      }
+    }
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+    await waitMs(reduced ? 40 : 280);
+  }
+  async function revealDaybar(target) {
+    const bar = target && (target.closest('.daybar-inner') || $('#day-tabs'));
+    if (!bar || !target) { await revealTourTarget(target); return; }
+    if (bar.scrollWidth <= bar.clientWidth + 8) return;
+    const reduced = prefersReducedMotion();
+    const settleLeft = () => {
+      const extra = $('.daybar-action', bar);
+      const right = extra || target;
+      const br = bar.getBoundingClientRect();
+      const tr = right.getBoundingClientRect();
+      return Math.max(0, Math.min(bar.scrollWidth - bar.clientWidth, bar.scrollLeft + (tr.right - br.right) + 10));
+    };
+    if (reduced) { bar.scrollLeft = settleLeft(); return; }
+    bar.scrollTo({ left: bar.scrollWidth, behavior: 'smooth' });
+    await waitMs(380);
+    bar.scrollTo({ left: settleLeft(), behavior: 'smooth' });
+    await waitMs(280);
+  }
+  function tourPaintCard(step) {
+    const root = ensureTourDom();
+    const card = $('.tour-card', root);
+    const steps = tourSteps();
+    const n = tour.index + 1;
+    const m = steps.length;
+    const last = tour.index >= steps.length - 1 && tour.sub !== 'overview';
+    const primary = tour.index === 0 && !tour.sub ? t('tourStart') : last ? t('tourDone') : t('tourNext');
+    const extra = step.showOverview && !tour.sub
+      ? el('div', { class: 'tour-extra' },
+          el('button', { class: 'btn sm ghost', type: 'button', onclick: () => { haptic('tick'); tourShowOverview(); } }, t('tourShowOverview')))
+      : null;
+    card.replaceChildren(...[
+      el('div', { class: 'tour-progress', id: 'tour-progress' }, `${n} ${t('of')} ${m}`),
+      el('h2', { id: 'tour-title' }, t(step.titleKey)),
+      el('p', { class: 'tour-body' }, t(step.bodyKey)),
+      extra,
+      el('div', { class: 'tour-actions' },
+        el('button', { class: 'btn sm ghost', type: 'button', onclick: () => endTour('skipped') }, t('tourSkip')),
+        el('span', { class: 'spacer' }),
+        tour.index > 0 || tour.sub
+          ? el('button', { class: 'btn sm ghost', type: 'button', onclick: () => { haptic('tick'); tourBack(); } }, t('tourBack'))
+          : null,
+        el('button', { class: 'btn sm primary', type: 'button', id: 'tour-next', onclick: () => { haptic('tick'); tourNext(); } }, primary),
+      ),
+    ].filter(Boolean));
+    requestAnimationFrame(() => { const b = $('#tour-next'); if (b) b.focus(); });
+  }
+  async function tourGo(index) {
+    if (!TOUR_ON) { endTour('off'); return; }
+    const gen = ++tour.gen;
+    tour.sub = null;
+    const steps = tourSteps();
+    if (index >= steps.length) { endTour('done'); return; }
+    if (index < 0) index = 0;
+    tour.index = index;
+    const step = steps[index];
+    tour.stepId = step.id;
+    if (step.needSchedule && state.view !== 'schedule') {
+      setView('schedule');
+      await waitFrames(3);
+      if (gen !== tour.gen) return;
+    }
+    if (step.needTimeline && state.layout !== 'timeline') {
+      setLayout('timeline');
+      await waitFrames(3);
+      if (gen !== tour.gen) return;
+    }
+    if (step.needStar && !$('#main .star')) {
+      toggleAll(true);
+      await waitFrames(2);
+      if (gen !== tour.gen) return;
+    }
+    let target = step.target ? step.target() : null;
+    if (step.reveal === 'daybar' && target) {
+      await revealDaybar(target);
+      if (gen !== tour.gen) return;
+      target = step.target();
+    } else if (target) {
+      if (step.id === 'star') {
+        target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+        await waitMs(prefersReducedMotion() ? 40 : 280);
+      } else {
+        await revealTourTarget(target);
+      }
+      if (gen !== tour.gen) return;
+      target = step.target ? step.target() : target;
+    }
+    if (gen !== tour.gen) return;
+    tour.target = target;
+    tourPaintCard(step);
+    await waitFrames(1);
+    if (gen !== tour.gen) return;
+    tourPlace(target);
+  }
+  async function tourShowOverview() {
+    if (!tour.active) return;
+    const gen = ++tour.gen;
+    tour.layoutBeforeOverview = state.layout;
+    if (state.view !== 'schedule') setView('schedule');
+    if (state.layout !== 'overview') {
+      setLayout('overview');
+      await waitFrames(3);
+    }
+    if (gen !== tour.gen) return;
+    tour.sub = 'overview';
+    tour.stepId = 'layout';
+    const wrap = $('[data-tour="overview"]') || $('.overview-wrap');
+    if (wrap) await revealTourTarget(wrap);
+    if (gen !== tour.gen) return;
+    tour.target = wrap;
+    tourPaintCard({ id: 'overview', titleKey: 'tourOverviewTitle', bodyKey: 'tourOverviewBody' });
+    await waitFrames(1);
+    if (gen !== tour.gen) return;
+    tourPlace(wrap);
+  }
+  function restoreLayoutAfterOverview() {
+    const prev = tour.layoutBeforeOverview;
+    tour.layoutBeforeOverview = null;
+    if (prev && prev !== state.layout) setLayout(prev);
+  }
+  function tourNext() {
+    if (tour.sub === 'overview') {
+      restoreLayoutAfterOverview();
+      tourGo(tour.index + 1);
+      return;
+    }
+    tourGo(tour.index + 1);
+  }
+  function tourBack() {
+    if (tour.sub === 'overview') {
+      restoreLayoutAfterOverview();
+      tourGo(tour.index);
+      return;
+    }
+    tourGo(tour.index - 1);
+  }
+  function startTour(opts = {}) {
+    if (!TOUR_ON) { endTour('off'); return; }
+    bindTourChrome();
+    tour.replay = !!opts.replay;
+    tour.savedView = state.view;
+    tour.savedLayout = state.layout;
+    tour.active = true;
+    tour.index = 0;
+    tour.sub = null;
+    tour.stepId = 'welcome';
+    tour.layoutBeforeOverview = null;
+    document.documentElement.classList.add('tour-lock');
+    const root = ensureTourDom();
+    root.hidden = false;
+    syncInstallUi();
+    tourGo(0);
+  }
+  function endTour(reason) {
+    tour.gen += 1;
+    const was = tour.active;
+    tour.active = false;
+    tour.sub = null;
+    tour.stepId = '';
+    tour.target = null;
+    document.documentElement.classList.remove('tour-lock');
+    const root = $('#tour-root');
+    if (root) { root.hidden = true; root.innerHTML = ''; }
+    if (reason === 'done' || reason === 'skipped') store.set('tour', reason === 'done' ? 'done' : 'skipped');
+    if (was && reason !== 'off') {
+      const v = tour.savedView, l = tour.savedLayout;
+      let changed = false;
+      if (v && state.view !== v) { state.view = v; changed = true; }
+      if (l && state.layout !== l) { state.layout = l; changed = true; }
+      if (changed) { renderAll(); writeHash(false); }
+    }
+    syncInstallUi();
+    if (was && tour.replay) {
+      const help = $('#btn-help');
+      if (help && !help.hidden) try { help.focus({ preventScroll: true }); } catch { help.focus(); }
+    }
+  }
+  function maybeStartTour() {
+    if (!TOUR_ON) return;
+    if (skipTourDeepLink || openTalkId) return;
+    if (store.get('tour', '')) return;
+    window.setTimeout(() => {
+      if (!TOUR_ON || tour.active) return;
+      if (skipTourDeepLink || openTalkId || anySheetOpen()) return;
+      if (store.get('tour', '')) return;
+      startTour();
+    }, 500);
+  }
+  function replayTour() {
+    if (!TOUR_ON) return;
+    if (tour.active) { tourGo(0); return; }
+    startTour({ replay: true });
+  }
+
   // ------------------------------------------------------------------ chrome
   function brandDisplayTitle() {
     const raw = L(D.settings.shortTitle) || 'ЯДРО-2026';
@@ -891,6 +1280,13 @@
     const themeBtn = $('#btn-theme'); themeBtn.innerHTML = ''; themeBtn.append(icon(state.theme === 'dark' ? 'sun' : 'moon')); themeBtn.setAttribute('aria-label', t('theme')); themeBtn.title = t('theme');
     const fontBtn = $('#btn-font'); fontBtn.innerHTML = ''; fontBtn.append(icon('type')); fontBtn.setAttribute('aria-label', `${t('font')}: ${['A', 'A+', 'A++'][state.font - 1]}`); fontBtn.title = fontBtn.getAttribute('aria-label');
     const langBtn = $('#btn-lang'); langBtn.dataset.lang = state.lang; langBtn.setAttribute('aria-label', t('lang')); langBtn.title = t('lang');
+    const helpBtn = $('#btn-help');
+    if (helpBtn) {
+      helpBtn.hidden = !TOUR_ON;
+      helpBtn.replaceChildren(icon('help'));
+      helpBtn.setAttribute('aria-label', t('tourHelp'));
+      helpBtn.title = t('tourHelp');
+    }
     fillChangesButton($('#btn-changes'), true);
     updateChangesBadge();
     renderNav();
@@ -928,7 +1324,7 @@
   ];
   function renderNav() {
     for (const [sel, cls] of [['#nav-desktop', 'tab'], ['#bottom-nav', 'tab']]) {
-      const nav = $(sel); nav.innerHTML = ''; nav.setAttribute('aria-label', t('viewsNav'));
+      const nav = $(sel); nav.innerHTML = ''; nav.setAttribute('aria-label', t('viewsNav')); nav.setAttribute('data-tour', 'nav');
       for (const v of VIEWS) {
         const id = v.view || v.id;
         const btn = el('button', { class: cls, type: 'button', role: 'tab', 'aria-selected': String(state.view === id), dataset: { view: id }, onclick: () => setView(id) },
@@ -1023,7 +1419,7 @@
     tabs.innerHTML = ''; tabs.setAttribute('aria-label', t('dayTabs'));
     const today = confNow().date;
     const isOverview = state.layout === 'overview';
-    const week = el('div', { class: `day-week${isOverview ? ' is-overview' : ''}` });
+    const week = el('div', { class: `day-week${isOverview ? ' is-overview' : ''}`, dataset: { tour: 'days' } });
     for (const d of DAYS) {
       const selected = isOverview ? d === state.overviewFocus : d === state.day;
       const btn = el('button', { class: `daypill${d === today ? ' is-today' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(selected), onclick: () => setDay(d), title: fmtLong(d) },
@@ -1032,7 +1428,7 @@
     }
     tabs.append(week);
     tabs.append(el('span', { class: 'spacer' }));
-    tabs.append(el('div', { class: 'seg', role: 'group', 'aria-label': t('scheduleLayout') },
+    tabs.append(el('div', { class: 'seg', role: 'group', 'aria-label': t('scheduleLayout'), dataset: { tour: 'layout' } },
       el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(!isOverview), onclick: () => setLayout('timeline') }, t('layoutTimeline')),
       el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(isOverview), onclick: () => setLayout('overview') }, t('layoutOverview'))));
     tabs.append(makeDaybarChangesButton());
@@ -1041,7 +1437,11 @@
       tabs.append(el('button', { class: 'btn ghost sm daybar-action', type: 'button', onclick: () => toggleAll(!allOpen) }, icon(allOpen ? 'collapse' : 'expand'), el('span', null, t(allOpen ? 'collapseAll' : 'expandAll'))));
     }
     updateChangesBadge();
-    requestAnimationFrame(() => { const act = $('.daypill[aria-selected="true"]', tabs); if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }); });
+    requestAnimationFrame(() => {
+      if (tour.active && (tour.stepId === 'layout' || tour.sub === 'overview')) return;
+      const act = $('.daypill[aria-selected="true"]', tabs);
+      if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+    });
   }
   function isExpanded(block) { return state.expanded.has(block.id) ? state.expanded.get(block.id) : isDesktop(); }
   function talkTimesForBlocks(sectionBlocks) {
@@ -1496,7 +1896,7 @@
     });
     applyOverviewDayFocus(table);
     applyOverviewHighlight(table);
-    frag.append(el('div', { class: 'overview-wrap' }, table));
+    frag.append(el('div', { class: 'overview-wrap', dataset: { tour: 'overview' } }, table));
     return frag;
   }
 
@@ -2513,8 +2913,19 @@
 
   $('#btn-font').addEventListener('click', () => { haptic('tick'); state.font = state.font >= 3 ? 1 : state.font + 1; store.set('font', state.font); applyChrome(); });
   $('#btn-theme').addEventListener('click', () => { haptic('tick'); state.theme = state.theme === 'dark' ? 'light' : 'dark'; store.set('theme', state.theme); applyChrome(); });
-  $('#btn-lang').addEventListener('click', () => { haptic('tick'); state.lang = state.lang === 'ru' ? 'en' : 'ru'; store.set('lang', state.lang); preserveScroll(renderAll); });
+  $('#btn-lang').addEventListener('click', () => {
+    haptic('tick');
+    state.lang = state.lang === 'ru' ? 'en' : 'ru';
+    store.set('lang', state.lang);
+    preserveScroll(renderAll);
+    if (tour.active) {
+      if (tour.sub === 'overview') tourShowOverview();
+      else tourGo(tour.index);
+    }
+  });
   $('#btn-changes').addEventListener('click', openChanges);
+  const helpBtn = $('#btn-help');
+  if (helpBtn) helpBtn.addEventListener('click', () => { if (!TOUR_ON) return; haptic('tick'); replayTour(); });
   $('#brand').addEventListener('click', (e) => { e.preventDefault(); setView('schedule'); });
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -2558,5 +2969,6 @@
   renderAll();
   writeHash(false);
   if (openTalkId) openDetail(openTalkId);
+  maybeStartTour();
   registerSW();
 })();

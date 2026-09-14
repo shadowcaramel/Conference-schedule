@@ -945,6 +945,7 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   html { font-size: 10.5pt; }
   body { background: #fff; color: #000; padding: 0; }
   body > *:not(.print-root) { display: none !important; }
+  #tour-root { display: none !important; }
   .print-root { display: block; }
   .print-root h1 { font-size: 16pt; margin-bottom: 2pt; }
   .print-root .print-sub { color: #444; margin-bottom: 8pt; font-size: 9pt; }
@@ -1029,6 +1030,50 @@ html.is-standalone [data-install-btn] { display: none !important; }
     transform: translateX(-50%); bottom: 24px;
   }
 }
+
+/* ---------- New-user tour ------------------------------------------------- */
+html.tour-lock { overscroll-behavior: none; }
+#tour-root {
+  position: fixed; inset: 0; z-index: 70; pointer-events: none;
+}
+#tour-root[hidden] { display: none !important; }
+.tour-layer {
+  position: absolute; inset: 0; pointer-events: auto;
+  cursor: default;
+}
+.tour-spot {
+  position: absolute; pointer-events: none;
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px var(--scrim);
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  transition: top var(--dur) var(--ease), left var(--dur) var(--ease), width var(--dur) var(--ease), height var(--dur) var(--ease);
+}
+.tour-spot.is-welcome { opacity: 0; }
+.tour-card {
+  position: absolute; z-index: 2; pointer-events: auto;
+  width: min(22rem, calc(100vw - 24px));
+  max-height: min(70dvh, calc(100dvh - var(--bottom-nav-h) - 24px));
+  overflow: auto;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+.tour-card .tour-progress {
+  font-size: var(--fs-xs); font-weight: 650; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
+}
+.tour-card h2 { font-size: var(--fs-lg); letter-spacing: -0.02em; margin-bottom: 6px; }
+.tour-card .tour-body { font-size: var(--fs-sm); color: var(--text-2); line-height: 1.4; }
+.tour-card .tour-extra { margin-top: 12px; }
+.tour-card .tour-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px;
+}
+.tour-card .tour-actions .spacer { flex: 1 1 auto; min-width: 4px; }
+.tour-card .btn.sm { min-height: 36px; }
 
 .install-steps { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .install-step { display: grid; grid-template-columns: 1.6rem 1fr; gap: 10px; align-items: start; }

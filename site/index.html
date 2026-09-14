@@ -17,7 +17,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="app.css?v=14">
+  <link rel="stylesheet" href="app.css?v=16">
   <script>
     (function () {
       try {
@@ -74,6 +74,9 @@
         <button class="ctl lang" id="btn-lang" type="button" aria-label="Switch language">
           <span class="lang-ru">RU</span><span class="lang-sep">·</span><span class="lang-en">EN</span>
         </button>
+        <button class="ctl ctl-icon" id="btn-help" type="button" hidden>
+          <span class="ico" data-icon="help"></span>
+        </button>
       </div>
     </div>
 
@@ -93,10 +96,11 @@
   <dialog class="sheet" id="install-dialog" aria-labelledby="install-title"></dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <div id="tour-root" hidden></div>
 
   <div id="print-root" class="print-root" aria-hidden="true"></div>
 
   <script src="data.js"></script>
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>
