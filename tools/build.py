@@ -317,6 +317,7 @@ def build_model(wb) -> dict:
         block = {
             "id": block_id, "date": date.isoformat(), "start": fmt_time(start), "end": fmt_time(end),
             "type": btype, "title": title, "section": sec, "talks": talk_ids, "room": room,
+            "chair": bilingual(rec["Председатель (RU)"], rec["Председатель (EN)"]),
             "note": bilingual(rec["Примечание (RU)"], rec["Примечание (EN)"]),
         }
         blocks.append(block)

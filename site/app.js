@@ -341,6 +341,11 @@
     const roomOf = (b) => roomText(b && b.room) || roomText(b && b.section && sectionsById[b.section] && sectionsById[b.section].room);
     const roomLabel = (b) => roomOf(b) || t('tbc');
     const chairLabel = (s) => (s && L(s.chair)) || t('tbc');
+    const chairOf = (b) => {
+      if (b && L(b.chair)) return L(b.chair);
+      const s = b && b.section ? sectionsById[b.section] : null;
+      return (s && L(s.chair)) || '';
+    };
   function slotGroupsOn() {
     return SLOT_GROUPS && document.documentElement.dataset.slotGroups !== 'off';
   }
@@ -2023,7 +2028,11 @@
     if (talk && talk.start) fact(t('time'), `${talk.start}–${talk.end}`); else if (poster && posterBlock) fact(t('time'), `${posterBlock.start}–${posterBlock.end}`);
     if (talk && talk.duration) fact(t('duration'), `${talk.duration} ${t('min')}`);
     fact(t('roomLong'), block ? roomLabel(block) : t('tbc'));
-    if (sec && sec.id !== 'P') fact(t('chair'), chairLabel(sec));
+    if (talk) {
+      const ch = chairOf(block);
+      if (ch) fact(t('chair'), ch);
+      else if (sec && sec.id !== 'P') fact(t('chair'), t('tbc'));
+    }
     if (item.email) {
       facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, t('email')), el('a', { class: 'v', href: `mailto:${item.email}` }, ...emailLabel(item.email))));
     }
@@ -2092,7 +2101,8 @@
         for (const b of slot.blocks) {
           const blk = el('div', { class: 'p-block' });
           const title = b.type === 'section' ? `${t('section')} ${b.section} · ${blockTitle(b)}` : blockTitle(b);
-          const meta = [`${t('room')} ${roomLabel(b)}`, b.type === 'section' && sectionsById[b.section] ? `${t('chair')}: ${chairLabel(sectionsById[b.section])}` : '', L(b.note)].filter(Boolean).join(' · ');
+          const ch = L(b.chair) || (b.type === 'section' && sectionsById[b.section] ? chairLabel(sectionsById[b.section]) : '');
+          const meta = [`${t('room')} ${roomLabel(b)}`, ch ? `${t('chair')}: ${ch}` : '', L(b.note)].filter(Boolean).join(' · ');
           const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
           if (talks.length === 1 && b.type !== 'section') {
             const tk = talks[0];

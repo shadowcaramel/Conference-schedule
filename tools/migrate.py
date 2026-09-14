@@ -680,12 +680,13 @@ def write_workbook(path: Path, talks: list[dict], plenary: list[dict], blocks: l
     ws.append(COLS_BLOCKS)
     for b in blocks:
         ws.append([b["date"], b["start"], b["end"], b["type"], b["ru"], b["en"], b["section"],
-                   b["talks"], b["room"], b["note_ru"], b["note_en"]])
+                   b["talks"], b["room"], b.get("chair_ru", ""), b.get("chair_en", ""),
+                   b["note_ru"], b["note_en"]])
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
         row[0].number_format = "DD.MM.YYYY"
         row[1].number_format = "HH:MM"
         row[2].number_format = "HH:MM"
-    style_header(ws, len(COLS_BLOCKS), [12, 8, 8, 14, 32, 32, 8, 10, 14, 30, 30])
+    style_header(ws, len(COLS_BLOCKS), [12, 8, 8, 14, 32, 32, 8, 10, 14, 22, 22, 30, 30])
     dv = DataValidation(type="list", formula1='"' + ",".join(BLOCK_TYPES) + '"', allow_blank=False)
     dv.error = "Выберите тип из списка"
     ws.add_data_validation(dv)

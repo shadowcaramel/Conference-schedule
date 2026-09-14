@@ -50,6 +50,8 @@ COLS_BLOCKS = [
     "Секция",
     "Доклады",
     "Аудитория",
+    "Председатель (RU)",
+    "Председатель (EN)",
     "Примечание (RU)",
     "Примечание (EN)",
 ]
@@ -114,12 +116,17 @@ TALK_STATUSES = {
 }
 
 # Spreadsheet stores a short campus code; build.py expands it for the site.
-# Numbers stay in Russian (ц/л) because that is what is on the signs.
+# Hall numbers stay in Russian (ц/л) because that is what is on the signs.
+# `144ц` is a retired alias of `библиотека` so leftover cells never print the old tag.
+LIBRARY_ROOM = {"ru": "Читальный зал библиотеки", "en": "Library reading hall"}
 ROOM_LABELS = {
     "235ц": {"ru": "235ц, Актовый зал", "en": "235ц, Assembly Hall"},
-    "144ц": {"ru": "144ц, Библиотека", "en": "144ц, Library"},
+    "библиотека": LIBRARY_ROOM,
+    "144ц": LIBRARY_ROOM,
     "117л": {"ru": "117л, Интеллектуальный центр", "en": "117л, Intellectual Center"},
     "315л": {"ru": "315л", "en": "315л"},
+    "вестибюль": {"ru": "Вестибюль, 1 эт.", "en": "Central lobby, 1st floor"},
+    "холл2": {"ru": "Коридор и холл 2-го этажа", "en": "Hallway, 2nd floor"},
 }
 
 PLENARY_SECTION = "P"
