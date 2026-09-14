@@ -28,6 +28,7 @@
   // Consecutive plenary/jubilee/sponsor cards get a group subtitle. Set false to flatten.
   const SLOT_GROUPS = true;
   const HAPTICS_ON = true; // set false in a later update to disable for everyone
+  const ASSET_V = '11'; // bump with index.html ?v= when logos/CSS/JS change
 
   // ------------------------------------------------------------------ helpers
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -141,7 +142,7 @@
       myEmptyTitle: 'Пока ничего не отмечено', myEmpty: 'Нажмите ★ у любого доклада или постера — он появится здесь. Отметки хранятся в этом браузере, входить в систему не нужно.',
       myHint: 'Отметки хранятся только на этом устройстве и в этом браузере. Чтобы перенести их на другое устройство, воспользуйтесь кнопкой «Поделиться».',
       conflict: 'пересекается с', removedFromProgramme: 'Удалено из программы', imported: 'Добавлено в «Моё»',
-      print: 'Версия для печати', localTime: 'Время местное', website: 'Сайт конференции', contact: 'Оргкомитет', fontLicence: 'Шрифт Onest (OFL)',
+      print: 'Версия для печати', localTime: 'Время местное', website: 'Сайт конференции', sponsorSite: 'Сайт спонсора', contact: 'Оргкомитет', fontLicence: 'Шрифт Onest (OFL)',
       close: 'Закрыть', openTalk: 'Открыть доклад', dayOf: 'День', of: 'из', noTalks: 'Нет докладов', tbc: 'уточняется',
       allDays: 'Все дни', posterHint: 'Номера стендов будут указаны позже.', sectionsHint: 'Полная программа каждой секции по дням.',
       plenarySection: 'Пленарные доклады', close2: 'Закрыть', starredCount: 'отмечено', dayTabs: 'Дни конференции', viewsNav: 'Разделы',
@@ -182,7 +183,7 @@
       myEmptyTitle: 'Nothing starred yet', myEmpty: 'Tap ★ on any talk or poster and it will appear here. Stars are stored in this browser — no sign-in needed.',
       myHint: 'Stars are stored only on this device and in this browser. Use “Share” to move them to another device.',
       conflict: 'overlaps with', removedFromProgramme: 'Removed from the programme', imported: 'Added to “My”',
-      print: 'Print version', localTime: 'Local time', website: 'Conference website', contact: 'Organising committee', fontLicence: 'Onest typeface (OFL)',
+      print: 'Print version', localTime: 'Local time', website: 'Conference website', sponsorSite: 'Sponsor website', contact: 'Organising committee', fontLicence: 'Onest typeface (OFL)',
       close: 'Close', openTalk: 'Open talk', dayOf: 'Day', of: 'of', noTalks: 'No talks', tbc: 'to be confirmed',
       allDays: 'All days', posterHint: 'Board numbers will be announced later.', sectionsHint: 'Full programme of each section, day by day.',
       plenarySection: 'Plenary talks', close2: 'Close', starredCount: 'starred', dayTabs: 'Conference days', viewsNav: 'Sections',
@@ -1731,13 +1732,60 @@
       el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), (roomOf(b) || L(b.note)) ? el('div', { class: 'row-meta' }, [roomOf(b) ? `${t('room')} ${roomOf(b)}` : '', L(b.note)].filter(Boolean).join(' · ')) : null));
   }
 
+  function sponsorOf(talk) {
+    if (!talk || !talk.url) return null;
+    const name = L(talk.sponsorName) || talk.org || '';
+    return { url: talk.url, logo: talk.logo || '', name };
+  }
+  function sponsorLogo(talk) {
+    const s = sponsorOf(talk);
+    if (!s || !s.logo) return null;
+    const img = el('img', {
+      class: 'sponsor-logo-img',
+      src: `assets/sponsors/${s.logo}?v=${ASSET_V}`,
+      alt: s.name || '',
+      loading: 'lazy',
+      decoding: 'async',
+      onerror: (e) => { const plate = e.currentTarget.closest('.sponsor-logo'); if (plate) plate.remove(); },
+    });
+    return el('span', { class: 'sponsor-logo', 'aria-hidden': s.name ? undefined : 'true' }, img);
+  }
+  function sponsorTile(talk) {
+    const s = sponsorOf(talk);
+    if (!s) return null;
+    let host = s.url;
+    try { host = new URL(s.url).host.replace(/^www\./, ''); } catch { /* keep raw */ }
+    const logo = s.logo
+      ? el('span', { class: 'sponsor-logo' }, el('img', {
+          class: 'sponsor-logo-img',
+          src: `assets/sponsors/${s.logo}?v=${ASSET_V}`,
+          alt: '',
+          loading: 'lazy',
+          decoding: 'async',
+          onerror: (e) => { const plate = e.currentTarget.closest('.sponsor-logo'); if (plate) plate.remove(); },
+        }))
+      : null;
+    return el('a', {
+      class: 'sponsor-tile',
+      href: s.url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      'aria-label': `${t('sponsorSite')}${s.name ? ': ' + s.name : ''} (${host})`,
+    },
+      logo,
+      el('span', { class: 'sponsor-tile-text' },
+        s.name ? el('span', { class: 'sponsor-tile-name' }, s.name) : null,
+        el('span', { class: 'sponsor-tile-host' }, host)),
+      icon('external'));
+  }
+
   function renderPlenary(b, now) {
     const talk = D.talks[b.talks[0]];
     if (!talk) return el('div', { class: 'row-card' }, icon('mic'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, t('tbc'))));
     const isNow = now && b.date === now.date && toMin(b.start) <= now.minutes && now.minutes < toMin(b.end);
     const card = el('article', { class: `card hoverable plenary status-${talk.status}${isNow ? ' is-now' : ''}`, id: `t-${talk.id}`, tabindex: 0, role: 'button', 'aria-label': `${talkKicker(talk)}: ${displayTitle(talk.title)}`, dataset: { talk: talk.id } },
       el('div', { class: 'kicker' }, el('span', null, talkKicker(talk)), statusBadge(talk)),
-      el('h3', { class: 'ptitle' }, ...titleNodes(talk.title)),
+      el('h3', { class: 'ptitle' }, el('span', { class: 'ptitle-text' }, ...titleNodes(talk.title)), sponsorLogo(talk)),
       el('div', { class: 'pspeaker' }, el('b', null, speakerName(talk)), talk.org ? el('span', null, talk.org) : null),
       el('div', { class: 'pmeta' }, el('span', { class: 'tnum' }, icon('clock'), ` ${talk.start}–${talk.end} · ${talk.duration} ${t('min')}`), el('span', { class: 'room' }, icon('pin'), ` ${roomLabel(b)}`)),
       starButton(talk.id));
@@ -2039,6 +2087,7 @@
     const body = el('div', { class: 'sheet-body' },
       el('h2', { id: 'detail-title' }, ...(item.title ? titleNodes(item.title) : ['—'])),
       el('div', { class: 'speaker' }, el('b', null, speakerName(item)), item.org ? el('span', { class: 'org' }, item.org) : null),
+      talk ? sponsorTile(talk) : null,
       facts,
       L(item.note) ? el('div', { class: 'sheet-note' }, L(item.note)) : null,
       block && L(block.note) && talk ? el('div', { class: 'sheet-note' }, L(block.note)) : null);

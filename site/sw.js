@@ -4,7 +4,7 @@
    HTTPS / localhost only; the page never registers this file on plain HTTP. */
 'use strict';
 
-const CACHE = 'nucleus2026-v6';
+const CACHE = 'nucleus2026-v9';
 const PRECACHE = [
   './',
   './index.html',
@@ -16,6 +16,9 @@ const PRECACHE = [
   './assets/icons/icon-192.png',
   './assets/fonts/onest-cyrillic.woff2',
   './assets/fonts/onest-latin.woff2',
+  './assets/sponsors/gammatech.png',
+  './assets/sponsors/digitizer.svg',
+  './assets/sponsors/spegroup.svg',
 ];
 
 function isProgrammeData(url) {

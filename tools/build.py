@@ -239,6 +239,9 @@ def build_model(wb) -> dict:
         topic = norm_number(rec["Тематика"])
         if topic and topic not in section_ids:
             diag.warn(f"Доклады, строка {row} ({tid}): тематика «{topic}» не соответствует ни одной секции")
+        url = clean(rec.get("Сайт"))
+        logo = clean(rec.get("Логотип"))
+        sponsor_name = bilingual(rec.get("Спонсор (RU)"), rec.get("Спонсор (EN)"))
         talks[tid] = {
             "id": tid, "section": sec, "number": num, "last": clean(rec["Фамилия"]),
             "first": clean(rec["Имя"]), "middle": clean(rec["Отчество"]),
@@ -247,6 +250,9 @@ def build_model(wb) -> dict:
             "duration": duration, "startOverride": start_override,
             "status": TALK_STATUSES.get(status_raw, "ok"), "topic": topic,
             "note": bilingual(rec["Примечание (RU)"], rec["Примечание (EN)"]),
+            "url": url,
+            "logo": logo,
+            "sponsorName": sponsor_name,
             # filled when placed
             "date": None, "start": None, "end": None, "blockId": None,
         }

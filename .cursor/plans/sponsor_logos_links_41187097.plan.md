@@ -4,16 +4,16 @@ overview: Show a company logo to the right of each sponsor talk title on the day
 todos:
   - id: xlsx-cols
     content: Add Сайт / Логотип / Спонсор RU+EN on P-S1–P-S3; COLS_TALKS + build.py url/logo/sponsorName
-    status: pending
+    status: completed
   - id: logo-files
     content: Save Gammatech, Digitizer, SPE header logos into site/assets/sponsors/
-    status: pending
+    status: completed
   - id: ui
     content: Timeline logo on .ptitle; detail-sheet sponsor tile; CSS for light/dark; i18n
-    status: pending
+    status: completed
   - id: cache-build
     content: Bump ?v= and CACHE, precache logos, build.py, local browser check, no FTP
-    status: pending
+    status: completed
 isProject: false
 ---
 

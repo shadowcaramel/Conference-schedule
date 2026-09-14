@@ -698,7 +698,7 @@ def write_workbook(path: Path, talks: list[dict], plenary: list[dict], blocks: l
     for t in plenary + talks:
         ws.append([t["id"], t["section"], t["number"], t["last"], t["first"], t.get("middle", ""), t["org"], "",
                    t["title"], t["duration"], "", t["status"], t["topic"], t["note_ru"], t["note_en"]])
-    style_header(ws, len(COLS_TALKS), [9, 8, 6, 20, 24, 18, 18, 22, 80, 12, 8, 12, 10, 24, 24])
+    style_header(ws, len(COLS_TALKS), [9, 8, 6, 20, 24, 18, 18, 22, 80, 12, 8, 12, 10, 24, 24, 28, 16, 22, 22])
     dv = DataValidation(type="list", formula1='"отменён,перенесён"', allow_blank=True)
     ws.add_data_validation(dv)
     dv.add(f"L2:L{max(ws.max_row, 2) + 300}")
