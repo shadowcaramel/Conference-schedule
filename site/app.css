@@ -996,23 +996,38 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   .print-overview-stage { flex: 1 1 auto; height: 184mm; overflow: hidden; }
   .print-overview-grid {
     min-width: 0; min-height: 0; height: auto; background: #fff; color: #111;
+    grid-template-columns: 5.4rem repeat(var(--days, 6), minmax(7.2rem, 1fr));
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
     --text: #1a1a1a; --text-2: #444; --text-3: #666;
     --bg: #fff; --surface: #fff; --surface-2: #f4f4f6;
     --border: #ccc; --border-2: #bbb;
     --accent: #3b5bdd; --accent-soft: #eef2ff; --accent-soft-2: #d0d7f5;
-    --sec-l-tint: 96%; --sec-c-tint: .035;
-    --sec-l-stripe: 60%; --sec-c-stripe: .17;
-    --sec-l-text: 38%; --sec-c-text: .13;
-    --sec-l-soft: 92%; --sec-c-soft: .06;
+    --sec-l-tint: 84%; --sec-c-tint: .08;
+    --sec-l-stripe: 55%; --sec-c-stripe: .18;
+    --sec-l-text: 28%; --sec-c-text: .16;
+    --sec-l-soft: 78%; --sec-c-soft: .10;
   }
   html[data-print="overview"] .print-overview-grid [data-color] {
-    --sec-tint: hsl(var(--h) 60% 94%);
-    --sec-soft: hsl(var(--h) 60% 88%);
-    --sec-stripe: hsl(var(--h) 60% 50%);
-    --sec-text: hsl(var(--h) 55% 32%);
+    --sec-tint: hsl(var(--h) 70% 82%);
+    --sec-soft: hsl(var(--h) 55% 68%);
+    --sec-stripe: hsl(var(--h) 60% 46%);
+    --sec-text: hsl(var(--h) 50% 22%);
   }
-  .print-overview-grid .overview-cell.head { cursor: default; }
+  .print-overview-grid .overview-time .t-start {
+    font-size: 10pt; font-weight: 700; color: #1a1a1a;
+  }
+  .print-overview-grid .overview-cell.head {
+    cursor: default;
+    flex-direction: row; align-items: baseline; justify-content: flex-start;
+    gap: 0.35em; padding: 0 4px 4px;
+  }
+  .print-overview-grid .overview-cell.head .dow {
+    font-size: 10pt; font-weight: 600; color: #666;
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+  .print-overview-grid .overview-cell.head .dom {
+    font-size: 14pt; font-weight: 750; color: #111; letter-spacing: 0;
+  }
   .print-overview-grid .overview-cell:not(.head) { cursor: default; font-size: 10pt; }
   .print-overview-grid .overview-cell.section-block { font-size: 11pt; }
   .print-overview-grid .overview-cell .ico { width: 1.15em; height: 1.15em; }
