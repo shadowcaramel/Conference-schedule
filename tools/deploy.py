@@ -110,12 +110,24 @@ def warn_if_stale() -> None:
 
 def connect(host: str, port: int, user: str, password: str) -> FTP:
     ftp = FTP()
-    ftp.connect(host, port, timeout=90)
+    ftp.connect(host, port, timeout=180)
     ftp.login(user, password)
     ftp.encoding = "utf-8"
     ftp.set_pasv(True)
     ftp.sendcmd("TYPE I")
     return ftp
+
+
+def close_ftp(ftp: FTP | None) -> None:
+    if ftp is None:
+        return
+    try:
+        ftp.quit()
+    except Exception:
+        try:
+            ftp.close()
+        except Exception:
+            pass
 
 
 def upload(ftp: FTP, local: Path, remote: str) -> int:
@@ -154,9 +166,9 @@ def main(argv: list[str]) -> int:
         print(f"В {SITE_DIR} нет файлов для публикации.")
         return 1
 
-    print(f"FTP {host}:{port}  пользователь {user}")
+    print(f"FTP {host}:{port}  пользователь {user}", flush=True)
     if dry_run:
-        print("Режим просмотра (--dry-run): загрузка не выполняется.")
+        print("Режим просмотра (--dry-run): загрузка не выполняется.", flush=True)
 
     ftp = connect(host, port, user, password)
     try:
@@ -169,28 +181,39 @@ def main(argv: list[str]) -> int:
             elif old != size:
                 planned.append((rel, path, size, f"размер {old} → {size}"))
             else:
-                print(f"  без изменений  {rel}")
+                print(f"  без изменений  {rel}", flush=True)
 
         if not planned:
-            print("На сервере уже актуальные файлы site/. Excel и исходники не публикуются.")
+            print("На сервере уже актуальные файлы site/. Excel и исходники не публикуются.", flush=True)
             return 0
 
-        print(f"К загрузке: {len(planned)}")
+        print(f"К загрузке: {len(planned)}", flush=True)
         uploaded = 0
         for rel, path, size, reason in planned:
-            print(f"  {'будет' if dry_run else 'загрузка':8} {rel}  ({size} байт, {reason})")
+            print(f"  {'будет' if dry_run else 'загрузка':8} {rel}  ({size} байт, {reason})", flush=True)
             if dry_run:
                 continue
-            got = upload(ftp, path, rel)
+            got = -1
+            last_err: Exception | None = None
+            for attempt in range(1, 4):
+                try:
+                    got = upload(ftp, path, rel)
+                    last_err = None
+                    break
+                except (TimeoutError, OSError, EOFError) as err:
+                    last_err = err
+                    print(f"    повтор {attempt}/3 после {type(err).__name__}", flush=True)
+                    close_ftp(ftp)
+                    ftp = connect(host, port, user, password)
+            if last_err is not None:
+                print(f"ОШИБКА: {rel}: {type(last_err).__name__}: {last_err}", flush=True)
+                return 1
             if got != size:
-                print(f"ОШИБКА: {rel}: локально {size}, на сервере {got}")
+                print(f"ОШИБКА: {rel}: локально {size}, на сервере {got}", flush=True)
                 return 1
             uploaded += 1
     finally:
-        try:
-            ftp.quit()
-        except Exception:
-            ftp.close()
+        close_ftp(ftp)
 
     if dry_run:
         print("Просмотр закончен. Чтобы отправить: python tools/deploy.py")
