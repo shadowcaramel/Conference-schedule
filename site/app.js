@@ -2590,7 +2590,8 @@
           const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
           if (talks.length === 1 && b.type !== 'section') {
             const tk = talks[0];
-            blk.append(el('div', { class: 'p-block-title' }, `${title}. `, ...titleNodes(tk.title)), el('div', { class: 'p-block-meta' }, [speakerName(tk), tk.org, meta].filter(Boolean).join(' · ')));
+            const heading = b.type === 'plenary' ? titleNodes(tk.title) : [`${title}. `, ...titleNodes(tk.title)];
+            blk.append(el('div', { class: 'p-block-title' }, ...heading), el('div', { class: 'p-block-meta' }, [speakerName(tk), tk.org, meta].filter(Boolean).join(' · ')));
           } else {
             blk.append(el('div', { class: 'p-block-title' }, title), meta ? el('div', { class: 'p-block-meta' }, meta) : null);
             for (const tk of talks) blk.append(el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, tk.start), el('span', null, el('div', { class: 'pt-title' }, `${tk.number}. `, ...titleNodes(tk.title)), el('div', { class: 'pt-speaker' }, [speakerName(tk), tk.org].filter(Boolean).join(', ')))));
