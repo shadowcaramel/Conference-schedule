@@ -184,7 +184,7 @@ python tools/migrate.py --force
 - Автозагрузка на FTP после каждой правки (публикация только вручную: `python tools/deploy.py`).
 - Синхронизация «Моего» между устройствами через сервер (нужен вход).
 
-Шрифт [Onest](https://github.com/googlefonts/onest) — SIL Open Font License, файлы в `site/assets/fonts/`.
+Шрифт [Onest](https://fonts.google.com/specimen/Onest) (источник: [simpals/onest](https://github.com/simpals/onest)) — SIL Open Font License, файлы в `site/assets/fonts/`. Иконки интерфейса — встроенные SVG [Lucide](https://lucide.dev/).
 
 ## Лицензия
 

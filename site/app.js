@@ -2558,7 +2558,7 @@
       el('button', { class: 'btn ghost sm', type: 'button', onclick: () => { renderPrint(); window.print(); } }, icon('printer'), t('print')),
       el('button', { class: 'btn ghost sm', type: 'button', dataset: { installBtn: true }, onclick: openInstall, hidden: isStandalone() }, icon('smartphone'), t('install')),
       el('button', { class: 'btn ghost sm', type: 'button', onclick: () => downloadICS(Object.values(D.talks).filter(x => x.date), 'nucleus2026-programme.ics') }, icon('download'), t('exportAll')),
-      el('span', { class: 'xs' }, t('fontLicence'))));
+      el('a', { class: 'xs', href: 'https://fonts.google.com/specimen/Onest', target: '_blank', rel: 'noopener' }, t('fontLicence'))));
   }
 
   function setPrintPage(overview) {
