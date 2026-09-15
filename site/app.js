@@ -29,7 +29,20 @@
   const SLOT_GROUPS = true;
   const HAPTICS_ON = true; // set false in a later update to disable for everyone
   const TOUR_ON = true; // set false in a later update to disable for everyone
-  const ASSET_V = '11'; // bump with index.html ?v= when logos/CSS/JS change
+  // Overview parallel panes: 'room' = library → assembly hall → 117л → 315л.
+  // 'section' restores numeric S1…S7. Timeline never uses this flag.
+  const OVERVIEW_SECTION_SORT = 'room';
+  const ASSET_V = '12'; // bump with index.html ?v= when logos/CSS/JS change
+  const SOCIAL_MAPS = {
+    pier: {
+      url: 'https://yandex.com/maps/-/CTtxINlb',
+      preview: { ru: 'assets/maps/pier-ru.png', en: 'assets/maps/pier-en.png' },
+    },
+    dinner: {
+      url: 'https://yandex.com/maps/-/CTtxZMZe',
+      preview: { ru: 'assets/maps/intourist-ru.png', en: 'assets/maps/intourist-en.png' },
+    },
+  };
 
   // ------------------------------------------------------------------ helpers
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -107,6 +120,13 @@
   const icon = (name, cls = '') => el('span', { class: `ico ${cls}`.trim(), 'aria-hidden': 'true', html: `<svg viewBox="0 0 24 24">${ICONS[name] || ''}</svg>` });
 
   const BLOCK_ICON = { break: 'coffee', lunch: 'lunch', registration: 'door', opening: 'flag', closing: 'flag', poster: 'poster', social: 'sparkles', plenary: 'mic', jubilee: 'mic', sponsor: 'mic', section: 'users' };
+  function socialVenue(block) {
+    if (!block || block.type !== 'social') return null;
+    const blob = `${(block.title && block.title.ru) || ''} ${(block.title && block.title.en) || ''}`.toLowerCase();
+    if (/теплоход|boat|экскурс|excursion|ship/.test(blob)) return SOCIAL_MAPS.pier;
+    if (/банкет/.test(blob) || /conference dinner/.test(blob)) return SOCIAL_MAPS.dinner;
+    return null;
+  }
   function socialIcon(block) {
     const t = `${(block.title && block.title.ru) || ''} ${(block.title && block.title.en) || ''}`.toLowerCase();
     if (/теплоход|boat|экскурс|excursion|ship/.test(t)) return 'ship';
@@ -140,6 +160,7 @@
       searchPlaceholder: 'Докладчик, название, организация…', results: 'Найдено', nothingFound: 'Ничего не найдено', speakerIndex: 'Указатель докладчиков',
       clear: 'Очистить', star: 'В моё расписание', unstar: 'Убрать из моего расписания', addToCalendar: 'В календарь (.ics)',
       copyLink: 'Ссылка на доклад', linkCopied: 'Ссылка скопирована', shareMy: 'Поделиться моим расписанием', shareCopied: 'Ссылка на ваше расписание скопирована',
+      openMap: 'Открыть в Яндекс Картах', mapPreview: 'Карта',
       exportMy: 'Экспорт в календарь', exportAll: 'Вся программа в календарь (.ics)', clearMy: 'Очистить',
       myEmptyTitle: 'Пока ничего не отмечено', myEmpty: 'Нажмите ★ у любого доклада или постера — он появится здесь. Отметки хранятся в этом браузере, входить в систему не нужно.',
       myHint: 'Отметки хранятся только на этом устройстве и в этом браузере. Чтобы перенести их на другое устройство, воспользуйтесь кнопкой «Поделиться».',
@@ -195,6 +216,7 @@
       searchPlaceholder: 'Speaker, title, affiliation…', results: 'Found', nothingFound: 'Nothing found', speakerIndex: 'Speaker index',
       clear: 'Clear', star: 'Add to my schedule', unstar: 'Remove from my schedule', addToCalendar: 'Add to calendar (.ics)',
       copyLink: 'Link to this talk', linkCopied: 'Link copied', shareMy: 'Share my schedule', shareCopied: 'Link to your schedule copied',
+      openMap: 'Open in Yandex Maps', mapPreview: 'Map',
       exportMy: 'Export to calendar', exportAll: 'Whole programme to calendar (.ics)', clearMy: 'Clear',
       myEmptyTitle: 'Nothing starred yet', myEmpty: 'Tap ★ on any talk or poster and it will appear here. Stars are stored in this browser — no sign-in needed.',
       myHint: 'Stars are stored only on this device and in this browser. Use “Share” to move them to another device.',
@@ -466,11 +488,13 @@
     if (state.view === 'sections') parts.push(`section=${state.section}`);
     if (state.view === 'search' && state.q) parts.push(`q=${encodeURIComponent(state.q)}`);
     if (openTalkId) parts.push(`talk=${openTalkId}`);
+    if (openBlockId) parts.push(`block=${openBlockId}`);
     const hash = '#' + parts.join('&');
     if (hash === location.hash) return;
     if (push) history.pushState(null, '', hash); else history.replaceState(null, '', hash);
   }
   let openTalkId = null;
+  let openBlockId = null;
   let sheetOpener = null;
   let suppressHash = false;
   let ignoreDayObs = false;
@@ -500,6 +524,7 @@
     if (h.section && sectionsById[h.section]) state.section = h.section;
     if (h.q !== undefined) state.q = h.q;
     if (h.talk && (D.talks[h.talk] || postersById[h.talk])) openTalkId = h.talk; else openTalkId = null;
+    if (!openTalkId && h.block && blocksById[h.block]) openBlockId = h.block; else openBlockId = null;
   }
 
   // ------------------------------------------------------------------ favourites
@@ -555,7 +580,23 @@
     const ms = Date.UTC(y, m - 1, d, hh, mm) - offsetMinutes() * 60000;
     return new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
   }
+  function icsBlockEvent(b) {
+    if (!b || !b.date || !b.start || !b.end) return null;
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    return [
+      'BEGIN:VEVENT',
+      `UID:${b.id}@nucleus2026`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART:${icsUTC(b.date, b.start)}`,
+      `DTEND:${icsUTC(b.date, b.end)}`,
+      icsFold(`SUMMARY:${icsEscape(blockTitle(b))}`),
+      L(b.note) ? icsFold(`DESCRIPTION:${icsEscape(L(b.note))}`) : null,
+      roomOf(b) ? icsFold(`LOCATION:${icsEscape(roomOf(b))}`) : null,
+      'END:VEVENT',
+    ].filter(Boolean).join('\r\n');
+  }
   function icsEvent(item) {
+    if (item && blocksById[item.id] === item) return icsBlockEvent(item);
     const isPoster = !!postersById[item.id];
     let date, start, end, location, summary, desc;
     if (isPoster) {
@@ -1784,11 +1825,27 @@
     return Array.from(mins).sort((a, b) => a - b);
   }
 
+  function overviewSectionRank(band) {
+    if (OVERVIEW_SECTION_SORT !== 'room') {
+      return Number(band.items[0] && band.items[0].section) || 99;
+    }
+    const room = roomOf(band.items[0]) || '';
+    if (/библиотек|library/i.test(room)) return 0;
+    if (/актов|assembly/i.test(room)) return 1;
+    if (/117л/.test(room)) return 2;
+    if (/315л/.test(room)) return 3;
+    return 4;
+  }
+  function cmpOverviewSection(a, b) {
+    const r = overviewSectionRank(a) - overviewSectionRank(b);
+    if (r) return r;
+    return String(a.items[0] && a.items[0].section).localeCompare(String(b.items[0] && b.items[0].section), undefined, { numeric: true });
+  }
   function overviewSectionClusters(bands) {
     const sections = bands.filter(b => b.kind === 'section').slice().sort((a, b) => {
       const t = a.start.localeCompare(b.start);
       if (t) return t;
-      return String(a.items[0] && a.items[0].section).localeCompare(String(b.items[0] && b.items[0].section), undefined, { numeric: true });
+      return cmpOverviewSection(a, b);
     });
     const clusters = [];
     for (const band of sections) {
@@ -1802,6 +1859,7 @@
         clusters.push({ start, end, items: [band] });
       }
     }
+    for (const cl of clusters) cl.items.sort(cmpOverviewSection);
     return clusters;
   }
 
@@ -2126,6 +2184,11 @@
         setView('posters');
         return;
       }
+      const socialRow = e.target.closest('.row-card[data-block]');
+      if (socialRow && main.contains(socialRow)) {
+        openBlockDetail(socialRow.dataset.block, true);
+        return;
+      }
       const item = e.target.closest('[data-talk]');
       if (item && main.contains(item)) openDetail(item.dataset.talk, true);
     });
@@ -2136,6 +2199,12 @@
       if (posterRow && e.target === posterRow) {
         e.preventDefault();
         setView('posters');
+        return;
+      }
+      const socialRow = e.target.closest('.row-card[data-block]');
+      if (socialRow && e.target === socialRow) {
+        e.preventDefault();
+        openBlockDetail(socialRow.dataset.block, true);
         return;
       }
       const item = e.target.closest('[data-talk]');
@@ -2156,8 +2225,16 @@
     }
     const cls = type === 'social' ? 'social' : (type === 'opening' || type === 'closing' || type === 'registration') ? 'milestone' : '';
     const ic = type === 'social' ? socialIcon(b) : BLOCK_ICON[type] || 'info';
-    return el('div', { class: `row-card ${cls}`.trim() }, icon(ic),
-      el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), (roomOf(b) || L(b.note)) ? el('div', { class: 'row-meta' }, [roomOf(b) || '', L(b.note)].filter(Boolean).join(' · ')) : null));
+    const venue = type === 'social' ? socialVenue(b) : null;
+    const clickable = !!venue;
+    return el('div', {
+      class: `row-card ${cls}${clickable ? ' card hoverable social-link' : ''}`.trim(),
+      role: clickable ? 'button' : undefined,
+      tabindex: clickable ? 0 : undefined,
+      dataset: clickable ? { block: b.id } : undefined,
+    }, icon(ic),
+      el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), (roomOf(b) || L(b.note)) ? el('div', { class: 'row-meta' }, [roomOf(b) || '', L(b.note)].filter(Boolean).join(' · ')) : null),
+      clickable ? el('span', { class: 'ico', style: 'margin-left:auto;color:var(--text-3)', html: `<svg viewBox="0 0 24 24">${ICONS.arrow}</svg>` }) : null);
   }
 
   function sponsorOf(talk) {
@@ -2231,8 +2308,6 @@
     const s = sectionsById[b.section];
     const dimmed = state.filters.size && !state.filters.has(b.section);
     const open = isExpanded(b);
-    const talks = b.talks.map(id => D.talks[id]).filter(Boolean);
-    const range = talks.length ? (talks.length > 1 ? `${talks[0].number}–${talks[talks.length - 1].number}` : talks[0].number) : '';
     const listId = `talks-${b.id}`;
     const card = el('article', { class: `card seccard${dimmed ? ' dimmed' : ''}${open ? ' open' : ''}`, dataset: { color: s.color, block: b.id, section: b.section }, id: listId });
     const desktop = isDesktop();
@@ -2250,7 +2325,6 @@
       el('span', { class: 'sec-name', title: `${t('section')} ${s.id} · ${L(s.short)}` }, `${t('section')} ${s.id} · ${L(s.short)}`),
       desktop ? null : el('span', { class: 'chev' }, icon('chevron')),
       el('span', { class: 'sec-meta' },
-        el('span', null, `${talks.length} ${t('talks')}${range ? ` (${range})` : ''}`),
         el('span', null, icon('pin'), ` ${roomLabel(b)}`),
         el('span', null, icon('user'), ` ${chairLabel(s)}`)));
     card.append(head);
@@ -2496,6 +2570,7 @@
     const talk = D.talks[id]; const poster = postersById[id];
     const item = talk || poster; if (!item) return;
     if (fromUser) haptic('tick');
+    openBlockId = null;
     openTalkId = id; writeHash();
     const dlg = $('#detail'); dlg.innerHTML = '';
     const sec = sectionsById[item.section];
@@ -2533,6 +2608,48 @@
     dlg.append(el('div', { class: 'sheet-inner' }, el('div', { class: 'grabber' }), el('div', { class: 'sheet-head' }, kicker, el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))), body, actions));
     showSheet(dlg);
     dlg.onclose = () => { openTalkId = null; writeHash(); unlockBodyScroll(); };
+  }
+
+  function mapPreview(venue) {
+    if (!venue) return null;
+    const src = (venue.preview && (venue.preview[state.lang] || venue.preview.ru || venue.preview.en)) || '';
+    return el('a', {
+      class: 'map-preview', href: venue.url, target: '_blank', rel: 'noopener noreferrer',
+      'aria-label': t('openMap'),
+    },
+      src ? el('img', { src: `${src}?v=${ASSET_V}`, alt: t('mapPreview'), loading: 'lazy', decoding: 'async' }) : null,
+      el('span', { class: 'map-open' }, icon('pin'), ` ${t('openMap')}`, icon('external')));
+  }
+
+  function openBlockDetail(id, fromUser) {
+    const b = blocksById[id];
+    if (!b) return;
+    if (fromUser) haptic('tick');
+    openTalkId = null;
+    openBlockId = id; writeHash();
+    const dlg = $('#detail'); dlg.innerHTML = '';
+    const venue = socialVenue(b);
+    const kicker = el('div', { class: 'kicker' },
+      el('span', null, BLOCK_TYPE_LABEL[state.lang][b.type] || b.type));
+    const facts = el('div', { class: 'facts' });
+    const fact = (k, v) => v ? facts.append(el('div', { class: 'fact' }, el('span', { class: 'k' }, k), el('span', { class: 'v' }, v))) : null;
+    fact(t('date'), fmtShort(b.date));
+    fact(t('time'), `${b.start}–${b.end}`);
+    fact(t('roomLong'), roomLabel(b));
+    const body = el('div', { class: 'sheet-body' },
+      el('h2', { id: 'detail-title' }, blockTitle(b)),
+      facts,
+      mapPreview(venue),
+      L(b.note) ? el('div', { class: 'sheet-note' }, L(b.note)) : null);
+    const actions = el('div', { class: 'sheet-actions' },
+      el('button', { class: 'btn primary', type: 'button', onclick: () => downloadICS([b], `${b.id}.ics`) }, icon('calplus'), t('addToCalendar')),
+      el('button', { class: 'btn ghost', type: 'button', onclick: async () => {
+        const url = pageUrl(`#view=schedule&day=${b.date}&block=${b.id}`);
+        if (await copyText(url)) { haptic('success'); toast(t('linkCopied')); }
+      } }, icon('link'), t('copyLink')));
+    dlg.append(el('div', { class: 'sheet-inner' }, el('div', { class: 'grabber' }), el('div', { class: 'sheet-head' }, kicker, el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))), body, actions));
+    showSheet(dlg);
+    dlg.onclose = () => { openBlockId = null; writeHash(); unlockBodyScroll(); };
   }
 
   function openChanges() {
@@ -2945,7 +3062,7 @@
   }
   window.addEventListener('scroll', scheduleDaySpy, { passive: true });
   window.addEventListener('resize', scheduleDaySpy);
-  window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); });
+  window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); else if (openBlockId) openBlockDetail(openBlockId); });
   window.addEventListener('beforeprint', renderPrint);
   window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
     syncInstallUi();
@@ -2970,6 +3087,7 @@
   renderAll();
   writeHash(false);
   if (openTalkId) openDetail(openTalkId);
+  else if (openBlockId) openBlockDetail(openBlockId);
   maybeStartTour();
   registerSW();
 })();

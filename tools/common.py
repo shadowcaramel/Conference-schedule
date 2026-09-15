@@ -131,13 +131,15 @@ ROOM_LABELS = {
     "315л": {"ru": "315л", "en": "315л"},
     "вестибюль": {"ru": "Вестибюль, 1 эт.", "en": "Central lobby, 1st floor"},
     "холл2": {"ru": "Коридор и холл 2-го этажа", "en": "Hallway, 2nd floor"},
+    "причал": {"ru": "4-й причал, Речной вокзал", "en": "Pier 4, River Terminal"},
+    "интурист": {"ru": "Ресторан «Интурист», Амурский бульвар, 2", "en": "Restaurant Inturist, Amursky Boulevard, 2"},
 }
 
 PLENARY_SECTION = "P"
 
 DEFAULT_DURATION = {
     "plenary": 30,
-    "jubilee": 20,
+    "jubilee": 30,
     "sponsor": 15,
     "section": 15,
 }
