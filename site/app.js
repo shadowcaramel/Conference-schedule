@@ -32,14 +32,20 @@
   // Overview parallel panes: 'room' = library → assembly hall → 117л → 315л.
   // 'section' restores numeric S1…S7. Timeline never uses this flag.
   const OVERVIEW_SECTION_SORT = 'room';
-  const ASSET_V = '12'; // bump with index.html ?v= when logos/CSS/JS change
+  const ASSET_V = '13'; // bump with index.html ?v= when logos/CSS/JS change
   const SOCIAL_MAPS = {
     pier: {
-      url: 'https://yandex.com/maps/-/CTtxINlb',
+      url: {
+        ru: 'https://yandex.ru/maps/-/CTxFFCyL',
+        en: 'https://yandex.com/maps/-/CTxFF0KI',
+      },
       preview: { ru: 'assets/maps/pier-ru.png', en: 'assets/maps/pier-en.png' },
     },
     dinner: {
-      url: 'https://yandex.com/maps/-/CTtxZMZe',
+      url: {
+        ru: 'https://yandex.ru/maps/-/CTxF5SOM',
+        en: 'https://yandex.com/maps/-/CTtxZMZe',
+      },
       preview: { ru: 'assets/maps/intourist-ru.png', en: 'assets/maps/intourist-en.png' },
     },
   };
@@ -127,6 +133,12 @@
     if (/банкет/.test(blob) || /conference dinner/.test(blob)) return SOCIAL_MAPS.dinner;
     return null;
   }
+  function socialMapUrl(venue) {
+    const u = venue && venue.url;
+    if (!u) return '';
+    if (typeof u === 'string') return u;
+    return u[state.lang] || u.en || u.ru || '';
+  }
   function socialIcon(block) {
     const t = `${(block.title && block.title.ru) || ''} ${(block.title && block.title.en) || ''}`.toLowerCase();
     if (/теплоход|boat|экскурс|excursion|ship/.test(t)) return 'ship';
@@ -159,8 +171,8 @@
       parallel: 'параллельных секций', plenaryCount: 'пленарных', posterCount: 'постеров',
       searchPlaceholder: 'Докладчик, название, организация…', results: 'Найдено', nothingFound: 'Ничего не найдено', speakerIndex: 'Указатель докладчиков',
       clear: 'Очистить', star: 'В моё расписание', unstar: 'Убрать из моего расписания', addToCalendar: 'В календарь (.ics)',
-      copyLink: 'Ссылка на доклад', linkCopied: 'Ссылка скопирована', shareMy: 'Поделиться моим расписанием', shareCopied: 'Ссылка на ваше расписание скопирована',
-      openMap: 'Открыть в Яндекс Картах', mapPreview: 'Карта',
+      copyLink: 'Ссылка на доклад', copyLinkEvent: 'Ссылка на событие', linkCopied: 'Ссылка скопирована', shareMy: 'Поделиться моим расписанием', shareCopied: 'Ссылка на ваше расписание скопирована',
+      openMap: 'Яндекс Карты', mapPreview: 'Карта',
       exportMy: 'Экспорт в календарь', exportAll: 'Вся программа в календарь (.ics)', clearMy: 'Очистить',
       myEmptyTitle: 'Пока ничего не отмечено', myEmpty: 'Нажмите ★ у любого доклада или постера — он появится здесь. Отметки хранятся в этом браузере, входить в систему не нужно.',
       myHint: 'Отметки хранятся только на этом устройстве и в этом браузере. Чтобы перенести их на другое устройство, воспользуйтесь кнопкой «Поделиться».',
@@ -215,8 +227,8 @@
       parallel: 'parallel sections', plenaryCount: 'plenary talks', posterCount: 'posters',
       searchPlaceholder: 'Speaker, title, affiliation…', results: 'Found', nothingFound: 'Nothing found', speakerIndex: 'Speaker index',
       clear: 'Clear', star: 'Add to my schedule', unstar: 'Remove from my schedule', addToCalendar: 'Add to calendar (.ics)',
-      copyLink: 'Link to this talk', linkCopied: 'Link copied', shareMy: 'Share my schedule', shareCopied: 'Link to your schedule copied',
-      openMap: 'Open in Yandex Maps', mapPreview: 'Map',
+      copyLink: 'Link to this talk', copyLinkEvent: 'Link to this event', linkCopied: 'Link copied', shareMy: 'Share my schedule', shareCopied: 'Link to your schedule copied',
+      openMap: 'Yandex Maps', mapPreview: 'Map',
       exportMy: 'Export to calendar', exportAll: 'Whole programme to calendar (.ics)', clearMy: 'Clear',
       myEmptyTitle: 'Nothing starred yet', myEmpty: 'Tap ★ on any talk or poster and it will appear here. Stars are stored in this browser — no sign-in needed.',
       myHint: 'Stars are stored only on this device and in this browser. Use “Share” to move them to another device.',
@@ -997,11 +1009,21 @@
   function ensureTourDom() {
     const root = tourRoot();
     if ($('.tour-card', root)) return root;
+    const layer = el('div', { class: 'tour-layer', 'aria-hidden': 'true' }, el('div', { class: 'tour-spot is-welcome' }));
+    layer.addEventListener('pointerdown', onTourOutside);
+    layer.addEventListener('pointerup', onTourOutside);
+    layer.addEventListener('click', onTourOutside);
     root.replaceChildren(
-      el('div', { class: 'tour-layer', 'aria-hidden': 'true' }, el('div', { class: 'tour-spot is-welcome' })),
+      layer,
       el('div', { class: 'tour-card', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'tour-title' }),
     );
     return root;
+  }
+  function onTourOutside(e) {
+    if (!tour.active) return;
+    e.preventDefault();
+    e.stopPropagation();
+    endTour('skipped');
   }
   function bindTourChrome() {
     if (tour.bound) return;
@@ -1402,7 +1424,8 @@
       state.overviewFocus = next;
       if (state.overviewFocus) state.day = day;
       writeHash(true);
-      renderDaybar();
+      if ($('.day-week.is-overview')) syncDayPills({ smooth: true });
+      else renderDaybar();
       const table = document.querySelector('.overview');
       if (table) applyOverviewDayFocus(table);
       else renderMain();
@@ -1416,7 +1439,8 @@
     haptic('tick');
     state.day = day;
     writeHash(true);
-    renderDaybar();
+    if (rebuild || !$('.day-week')) renderDaybar();
+    else syncDayPills({ smooth: true });
     if (rebuild) renderMain();
     else if (scroll) scrollToDay(day);
   }
@@ -1424,10 +1448,20 @@
     const chunk = document.querySelector(`.day-chunk[data-day="${day}"]`);
     if (!chunk) return;
     ignoreDayObs = true;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    chunk.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    const chrome = ($('#topbar')?.getBoundingClientRect().bottom) || 0;
+    const y = Math.max(0, window.scrollY + chunk.getBoundingClientRect().top - chrome);
+    const reduced = prefersReducedMotion();
+    window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
     clearTimeout(scrollToDay._t);
-    scrollToDay._t = setTimeout(() => { ignoreDayObs = false; }, 500);
+    const started = performance.now();
+    const settle = () => {
+      if (Math.abs(window.scrollY - y) < 12 || performance.now() - started > 1400) {
+        ignoreDayObs = false;
+        return;
+      }
+      scrollToDay._t = setTimeout(settle, 80);
+    };
+    scrollToDay._t = setTimeout(settle, reduced ? 50 : 120);
   }
   function scrollToSlot(el, opts = {}) {
     if (!el) return;
@@ -1445,7 +1479,7 @@
     scrollToSlot._t = setTimeout(() => {
       if (day && day !== state.day) {
         state.day = day;
-        renderDaybar();
+        syncDayPills({ instant: true });
         writeHash(false);
       }
       ignoreDayObs = false;
@@ -1453,6 +1487,61 @@
   }
 
   // ------------------------------------------------------------------ day bar
+  const DAYBAR_SCROLL_MS = 480;
+  function selectedTapeDay() {
+    return state.layout === 'overview' ? state.overviewFocus : state.day;
+  }
+  function animateDaybarScroll(bar, to, ms) {
+    const max = Math.max(0, bar.scrollWidth - bar.clientWidth);
+    to = Math.max(0, Math.min(max, to));
+    const from = bar.scrollLeft;
+    if (Math.abs(from - to) < 1) return;
+    if (bar._dayScrollRaf) cancelAnimationFrame(bar._dayScrollRaf);
+    const t0 = performance.now();
+    const ease = (p) => 1 - ((1 - p) ** 3);
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / ms);
+      bar.scrollLeft = from + (to - from) * ease(p);
+      if (p < 1) bar._dayScrollRaf = requestAnimationFrame(step);
+      else bar._dayScrollRaf = 0;
+    };
+    bar._dayScrollRaf = requestAnimationFrame(step);
+  }
+  function revealDayPill(btn, opts = {}) {
+    if (!btn) return;
+    if (tour.active && (tour.stepId === 'layout' || tour.sub === 'overview')) return;
+    const bar = btn.closest('.daybar-inner') || $('#day-tabs');
+    if (!bar) return;
+    const pad = 12;
+    const br = bar.getBoundingClientRect();
+    const tr = btn.getBoundingClientRect();
+    let delta = 0;
+    if (tr.left < br.left + pad) delta = tr.left - br.left - pad;
+    else if (tr.right > br.right - pad) delta = tr.right - br.right + pad;
+    if (Math.abs(delta) < 1) return;
+    const left = bar.scrollLeft + delta;
+    const instant = opts.instant || prefersReducedMotion();
+    if (instant) {
+      if (bar._dayScrollRaf) { cancelAnimationFrame(bar._dayScrollRaf); bar._dayScrollRaf = 0; }
+      const max = Math.max(0, bar.scrollWidth - bar.clientWidth);
+      bar.scrollLeft = Math.max(0, Math.min(max, left));
+      return;
+    }
+    animateDaybarScroll(bar, left, DAYBAR_SCROLL_MS);
+  }
+  function syncDayPills(opts = {}) {
+    const tabs = $('#day-tabs');
+    if (!tabs) return;
+    const selected = selectedTapeDay();
+    $$('.daypill', tabs).forEach((btn) => {
+      btn.setAttribute('aria-selected', String(btn.dataset.day === selected));
+    });
+    const act = selected ? $(`.daypill[data-day="${CSS.escape(selected)}"]`, tabs) : null;
+    if (act) {
+      if (opts.instant) revealDayPill(act, { instant: true });
+      else requestAnimationFrame(() => revealDayPill(act, opts));
+    }
+  }
   function renderDaybar() {
     const bar = $('#daybar'); const tabs = $('#day-tabs');
     bar.hidden = state.view !== 'schedule';
@@ -1460,10 +1549,10 @@
     tabs.innerHTML = ''; tabs.setAttribute('aria-label', t('dayTabs'));
     const today = confNow().date;
     const isOverview = state.layout === 'overview';
+    const selected = selectedTapeDay();
     const week = el('div', { class: `day-week${isOverview ? ' is-overview' : ''}`, dataset: { tour: 'days' } });
     for (const d of DAYS) {
-      const selected = isOverview ? d === state.overviewFocus : d === state.day;
-      const btn = el('button', { class: `daypill${d === today ? ' is-today' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(selected), onclick: () => setDay(d), title: fmtLong(d) },
+      const btn = el('button', { class: `daypill${d === today ? ' is-today' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(d === selected), dataset: { day: d }, onclick: () => setDay(d), title: fmtLong(d) },
         el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
       week.append(btn);
     }
@@ -1479,9 +1568,8 @@
     }
     updateChangesBadge();
     requestAnimationFrame(() => {
-      if (tour.active && (tour.stepId === 'layout' || tour.sub === 'overview')) return;
       const act = $('.daypill[aria-selected="true"]', tabs);
-      if (act && act.scrollIntoView) act.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+      revealDayPill(act, { instant: true });
     });
   }
   function isExpanded(block) { return state.expanded.has(block.id) ? state.expanded.get(block.id) : isDesktop(); }
@@ -1748,7 +1836,7 @@
     if (day && day !== state.day) {
       haptic('tick', { day: true });
       state.day = day;
-      renderDaybar();
+      syncDayPills({ smooth: true });
       writeHash(false);
     }
   }
@@ -2613,12 +2701,14 @@
   function mapPreview(venue) {
     if (!venue) return null;
     const src = (venue.preview && (venue.preview[state.lang] || venue.preview.ru || venue.preview.en)) || '';
+    const href = socialMapUrl(venue);
     return el('a', {
-      class: 'map-preview', href: venue.url, target: '_blank', rel: 'noopener noreferrer',
+      class: 'map-preview', href, target: '_blank', rel: 'noopener noreferrer',
       'aria-label': t('openMap'),
     },
-      src ? el('img', { src: `${src}?v=${ASSET_V}`, alt: t('mapPreview'), loading: 'lazy', decoding: 'async' }) : null,
-      el('span', { class: 'map-open' }, icon('pin'), ` ${t('openMap')}`, icon('external')));
+      src ? el('span', { class: 'map-frame' },
+        el('img', { src: `${src}?v=${ASSET_V}`, alt: t('mapPreview'), loading: 'lazy', decoding: 'async' })) : null,
+      el('span', { class: 'map-open' }, icon('pin'), el('span', { class: 'map-open-label' }, t('openMap')), icon('external')));
   }
 
   function openBlockDetail(id, fromUser) {
@@ -2646,7 +2736,7 @@
       el('button', { class: 'btn ghost', type: 'button', onclick: async () => {
         const url = pageUrl(`#view=schedule&day=${b.date}&block=${b.id}`);
         if (await copyText(url)) { haptic('success'); toast(t('linkCopied')); }
-      } }, icon('link'), t('copyLink')));
+      } }, icon('link'), t('copyLinkEvent')));
     dlg.append(el('div', { class: 'sheet-inner' }, el('div', { class: 'grabber' }), el('div', { class: 'sheet-head' }, kicker, el('button', { class: 'sheet-close', type: 'button', 'aria-label': t('close'), onclick: () => dlg.close() }, icon('x'))), body, actions));
     showSheet(dlg);
     dlg.onclose = () => { openBlockId = null; writeHash(); unlockBodyScroll(); };

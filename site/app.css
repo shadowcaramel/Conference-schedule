@@ -331,13 +331,14 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   padding: 0 clamp(12px, 3vw, 24px);
   display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;
 }
 .daybar-inner::-webkit-scrollbar { display: none; }
 .daypill {
   flex: 0 0 auto; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
   min-width: 64px; height: 44px; padding: 0 14px; border-radius: var(--r-pill);
   border: 1px solid transparent; background: transparent; color: var(--text-2); line-height: 1.1;
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-slow) var(--ease), color var(--dur-slow) var(--ease), transform var(--dur-fast) var(--ease);
   position: relative;
 }
 .daypill .dow { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
@@ -822,18 +823,24 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
 .sheet-note { color: var(--text-2); font-size: var(--fs-sm); padding: 10px 12px; border-left: 3px solid var(--border-2); }
 
 .map-preview {
-  display: block; border-radius: var(--r-md); overflow: hidden;
-  border: 1px solid var(--border); background: var(--surface-2); color: inherit; text-decoration: none;
+  display: flex; flex-direction: column;
+  border-radius: var(--r-md); overflow: hidden;
+  border: 1px solid var(--border); background: var(--surface); color: inherit; text-decoration: none;
 }
 .map-preview:hover { border-color: var(--border-2); }
+.map-preview .map-frame { display: block; overflow: hidden; line-height: 0; background: var(--surface-2); }
 .map-preview img {
   display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--surface-2);
 }
 .map-preview .map-open {
-  display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 12px;
   font-size: var(--fs-sm); font-weight: 650; color: var(--accent); background: var(--surface);
 }
-.map-preview .map-open .ico { width: 1.1em; height: 1.1em; }
+.map-preview .map-open-label { min-width: 0; }
+.map-preview .map-open .ico { width: 1.1em; height: 1.1em; flex: 0 0 auto; }
+@media (max-width: 720px) {
+  .map-preview .map-open { font-size: var(--fs-xs); padding: 7px 10px; gap: 5px; }
+}
 
 /* changes list */
 .changes { display: grid; gap: 12px; }
