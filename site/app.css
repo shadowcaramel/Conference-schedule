@@ -861,6 +861,9 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   font-size: var(--fs-sm); font-weight: 600; box-shadow: var(--shadow-lg); max-width: calc(100vw - 32px);
   animation: toast-in var(--dur) var(--ease);
 }
+.sheet > .toast {
+  position: absolute; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+}
 @media (min-width: 900px) { .toast { bottom: 24px; } }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 

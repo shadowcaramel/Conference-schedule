@@ -648,15 +648,39 @@
 
   // ------------------------------------------------------------------ UI utils
   let toastTimer = null;
+  let toastHome = null;
   function toast(msg) {
-    const node = $('#toast'); node.textContent = msg; node.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => { node.hidden = true; }, 2600);
+    const node = $('#toast');
+    if (!toastHome) toastHome = node.parentElement;
+    node.textContent = msg; node.hidden = false;
+    const dlg = document.querySelector('dialog[open]');
+    if (dlg) dlg.append(node);
+    else if (toastHome && node.parentElement !== toastHome) toastHome.append(node);
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => {
+      node.hidden = true;
+      if (toastHome && node.parentElement !== toastHome) toastHome.append(node);
+    }, 2600);
   }
   async function copyText(text) {
-    try { await navigator.clipboard.writeText(text); return true; } catch {
-      const ta = el('textarea', { style: 'position:fixed;opacity:0' }, text); document.body.append(ta); ta.select();
-      try { document.execCommand('copy'); return true; } catch { return false; } finally { ta.remove(); }
+    if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+      try { await navigator.clipboard.writeText(text); return true; } catch { /* fall through */ }
     }
+    const host = document.querySelector('dialog[open]') || document.body;
+    const ta = document.createElement('textarea');
+    ta.value = String(text);
+    ta.setAttribute('readonly', '');
+    ta.setAttribute('tabindex', '-1');
+    ta.setAttribute('aria-hidden', 'true');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;margin:0;border:0;opacity:0.01;';
+    host.append(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { ok = false; }
+    ta.remove();
+    if (ok) return true;
+    try { return window.prompt(t('copyLink'), String(text)) !== null; } catch { return false; }
   }
   function withTransition(fn) {
     // Full innerHTML replacement does not play well with the View Transitions API
