@@ -162,13 +162,12 @@
       changes: 'Изменения', changesTitle: 'Изменения в программе', noChanges: 'Изменений пока нет.',
       theme: 'Тема: светлая / тёмная', font: 'Размер шрифта', lang: 'Switch to English',
       updated: 'Обновлено', today: 'Сегодня', now: 'Сейчас', next: 'Далее', at: 'в', until: 'до',
-      day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', chairs: 'Председатели', talks: 'докладов', talk: 'Доклад',
+      day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', chairs: 'Председатели', talk: 'Доклад',
       plenaryTalk: 'Пленарный доклад', jubileeTalk: 'Юбилейный доклад', sponsorTalk: 'Доклад спонсора', section: 'Секция',
       posterSession: 'Постерная сессия', poster: 'Постер', board: 'Стенд', time: 'Время', date: 'Дата', duration: 'Длительность', min: 'мин',
       speaker: 'Докладчик', affiliation: 'Организация', topic: 'Тематика', status: 'Статус',
       cancelled: 'Отменён', moved: 'Перенесён', showTalks: 'Показать доклады', hideTalks: 'Скрыть доклады',
       expandAll: 'Развернуть все', collapseAll: 'Свернуть все', filterSections: 'Секции', allSections: 'Все',
-      parallel: 'параллельных секций', plenaryCount: 'пленарных', posterCount: 'постеров',
       searchPlaceholder: 'Докладчик, название, организация…', results: 'Найдено', nothingFound: 'Ничего не найдено', speakerIndex: 'Указатель докладчиков',
       clear: 'Очистить', star: 'В моё расписание', unstar: 'Убрать из моего расписания', addToCalendar: 'В календарь (.ics)',
       copyLink: 'Ссылка на доклад', copyLinkEvent: 'Ссылка на событие', linkCopied: 'Ссылка скопирована', shareMy: 'Поделиться моим расписанием', shareCopied: 'Ссылка на ваше расписание скопирована',
@@ -218,13 +217,12 @@
       changes: 'Changes', changesTitle: 'Programme changes', noChanges: 'No changes yet.',
       theme: 'Theme: light / dark', font: 'Font size', lang: 'Переключить на русский',
       updated: 'Updated', today: 'Today', now: 'Now', next: 'Next', at: 'at', until: 'until',
-      day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', chairs: 'Chairs', talks: 'talks', talk: 'Talk',
+      day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', chairs: 'Chairs', talk: 'Talk',
       plenaryTalk: 'Plenary talk', jubileeTalk: 'Anniversary talk', sponsorTalk: 'Sponsor talk', section: 'Section',
       posterSession: 'Poster session', poster: 'Poster', board: 'Board', time: 'Time', date: 'Date', duration: 'Duration', min: 'min',
       speaker: 'Speaker', affiliation: 'Affiliation', topic: 'Topic', status: 'Status',
       cancelled: 'Cancelled', moved: 'Moved', showTalks: 'Show talks', hideTalks: 'Hide talks',
       expandAll: 'Expand all', collapseAll: 'Collapse all', filterSections: 'Sections', allSections: 'All',
-      parallel: 'parallel sections', plenaryCount: 'plenary talks', posterCount: 'posters',
       searchPlaceholder: 'Speaker, title, affiliation…', results: 'Found', nothingFound: 'Nothing found', speakerIndex: 'Speaker index',
       clear: 'Clear', star: 'Add to my schedule', unstar: 'Remove from my schedule', addToCalendar: 'Add to calendar (.ics)',
       copyLink: 'Link to this talk', copyLinkEvent: 'Link to this event', linkCopied: 'Link copied', shareMy: 'Share my schedule', shareCopied: 'Link to your schedule copied',
@@ -273,6 +271,28 @@
   const BLOCK_TYPE_LABEL = {
     ru: { plenary: 'Пленарный доклад', jubilee: 'Юбилейный доклад', sponsor: 'Доклад спонсора', section: 'Секция', break: 'Кофе-брейк', lunch: 'Обед', registration: 'Регистрация', opening: 'Открытие', closing: 'Закрытие', poster: 'Постерная сессия', social: 'Мероприятие' },
     en: { plenary: 'Plenary talk', jubilee: 'Anniversary talk', sponsor: 'Sponsor talk', section: 'Section', break: 'Coffee break', lunch: 'Lunch', registration: 'Registration', opening: 'Opening', closing: 'Closing', poster: 'Poster session', social: 'Social event' },
+  };
+  const COUNT = {
+    talks: {
+      ru: { one: 'доклад', few: 'доклада', many: 'докладов' },
+      en: { one: 'talk', other: 'talks' },
+    },
+    posters: {
+      ru: { one: 'постер', few: 'постера', many: 'постеров' },
+      en: { one: 'poster', other: 'posters' },
+    },
+    plenary: {
+      ru: { one: 'пленарный', few: 'пленарных', many: 'пленарных' },
+      en: { one: 'plenary talk', other: 'plenary talks' },
+    },
+    parallel: {
+      ru: { one: 'параллельная секция', few: 'параллельные секции', many: 'параллельных секций' },
+      en: { one: 'parallel section', other: 'parallel sections' },
+    },
+    slots: {
+      ru: { one: 'слот', few: 'слота', many: 'слотов' },
+      en: { one: 'slot', other: 'slots' },
+    },
   };
 
   // ------------------------------------------------------------------ state
@@ -344,6 +364,18 @@
   const t = (key) => (I18N[state.lang] && I18N[state.lang][key]) || I18N.ru[key] || key;
   const L = (obj) => obj ? (obj[state.lang] || obj.ru || obj.en || '') : '';
   const locale = () => state.lang === 'ru' ? 'ru-RU' : 'en-GB';
+  function ruPluralCat(n) {
+    const n100 = Math.abs(n) % 100, n10 = n100 % 10;
+    if (n100 >= 11 && n100 <= 14) return 'many';
+    if (n10 === 1) return 'one';
+    if (n10 >= 2 && n10 <= 4) return 'few';
+    return 'many';
+  }
+  function counted(n, forms) {
+    const f = forms[state.lang] || forms.ru;
+    const word = state.lang === 'ru' ? f[ruPluralCat(n)] : (n === 1 ? f.one : f.other);
+    return `${n} ${word}`;
+  }
 
   // ------------------------------------------------------------------ time
   function nowDate() {
@@ -477,13 +509,13 @@
     const sectionSlots = new Set(blocks.filter(b => b.type === 'section').map(b => b.start)).size;
     const sectionCount = blocks.filter(b => b.type === 'section').length;
     const sectionPart = sectionCount
-      ? `${sectionCount} ${t('parallel')}` + (sectionSlots > 1 ? ` (${sectionSlots} ${state.lang === 'ru' ? 'слота' : 'slots'})` : '')
+      ? counted(sectionCount, COUNT.parallel) + (sectionSlots > 1 ? ` (${counted(sectionSlots, COUNT.slots)})` : '')
       : '';
     const parts = [];
     let sawPlenary = false, sawSection = false;
     for (const b of blocks) {
       if (['plenary', 'jubilee'].includes(b.type)) {
-        if (!sawPlenary && plenary) { parts.push(`${plenary} ${t('plenaryCount')}`); sawPlenary = true; }
+        if (!sawPlenary && plenary) { parts.push(counted(plenary, COUNT.plenary)); sawPlenary = true; }
       } else if (b.type === 'section') {
         if (!sawSection && sectionPart) { parts.push(sectionPart); sawSection = true; }
       } else if (['social', 'poster', 'opening', 'closing', 'registration'].includes(b.type)) {
@@ -2346,7 +2378,7 @@
     if (['plenary', 'jubilee', 'sponsor'].includes(type)) return renderPlenary(b, now);
     if (type === 'poster') {
       return el('div', { class: 'row-card poster-row card hoverable', role: 'button', tabindex: 0, dataset: { action: 'posters' } },
-        icon('poster'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, [`${D.posters.length} ${t('posterCount')}`, roomOf(b) || '', L(b.note)].filter(Boolean).join(' · '))),
+        icon('poster'), el('div', null, el('div', { class: 'row-title' }, blockTitle(b)), el('div', { class: 'row-meta' }, [counted(D.posters.length, COUNT.posters), roomOf(b) || '', L(b.note)].filter(Boolean).join(' · '))),
         el('span', { class: 'ico', style: 'margin-left:auto;color:var(--text-3)', html: `<svg viewBox="0 0 24 24">${ICONS.arrow}</svg>` }));
     }
     const cls = type === 'social' ? 'social' : (type === 'opening' || type === 'closing' || type === 'registration') ? 'milestone' : '';
@@ -2493,7 +2525,7 @@
       el('div', { class: 'kicker' }, s.id === 'P' ? t('plenarySection') : `${t('section')} ${s.id}`),
       el('h2', null, L(s.short)),
       L(s.full) !== L(s.short) ? el('p', { class: 'full' }, L(s.full)) : null,
-      el('div', { class: 'meta' }, chairMeta, el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), roomText(s.room) ? el('span', null, icon('pin'), ` ${roomText(s.room)}`) : null)));
+      el('div', { class: 'meta' }, chairMeta, el('span', null, icon('list'), ` ${counted(talkCount, COUNT.talks)}`), roomText(s.room) ? el('span', null, icon('pin'), ` ${roomText(s.room)}`) : null)));
 
     // group by day
     const byDay = new Map();
@@ -2526,7 +2558,7 @@
     const frag = document.createDocumentFragment();
     const sub = [];
     if (posterBlock) sub.push(`${fmtLong(posterBlock.date)}, ${posterBlock.start}–${posterBlock.end}`, roomOf(posterBlock) || '', L(posterBlock.note));
-    sub.push(`${D.posters.length} ${t('posterCount')}`);
+    sub.push(counted(D.posters.length, COUNT.posters));
     frag.append(el('div', { class: 'page-head' }, el('div', null, el('h1', { class: 'page-title' }, t('posters')), el('p', { class: 'page-sub' }, sub.filter(Boolean).flatMap((x, i) => i ? [el('span', { class: 'sep' }, '·'), el('span', null, x)] : [el('span', null, x)])))));
     if (!D.posters.some(p => p.board)) frag.append(el('div', { class: 'hint' }, icon('info'), el('span', null, t('posterHint'))));
 
@@ -2554,7 +2586,7 @@
       for (const [sid, ps] of Array.from(bySec.entries()).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))) {
         const s = sectionsById[sid];
         const group = el('section', { class: 'group' });
-        group.append(el('div', { class: 'group-head' }, el('h3', null, s ? `${t('section')} ${sid} · ${L(s.short)}` : sid), el('span', { class: 'when' }, `${ps.length} ${t('posterCount')}`)));
+        group.append(el('div', { class: 'group-head' }, el('h3', null, s ? `${t('section')} ${sid} · ${L(s.short)}` : sid), el('span', { class: 'when' }, counted(ps.length, COUNT.posters))));
         const list = el('div', { class: 'poster-list' });
         for (const p of ps) list.append(renderPoster(p, q));
         group.append(list); listHost.append(group);
