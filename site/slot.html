@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title>Slot playground — ЯДРО-2026</title>
+  <link rel="stylesheet" href="app.css?v=23">
+  <link rel="stylesheet" href="slot-machine.css?v=3">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('nucleus2026:theme');
+        if (t) document.documentElement.dataset.theme = JSON.parse(t);
+        else if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    .slot-demo {
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    .slot-demo h1 {
+      font-size: var(--fs-xl);
+      margin-bottom: 6px;
+    }
+    .slot-demo .lede {
+      color: var(--text-2);
+      font-size: var(--fs-sm);
+      margin-bottom: 22px;
+    }
+    .slot-demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 16px 20px;
+      min-height: 72px;
+    }
+    #slot-root { padding-top: 26px; }
+    .slot-demo-scale {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .slot-demo-cap {
+      font-size: var(--fs-xs);
+      font-weight: 650;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .slot-demo-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 28px;
+    }
+    .slot-demo-log {
+      margin-top: 18px;
+      font-size: var(--fs-sm);
+      color: var(--text-3);
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <main class="slot-demo">
+    <h1>Slot playground</h1>
+    <p class="lede">Isolated machine at Лента/Сетка size. Tap or click to spin. Three of a kind shows БАХ / BOOM. Not linked from the programme.</p>
+
+    <div class="slot-demo-row">
+      <div class="slot-demo-scale">
+        <span class="slot-demo-cap">Layout switch</span>
+        <div class="seg" role="group" aria-label="Schedule layout">
+          <button class="seg-btn" type="button" aria-pressed="true">Лента</button>
+          <button class="seg-btn" type="button" aria-pressed="false">Сетка</button>
+        </div>
+      </div>
+      <div class="slot-demo-scale">
+        <span class="slot-demo-cap">Machine</span>
+        <div id="slot-root"></div>
+      </div>
+    </div>
+
+    <div class="slot-demo-tools">
+      <button class="btn sm" id="btn-theme" type="button">Theme</button>
+      <button class="btn sm" id="btn-lang" type="button">EN</button>
+    </div>
+    <p class="slot-demo-log" id="slot-log" aria-live="polite"></p>
+  </main>
+
+  <script src="slot-machine.js?v=2"></script>
+  <script>
+    (function () {
+      var lang = 'ru';
+      var log = document.getElementById('slot-log');
+      var api = window.mountSlotMachine(document.getElementById('slot-root'), {
+        lang: lang,
+        haptic: true,
+        onSpinEnd: function (r) {
+          log.textContent = r.symbols.join(' · ') + (r.jackpot ? ' — jackpot' : '');
+        },
+        onJackpot: function () {}
+      });
+
+      document.getElementById('btn-theme').addEventListener('click', function () {
+        var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+      });
+      document.getElementById('btn-lang').addEventListener('click', function () {
+        lang = lang === 'ru' ? 'en' : 'ru';
+        api.setLang(lang);
+        this.textContent = lang === 'ru' ? 'EN' : 'RU';
+      });
+    })();
+  </script>
+</body>
+</html>

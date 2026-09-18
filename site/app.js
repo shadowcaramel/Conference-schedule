@@ -162,7 +162,7 @@
       changes: 'Изменения', changesTitle: 'Изменения в программе', noChanges: 'Изменений пока нет.',
       theme: 'Тема: светлая / тёмная', font: 'Размер шрифта', lang: 'Switch to English',
       updated: 'Обновлено', today: 'Сегодня', now: 'Сейчас', next: 'Далее', at: 'в', until: 'до',
-      day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', talks: 'докладов', talk: 'Доклад',
+      day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', chairs: 'Председатели', talks: 'докладов', talk: 'Доклад',
       plenaryTalk: 'Пленарный доклад', jubileeTalk: 'Юбилейный доклад', sponsorTalk: 'Доклад спонсора', section: 'Секция',
       posterSession: 'Постерная сессия', poster: 'Постер', board: 'Стенд', time: 'Время', date: 'Дата', duration: 'Длительность', min: 'мин',
       speaker: 'Докладчик', affiliation: 'Организация', topic: 'Тематика', status: 'Статус',
@@ -218,7 +218,7 @@
       changes: 'Changes', changesTitle: 'Programme changes', noChanges: 'No changes yet.',
       theme: 'Theme: light / dark', font: 'Font size', lang: 'Переключить на русский',
       updated: 'Updated', today: 'Today', now: 'Now', next: 'Next', at: 'at', until: 'until',
-      day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', talks: 'talks', talk: 'Talk',
+      day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', chairs: 'Chairs', talks: 'talks', talk: 'Talk',
       plenaryTalk: 'Plenary talk', jubileeTalk: 'Anniversary talk', sponsorTalk: 'Sponsor talk', section: 'Section',
       posterSession: 'Poster session', poster: 'Poster', board: 'Board', time: 'Time', date: 'Date', duration: 'Duration', min: 'min',
       speaker: 'Speaker', affiliation: 'Affiliation', topic: 'Topic', status: 'Status',
@@ -426,6 +426,20 @@
       const s = b && b.section ? sectionsById[b.section] : null;
       return (s && L(s.chair)) || '';
     };
+    function sittingChairs(sectionId) {
+      const seen = new Set();
+      const names = [];
+      const sittings = D.blocks
+        .filter(b => b.section === sectionId && b.type === 'section')
+        .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+      for (const b of sittings) {
+        const name = L(b.chair);
+        if (!name || seen.has(name)) continue;
+        seen.add(name);
+        names.push(name);
+      }
+      return names;
+    }
   function slotGroupsOn() {
     return SLOT_GROUPS && document.documentElement.dataset.slotGroups !== 'off';
   }
@@ -2438,7 +2452,7 @@
       desktop ? null : el('span', { class: 'chev' }, icon('chevron')),
       el('span', { class: 'sec-meta' },
         el('span', null, icon('pin'), ` ${roomLabel(b)}`),
-        el('span', null, icon('user'), ` ${chairLabel(s)}`)));
+        el('span', null, icon('user'), ` ${chairOf(b) || t('tbc')}`)));
     card.append(head);
     if (open || desktop) fillSectionTalks(card, b, times, now);
     return card;
@@ -2471,11 +2485,15 @@
     const s = sectionsById[state.section] || ordered[0];
     const blocks = D.blocks.filter(b => b.section === s.id && b.talks.length).sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
     const talkCount = blocks.reduce((n, b) => n + b.talks.length, 0);
+    const chairs = s.id === 'P' ? [] : sittingChairs(s.id);
+    const chairMeta = chairs.length
+      ? el('span', null, icon('user'), ` ${chairs.length > 1 ? t('chairs') : t('chair')}: ${chairs.join(', ')}`)
+      : (s.id === 'P' ? null : el('span', null, icon('user'), ` ${t('chair')}: ${t('tbc')}`));
     frag.append(el('div', { class: 'section-hero', dataset: { color: s.color } },
       el('div', { class: 'kicker' }, s.id === 'P' ? t('plenarySection') : `${t('section')} ${s.id}`),
       el('h2', null, L(s.short)),
       L(s.full) !== L(s.short) ? el('p', { class: 'full' }, L(s.full)) : null,
-      el('div', { class: 'meta' }, el('span', null, icon('user'), ` ${t('chair')}: ${chairLabel(s)}`), el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), roomText(s.room) ? el('span', null, icon('pin'), ` ${roomText(s.room)}`) : null)));
+      el('div', { class: 'meta' }, chairMeta, el('span', null, icon('list'), ` ${talkCount} ${t('talks')}`), roomText(s.room) ? el('span', null, icon('pin'), ` ${roomText(s.room)}`) : null)));
 
     // group by day
     const byDay = new Map();
@@ -2486,7 +2504,14 @@
       group.append(el('div', { class: 'group-head' }, el('h3', null, fmtLong(date)), el('span', { class: 'when' }, dayBlocks.map(b => `${b.start}–${b.end}`).join(', '))));
       for (const b of dayBlocks) {
         const card = el('div', { class: 'card', dataset: { color: s.color } });
-        if (dayBlocks.length > 1 || roomOf(b)) card.append(el('div', { class: 'sechead', style: 'cursor:default' }, el('span', { class: 'sec-name' }, el('span', { class: 'num' }, `${b.start}–${b.end}`), b.type !== 'section' ? ' · ' : null, b.type !== 'section' ? el('span', { class: 'sec-cat' }, blockTitle(b)) : null), el('span', { class: 'sec-meta' }, roomOf(b) ? el('span', null, icon('pin'), ` ${roomOf(b)}`) : null)));
+        const sittingChair = chairOf(b);
+        if (dayBlocks.length > 1 || roomOf(b) || sittingChair) {
+          card.append(el('div', { class: 'sechead', style: 'cursor:default' },
+            el('span', { class: 'sec-name' }, el('span', { class: 'num' }, `${b.start}–${b.end}`), b.type !== 'section' ? ' · ' : null, b.type !== 'section' ? el('span', { class: 'sec-cat' }, blockTitle(b)) : null),
+            el('span', { class: 'sec-meta' },
+              roomOf(b) ? el('span', null, icon('pin'), ` ${roomOf(b)}`) : null,
+              sittingChair ? el('span', null, icon('user'), ` ${sittingChair}`) : null)));
+        }
         card.append(el('div', { class: 'talks' }, ...b.talks.map(id => D.talks[id]).filter(Boolean).map(tk => renderTalkRow(tk, now.date === date ? now : null))));
         group.append(card);
       }

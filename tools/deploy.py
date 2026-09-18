@@ -25,7 +25,10 @@ from common import PROGRAMME_XLSX, ROOT, SITE_DIR, utf8_stdout  # noqa: E402
 utf8_stdout()
 
 ENV_FILE = ROOT / ".ftp.env"
-SKIP_NAMES = {".nojekyll", "desktop.ini", "thumbs.db", ".ds_store"}
+SKIP_NAMES = {
+    ".nojekyll", "desktop.ini", "thumbs.db", ".ds_store",
+    "slot.html", "slot-machine.js", "slot-machine.css",
+}
 PUBLIC_URL_DEFAULT = "http://nucleus.togudv.ru/timetable/"
 
 
