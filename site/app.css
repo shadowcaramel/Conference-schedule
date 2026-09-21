@@ -861,6 +861,7 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   font-size: var(--fs-sm); font-weight: 600; box-shadow: var(--shadow-lg); max-width: calc(100vw - 32px);
   animation: toast-in var(--dur) var(--ease);
 }
+.toast.is-action { cursor: pointer; padding: 14px 20px; }
 .sheet > .toast {
   position: absolute; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 5;
 }

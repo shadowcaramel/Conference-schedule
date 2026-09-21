@@ -161,7 +161,7 @@
       skip: 'К содержанию', schedule: 'Расписание', sections: 'Секции', posters: 'Постеры', search: 'Поиск', my: 'Моё',
       changes: 'Изменения', changesTitle: 'Изменения в программе', noChanges: 'Изменений пока нет.',
       theme: 'Тема: светлая / тёмная', font: 'Размер шрифта', lang: 'Switch to English',
-      updated: 'Обновлено', today: 'Сегодня', now: 'Сейчас', next: 'Далее', at: 'в', until: 'до',
+      updated: 'Обновлено', reloadProgramme: 'Программа обновлена — нажмите, чтобы загрузить', today: 'Сегодня', now: 'Сейчас', next: 'Далее', at: 'в', until: 'до',
       day: 'День', room: 'Ауд.', roomLong: 'Аудитория', chair: 'Председатель', chairs: 'Председатели', talk: 'Доклад',
       plenaryTalk: 'Пленарный доклад', jubileeTalk: 'Юбилейный доклад', sponsorTalk: 'Доклад спонсора', section: 'Секция',
       posterSession: 'Постерная сессия', poster: 'Постер', board: 'Стенд', time: 'Время', date: 'Дата', duration: 'Длительность', min: 'мин',
@@ -216,7 +216,7 @@
       skip: 'Skip to content', schedule: 'Schedule', sections: 'Sections', posters: 'Posters', search: 'Search', my: 'My',
       changes: 'Changes', changesTitle: 'Programme changes', noChanges: 'No changes yet.',
       theme: 'Theme: light / dark', font: 'Font size', lang: 'Переключить на русский',
-      updated: 'Updated', today: 'Today', now: 'Now', next: 'Next', at: 'at', until: 'until',
+      updated: 'Updated', reloadProgramme: 'Programme updated — tap to reload', today: 'Today', now: 'Now', next: 'Next', at: 'at', until: 'until',
       day: 'Day', room: 'Room', roomLong: 'Room', chair: 'Chair', chairs: 'Chairs', talk: 'Talk',
       plenaryTalk: 'Plenary talk', jubileeTalk: 'Anniversary talk', sponsorTalk: 'Sponsor talk', section: 'Section',
       posterSession: 'Poster session', poster: 'Poster', board: 'Board', time: 'Time', date: 'Date', duration: 'Duration', min: 'min',
@@ -696,9 +696,12 @@
   let toastTimer = null;
   let toastHome = null;
   function toast(msg) {
+    if (reloadOffered) return;
     const node = $('#toast');
     if (!toastHome) toastHome = node.parentElement;
     node.textContent = msg; node.hidden = false;
+    node.classList.remove('is-action');
+    node.onclick = null;
     const dlg = document.querySelector('dialog[open]');
     if (dlg) dlg.append(node);
     else if (toastHome && node.parentElement !== toastHome) toastHome.append(node);
@@ -706,6 +709,30 @@
       node.hidden = true;
       if (toastHome && node.parentElement !== toastHome) toastHome.append(node);
     }, 2600);
+  }
+  let reloadOffered = false;
+  function offerProgrammeReload() {
+    if (reloadOffered) return;
+    reloadOffered = true;
+    const node = $('#toast');
+    if (!node) return;
+    if (!toastHome) toastHome = node.parentElement;
+    if (toastHome && node.parentElement !== toastHome) toastHome.append(node);
+    node.textContent = t('reloadProgramme');
+    node.classList.add('is-action');
+    node.hidden = false;
+    node.onclick = () => location.reload();
+    clearTimeout(toastTimer);
+  }
+  function checkProgrammeUpdate() {
+    if (location.protocol === 'file:') return;
+    fetch(`data.js?fresh=${Date.now()}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.text() : ''))
+      .then((text) => {
+        const m = text.match(/"generatedAt":"([^"]+)"/);
+        if (m && m[1] && m[1] !== D.generatedAt) offerProgrammeReload();
+      })
+      .catch(() => {});
   }
   async function copyText(text) {
     if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
@@ -3245,12 +3272,20 @@
   bindMainClicks();
   bindHapticUnlock();
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refreshNowMarkers();
+    if (document.visibilityState === 'visible') {
+      refreshNowMarkers();
+      checkProgrammeUpdate();
+    }
   });
   setInterval(() => {
     if (document.visibilityState !== 'visible') return;
     refreshNowMarkers();
   }, 60000);
+  setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    checkProgrammeUpdate();
+  }, 120000);
+  setTimeout(checkProgrammeUpdate, 8000);
 
   // boot
   applyHash();

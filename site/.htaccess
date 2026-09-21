@@ -1,0 +1,7 @@
+# Ask browsers to revalidate HTML/JS so conference-day programme edits
+# are not stuck behind a phone cache. Fonts and images may still be cached.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

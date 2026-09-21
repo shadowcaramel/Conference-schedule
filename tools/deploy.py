@@ -20,7 +20,7 @@ from ftplib import FTP, error_perm
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import PROGRAMME_XLSX, ROOT, SITE_DIR, utf8_stdout  # noqa: E402
+from common import PROGRAMME_XLSX, ROOT, SITE_DIR, stamp_site_cache, utf8_stdout  # noqa: E402
 
 utf8_stdout()
 
@@ -163,6 +163,9 @@ def main(argv: list[str]) -> int:
             return code
 
     warn_if_stale()
+    tags = stamp_site_cache()
+    if tags:
+        print("Кэш: " + ", ".join(f"{k}={v}" for k, v in tags.items()), flush=True)
     host, port, user, password, public_url = require_creds(load_env())
     files = local_files()
     if not files:

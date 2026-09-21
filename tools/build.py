@@ -48,6 +48,7 @@ from common import (  # noqa: E402
     minutes,
     parse_date,
     parse_time,
+    stamp_site_cache,
     utf8_stdout,
 )
 
@@ -499,7 +500,7 @@ def write_single_file(model: dict) -> Path | None:
     html = index.read_text(encoding="utf-8")
 
     def inline_css(match: re.Match) -> str:
-        href = match.group(1)
+        href = match.group(1).split("?", 1)[0]
         css_path = SITE_DIR / href
         if not css_path.exists():
             return match.group(0)
@@ -518,7 +519,7 @@ def write_single_file(model: dict) -> Path | None:
         return f"<style>\n{css}\n</style>"
 
     def inline_js(match: re.Match) -> str:
-        src = match.group(1)
+        src = match.group(1).split("?", 1)[0]
         js_path = SITE_DIR / src
         if not js_path.exists():
             return match.group(0)
@@ -584,6 +585,9 @@ def main(argv: list[str]) -> int:
     if single:
         size_kb = single.stat().st_size / 1024
         print(f"Записано: {single} ({size_kb:.0f} КБ)")
+    tags = stamp_site_cache()
+    if tags:
+        print("Кэш: " + ", ".join(f"{k}={v}" for k, v in tags.items()))
     print(f"Готово. Предупреждений: {len(diag.warnings)}.")
     return 0
 

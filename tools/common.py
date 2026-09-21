@@ -7,6 +7,7 @@ Everything here describes its layout so that both scripts agree on it.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -230,3 +231,44 @@ def minutes(t: dt.time) -> int:
 def from_minutes(m: int) -> dt.time:
     m %= 24 * 60
     return dt.time(m // 60, m % 60)
+
+
+def stamp_site_cache(site_dir: Path | None = None) -> dict[str, str]:
+    """Put content hashes on app.css / app.js / data.js in index.html and bump sw.js CACHE.
+
+    Phones otherwise keep a stale data.js for hours (no Cache-Control on the FTP host).
+    """
+    site = site_dir or SITE_DIR
+    tags: dict[str, str] = {}
+    parts: list[str] = []
+    for name in ("app.css", "app.js", "data.js"):
+        path = site / name
+        if not path.is_file():
+            continue
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()[:8]
+        tags[name] = digest
+        parts.append(digest)
+    html_path = site / "index.html"
+    if html_path.is_file() and tags:
+        text = html_path.read_text(encoding="utf-8")
+        for name, digest in tags.items():
+            text = re.sub(
+                rf'(href|src)="{re.escape(name)}(\?v=[^"]*)?"',
+                rf'\1="{name}?v={digest}"',
+                text,
+            )
+        html_path.write_text(text, encoding="utf-8", newline="\n")
+    sw_path = site / "sw.js"
+    if sw_path.is_file() and parts:
+        sw_tag = hashlib.sha256("".join(parts).encode("ascii")).hexdigest()[:8]
+        tags["sw"] = sw_tag
+        sw = sw_path.read_text(encoding="utf-8")
+        sw, n = re.subn(
+            r"const CACHE = 'nucleus2026-[^']+';",
+            f"const CACHE = 'nucleus2026-{sw_tag}';",
+            sw,
+            count=1,
+        )
+        if n:
+            sw_path.write_text(sw, encoding="utf-8", newline="\n")
+    return tags

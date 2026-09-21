@@ -22,7 +22,8 @@ The live site is [http://nucleus.togudv.ru/timetable/](http://nucleus.togudv.ru/
 1. If `data/programme.xlsx` changed and `site/data.js` is stale, rebuild first (`python tools/build.py` or pass `--build`).
 2. Preview: `python tools/deploy.py --dry-run`
 3. Upload: `python tools/deploy.py` (only files whose size differs). Use `--all` only if they ask to overwrite everything.
-4. Confirm the live URL in the browser (schedule renders, RU/EN works, no missing CSS/JS).
+   The script stamps `?v=` hashes on `data.js` / `app.js` / `app.css` in `index.html` before upload so phones do not keep a stale programme.
+4. Confirm the live URL in the browser (schedule renders, RU/EN works, no missing CSS/JS). After a cache-busting change, check that `data.js?v=` is present in `index.html` and that HTML/JS responses prefer `Cache-Control: no-cache` when `.htaccess` is honoured.
 
 Credentials come from gitignored `.ftp.env` (copy `.ftp.env.example`) or `FTP_HOST` / `FTP_USER` / `FTP_PASS`. Never print the password, never commit `.ftp.env`, never write the password into the repo.
 
