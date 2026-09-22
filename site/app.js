@@ -176,11 +176,11 @@
       myEmptyTitle: 'Пока ничего не отмечено', myEmpty: 'Нажмите ★ у любого доклада или постера — он появится здесь. Отметки хранятся в этом браузере, входить в систему не нужно.',
       myHint: 'Отметки хранятся только на этом устройстве и в этом браузере. Чтобы перенести их на другое устройство, воспользуйтесь кнопкой «Поделиться».',
       conflict: 'пересекается с', removedFromProgramme: 'Удалено из программы', imported: 'Добавлено в «Моё»',
-      print: 'Версия для печати', printSection: 'Печать секции', localTime: 'Время местное', website: 'Сайт конференции', sponsorSite: 'Сайт спонсора', contact: 'Оргкомитет', fontLicence: 'Шрифт Onest (OFL)',
+      print: 'Версия для печати', printSection: 'Печать секции', printDay: 'Печать дня', localTime: 'Время местное', website: 'Сайт конференции', sponsorSite: 'Сайт спонсора', contact: 'Оргкомитет', fontLicence: 'Шрифт Onest (OFL)',
       close: 'Закрыть', openTalk: 'Открыть доклад', dayOf: 'День', of: 'из', noTalks: 'Нет докладов', tbc: 'уточняется',
       allDays: 'Все дни', posterHint: 'Номера стендов будут указаны позже.', sectionsHint: 'Полная программа каждой секции по дням.',
       plenarySection: 'Пленарные доклады', close2: 'Закрыть', starredCount: 'отмечено', dayTabs: 'Дни конференции', viewsNav: 'Разделы',
-      email: 'Email', layoutTimeline: 'Лента', layoutOverview: 'Сетка', scheduleLayout: 'Вид расписания',
+      email: 'Email', layoutTimeline: 'Лента', layoutOverview: 'Сетка', layoutDay: 'Подробный день', layoutWeek: 'Вся неделя', scheduleLayout: 'Вид расписания',
       slotGroupPlenary: 'Пленарные доклады', openSection: 'Открыть секцию',
       install: 'На экран Домой', installTitle: 'Программа как приложение',
       installLead: 'Ярлык на экране Домой открывает расписание сразу, без поиска во вкладках.',
@@ -231,11 +231,11 @@
       myEmptyTitle: 'Nothing starred yet', myEmpty: 'Tap ★ on any talk or poster and it will appear here. Stars are stored in this browser — no sign-in needed.',
       myHint: 'Stars are stored only on this device and in this browser. Use “Share” to move them to another device.',
       conflict: 'overlaps with', removedFromProgramme: 'Removed from the programme', imported: 'Added to “My”',
-      print: 'Print version', printSection: 'Print section', localTime: 'Local time', website: 'Conference website', sponsorSite: 'Sponsor website', contact: 'Organising committee', fontLicence: 'Onest typeface (OFL)',
+      print: 'Print version', printSection: 'Print section', printDay: 'Print this day', localTime: 'Local time', website: 'Conference website', sponsorSite: 'Sponsor website', contact: 'Organising committee', fontLicence: 'Onest typeface (OFL)',
       close: 'Close', openTalk: 'Open talk', dayOf: 'Day', of: 'of', noTalks: 'No talks', tbc: 'to be confirmed',
       allDays: 'All days', posterHint: 'Board numbers will be announced later.', sectionsHint: 'Full programme of each section, day by day.',
       plenarySection: 'Plenary talks', close2: 'Close', starredCount: 'starred', dayTabs: 'Conference days', viewsNav: 'Sections',
-      email: 'Email', layoutTimeline: 'Timeline', layoutOverview: 'Overview', scheduleLayout: 'Schedule layout',
+      email: 'Email', layoutTimeline: 'Timeline', layoutOverview: 'Overview', layoutDay: 'Detailed day', layoutWeek: 'Whole week', scheduleLayout: 'Schedule layout',
       slotGroupPlenary: 'Plenary talks', openSection: 'Open section',
       install: 'Add to Home Screen', installTitle: 'Programme as an app',
       installLead: 'A Home Screen icon opens the programme immediately, without hunting through browser tabs.',
@@ -338,7 +338,7 @@
     filters: new Set(),
     favs: new Set(store.get('favs', [])),
     expanded: new Map(),          // blockId -> bool (user override)
-    layout: 'timeline',           // 'timeline' | 'overview'
+    layout: 'timeline',           // 'timeline' | 'overview' | 'day'
     overviewFocus: null,          // focused overview column, or null = whole week
     overviewSel: null,            // { day, start, end, section? } highlighted overview cell, or null
     lastSeenChanges: store.get('lastSeenChanges', ''),
@@ -542,7 +542,7 @@
   function writeHash(push = false) {
     const parts = [`view=${state.view}`];
     if (state.view === 'schedule' && state.day) parts.push(`day=${state.day}`);
-    if (state.view === 'schedule' && state.layout === 'overview') parts.push('layout=overview');
+    if (state.view === 'schedule' && (state.layout === 'overview' || state.layout === 'day')) parts.push(`layout=${state.layout}`);
     if (state.view === 'sections') parts.push(`section=${state.section}`);
     if (state.view === 'search' && state.q) parts.push(`q=${encodeURIComponent(state.q)}`);
     if (openTalkId) parts.push(`talk=${openTalkId}`);
@@ -578,7 +578,8 @@
     }
     if (h.view && ['schedule', 'sections', 'posters', 'search', 'my'].includes(h.view)) state.view = h.view;
     if (h.day && CONF_DAYS.has(h.day)) state.day = h.day;
-    if (h.layout === 'overview' || h.layout === 'timeline') state.layout = h.layout;
+    if (h.layout === 'day') state.layout = (state.day && CONF_DAYS.has(state.day)) ? 'day' : 'overview';
+    else if (h.layout === 'overview' || h.layout === 'timeline') state.layout = h.layout;
     if (h.section && sectionsById[h.section]) state.section = h.section;
     if (h.q !== undefined) state.q = h.q;
     if (h.talk && (D.talks[h.talk] || postersById[h.talk])) openTalkId = h.talk; else openTalkId = null;
@@ -1499,10 +1500,18 @@
   }
   function setView(view, push = true) {
     if (state.view === view && view !== 'schedule') return;
+    boardMorphToken++;
+    clearInlineOverviewFade();
     if (state.view !== view) haptic('tick');
     withTransition(() => { state.view = view; renderAll(); writeHash(push); window.scrollTo(0, 0); });
   }
   function setLayout(layout) {
+    boardMorphToken++;
+    clearInlineOverviewFade();
+    if (layout === 'overview' && state.layout === 'day') {
+      closeDayBoard();
+      return;
+    }
     if (state.layout === layout) return;
     haptic('tick');
     state.layout = layout;
@@ -1511,18 +1520,159 @@
     writeHash(true);
     renderDaybar();
     renderMain();
+    renderFooter();
     window.scrollTo(0, 0);
+  }
+  function onDayDetailClick() {
+    if (state.layout === 'day') closeDayBoard();
+    else openDayBoard();
+  }
+  let boardMorphToken = 0;
+  function dimOtherOverviewDays(day) {
+    const table = document.querySelector('.overview');
+    if (!table || table.classList.contains('is-day-board')) return;
+    table.querySelectorAll('.overview-cell[data-day]').forEach(cell => {
+      if (cell.dataset.day === day) return;
+      cell.style.transition = 'opacity 160ms var(--ease)';
+      cell.style.opacity = '0';
+    });
+  }
+  function tagMorphSource(day) {
+    const board = document.querySelector('.overview.is-day-board');
+    if (board) { board.classList.add('is-morph-source'); return; }
+    const col = day && document.querySelector(`.overview-day[data-day="${CSS.escape(day)}"]`);
+    if (col) col.classList.add('is-morph-source');
+  }
+  function tagMorphTarget(day) {
+    const board = document.querySelector('.overview.is-day-board');
+    if (board) { board.classList.add('is-morph-target'); return; }
+    const col = day && document.querySelector(`.overview-day[data-day="${CSS.escape(day)}"]`);
+    if (col) col.classList.add('is-morph-target');
+  }
+  function clearBoardMorphMarks() {
+    document.querySelectorAll('.is-morph-source, .is-morph-target').forEach(n => n.classList.remove('is-morph-source', 'is-morph-target'));
+    document.querySelectorAll('[data-print-btn].is-morph').forEach(n => n.classList.remove('is-morph'));
+  }
+  function revealOverviewDay(day) {
+    const col = day && document.querySelector(`.overview-day[data-day="${CSS.escape(day)}"]`);
+    const wrap = col && col.closest('.overview-wrap');
+    if (!col || !wrap) return;
+    const cr = col.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    if (cr.left < wr.left + 8) wrap.scrollLeft += cr.left - wr.left - 8;
+    else if (cr.right > wr.right - 8) wrap.scrollLeft += cr.right - wr.right + 8;
+  }
+  function clearInlineOverviewFade() {
+    document.querySelectorAll('.overview .overview-cell[data-day]').forEach(cell => {
+      cell.style.transition = '';
+      cell.style.opacity = '';
+    });
+  }
+  function transitionBoard(mutate, opts = {}) {
+    const morph = !!opts.morph;
+    const day = opts.morphDay || '';
+    const revealAfter = !!opts.revealAfter;
+    const reduce = prefersReducedMotion() || typeof document.startViewTransition !== 'function';
+    if (reduce) { mutate(); return; }
+    const token = ++boardMorphToken;
+    const leavingWeek = morph && !!document.querySelector('.overview:not(.is-day-board)');
+    const start = () => {
+      if (token !== boardMorphToken) return;
+      if (leavingWeek && (state.layout !== 'overview' || state.overviewFocus !== day)) {
+        clearInlineOverviewFade();
+        return;
+      }
+      if (morph) tagMorphSource(day);
+      const oldBtn = morph && document.querySelector('[data-print-btn]');
+      if (oldBtn) oldBtn.classList.add('is-morph');
+      let ran = false;
+      const apply = () => {
+        if (ran) return;
+        ran = true;
+        mutate();
+        if (morph) tagMorphTarget(day);
+        const btn = morph && document.querySelector('[data-print-btn]');
+        if (btn) btn.classList.add('is-morph');
+        if (revealAfter) document.querySelector('.overview')?.classList.add('is-zooming');
+      };
+      let vt;
+      try {
+        vt = document.startViewTransition(apply);
+      } catch {
+        apply();
+        return;
+      }
+      vt.finished.finally(() => {
+        clearBoardMorphMarks();
+        if (!revealAfter) return;
+        const table = document.querySelector('.overview.is-zooming');
+        if (table) requestAnimationFrame(() => table.classList.remove('is-zooming'));
+      });
+    };
+    if (leavingWeek && day) {
+      revealOverviewDay(day);
+      dimOtherOverviewDays(day);
+      setTimeout(start, 160);
+      return;
+    }
+    start();
+  }
+  function openDayBoard() {
+    const day = state.overviewFocus || state.day;
+    if (!day || !CONF_DAYS.has(day)) return;
+    haptic('tick');
+    transitionBoard(() => {
+      state.layout = 'day';
+      state.day = day;
+      state.overviewFocus = null;
+      state.overviewSel = null;
+      writeHash(true);
+      renderDaybar();
+      renderMain();
+      renderFooter();
+      window.scrollTo(0, 0);
+    }, { morph: true, morphDay: day });
+  }
+  function closeDayBoard() {
+    const day = state.day;
+    if (!day || !CONF_DAYS.has(day)) return;
+    haptic('tick');
+    transitionBoard(() => {
+      state.layout = 'overview';
+      state.day = day;
+      state.overviewFocus = day;
+      state.overviewSel = null;
+      writeHash(true);
+      renderDaybar();
+      renderMain();
+      renderFooter();
+      window.scrollTo(0, 0);
+    }, { morph: true, morphDay: day, revealAfter: true });
   }
   function setDay(day, opts = {}) {
     const scroll = opts.scroll !== false;
+    if (state.layout === 'day' && state.view === 'schedule') {
+      if (state.day === day && !opts.force) return;
+      haptic('tick');
+      transitionBoard(() => {
+        state.day = day;
+        state.overviewSel = null;
+        writeHash(true);
+        syncDayPills({ smooth: true });
+        renderMain();
+      });
+      return;
+    }
     if (state.layout === 'overview' && state.view === 'schedule') {
       const next = state.overviewFocus === day ? null : day;
       if (next !== state.overviewFocus) haptic('tick');
       state.overviewFocus = next;
       if (state.overviewFocus) state.day = day;
       writeHash(true);
+      clearInlineOverviewFade();
       if ($('.day-week.is-overview')) syncDayPills({ smooth: true });
       else renderDaybar();
+      syncDayDetailButton();
       const table = document.querySelector('.overview');
       if (table) applyOverviewDayFocus(table);
       else renderMain();
@@ -1639,15 +1789,36 @@
       else requestAnimationFrame(() => revealDayPill(act, opts));
     }
   }
+  function syncDayDetailButton() {
+    const tabs = $('#day-tabs');
+    if (!tabs) return;
+    const show = state.view === 'schedule' && ((state.layout === 'overview' && !!state.overviewFocus) || state.layout === 'day');
+    let btn = $('[data-day-detail]', tabs);
+    if (!show) { if (btn) btn.remove(); return; }
+    const label = t(state.layout === 'day' ? 'layoutWeek' : 'layoutDay');
+    if (!btn) {
+      btn = el('button', {
+        class: 'btn ghost sm daybar-action', type: 'button', dataset: { dayDetail: '1' },
+        onclick: onDayDetailClick,
+      }, el('span', null, label));
+      const seg = $('.seg', tabs);
+      if (seg) seg.after(btn);
+      else tabs.append(btn);
+    } else {
+      const span = $('span', btn);
+      if (span) span.textContent = label;
+    }
+    btn.setAttribute('aria-pressed', String(state.layout === 'day'));
+  }
   function renderDaybar() {
     const bar = $('#daybar'); const tabs = $('#day-tabs');
     bar.hidden = state.view !== 'schedule';
     if (bar.hidden) return;
     tabs.innerHTML = ''; tabs.setAttribute('aria-label', t('dayTabs'));
     const today = confNow().date;
-    const isOverview = state.layout === 'overview';
+    const overviewFamily = state.layout === 'overview' || state.layout === 'day';
     const selected = selectedTapeDay();
-    const week = el('div', { class: `day-week${isOverview ? ' is-overview' : ''}`, dataset: { tour: 'days' } });
+    const week = el('div', { class: `day-week${overviewFamily ? ' is-overview' : ''}`, dataset: { tour: 'days' } });
     for (const d of DAYS) {
       const btn = el('button', { class: `daypill${d === today ? ' is-today' : ''}`, type: 'button', role: 'tab', 'aria-selected': String(d === selected), dataset: { day: d }, onclick: () => setDay(d), title: fmtLong(d) },
         el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
@@ -1656,10 +1827,11 @@
     tabs.append(week);
     tabs.append(el('span', { class: 'spacer' }));
     tabs.append(el('div', { class: 'seg', role: 'group', 'aria-label': t('scheduleLayout'), dataset: { tour: 'layout' } },
-      el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(!isOverview), onclick: () => setLayout('timeline') }, t('layoutTimeline')),
-      el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(isOverview), onclick: () => setLayout('overview') }, t('layoutOverview'))));
+      el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(state.layout === 'timeline'), onclick: () => setLayout('timeline') }, t('layoutTimeline')),
+      el('button', { class: 'seg-btn', type: 'button', 'aria-pressed': String(overviewFamily), onclick: () => { if (state.layout === 'day') closeDayBoard(); else setLayout('overview'); } }, t('layoutOverview'))));
+    syncDayDetailButton();
     tabs.append(makeDaybarChangesButton());
-    if (!isOverview) {
+    if (!overviewFamily) {
       const allOpen = D.blocks.filter(b => b.type === 'section').every(b => isExpanded(b));
       tabs.append(el('button', { class: 'btn ghost sm daybar-action', type: 'button', onclick: () => toggleAll(!allOpen) }, icon(allOpen ? 'collapse' : 'expand'), el('span', null, t(allOpen ? 'collapseAll' : 'expandAll'))));
     }
@@ -1741,6 +1913,7 @@
 
   // ---- Schedule ------------------------------------------------------------
   function viewSchedule() {
+    if (state.layout === 'day') return viewDayBoard();
     if (state.layout === 'overview') return viewOverview();
     const frag = document.createDocumentFragment();
     const now = confNow();
@@ -2053,30 +2226,49 @@
     return !!(sel && sel.day === day && sel.start === start && String(sel.section || '') === String(section || ''));
   }
 
+  function viewDayBoard() {
+    const date = CONF_DAYS.has(state.day) ? state.day : DAYS[0];
+    const frag = document.createDocumentFragment();
+    frag.append(el('div', { class: 'page-head' },
+      el('div', null, el('h1', { class: 'page-title' }, fmtLong(date), ' ', el('span', { class: 'dim' }, `· ${t('layoutDay')}`)))));
+    frag.append(el('div', { class: 'overview-wrap', dataset: { tour: 'overview' } }, buildOverviewTable(true)));
+    return frag;
+  }
+
   function viewOverview() {
     const frag = document.createDocumentFragment();
     frag.append(el('div', { class: 'page-head' },
       el('div', null, el('h1', { class: 'page-title' }, t('layoutOverview'), ' ', el('span', { class: 'dim' }, `· ${t('schedule')}`)))));
-    const byDay = Object.fromEntries(DAYS.map(d => [d, mergeDayBands(d)]));
+    frag.append(el('div', { class: 'overview-wrap', dataset: { tour: 'overview' } }, buildOverviewTable(false)));
+    return frag;
+  }
+
+  function buildOverviewTable(detail) {
+    const days = detail ? [CONF_DAYS.has(state.day) ? state.day : DAYS[0]] : DAYS;
+    const byDay = Object.fromEntries(days.map(d => [d, mergeDayBands(d)]));
     const ticks = overviewTicks(byDay);
     const slices = Math.max(1, ticks.length - 1);
-    const focus = state.overviewFocus;
-    const table = el('div', { class: `overview${focus ? ' is-day-focus' : ''}`, role: 'grid' });
-    table.style.setProperty('--days', String(DAYS.length));
+    const focus = detail ? null : state.overviewFocus;
+    const table = el('div', { class: `overview${detail ? ' is-day-board' : ''}${focus ? ' is-day-focus' : ''}`, role: 'grid' });
+    table.style.setProperty('--days', String(days.length));
     table.style.setProperty('--slices', String(slices));
-    const rowSizes = ['auto'];
+    let panes = 1;
+    const rowSizes = detail ? [] : ['auto'];
     for (let i = 0; i < ticks.length - 1; i++) {
       rowSizes.push(`${Math.max(1, ticks[i + 1] - ticks[i])}fr`);
     }
     table.style.gridTemplateRows = rowSizes.join(' ');
-    table.append(el('div', { class: 'overview-time overview-corner', role: 'columnheader' }));
-    DAYS.forEach((d, i) => {
-      const cell = el('div', { class: `overview-cell head${d === focus ? ' is-active is-focus' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d }, onclick: () => setDay(d) },
-        el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
-      cell.style.gridColumn = String(i + 2);
-      cell.style.gridRow = '1';
-      table.append(cell);
-    });
+    const row0 = detail ? 1 : 2;
+    if (!detail) {
+      table.append(el('div', { class: 'overview-time overview-corner', role: 'columnheader' }));
+      days.forEach((d, i) => {
+        const cell = el('div', { class: `overview-cell head${d === focus ? ' is-active is-focus' : ''}${d === confNow().date ? ' is-today' : ''}`, role: 'columnheader', dataset: { day: d }, onclick: () => setDay(d) },
+          el('span', { class: 'dow' }, fmtDow(d)), el('span', { class: 'dom' }, fmtDom(d)));
+        cell.style.gridColumn = String(i + 2);
+        cell.style.gridRow = '1';
+        table.append(cell);
+      });
+    }
     for (let i = 0; i < ticks.length - 1; i++) {
       const start = ticks[i], end = ticks[i + 1];
       const label = el('div', {
@@ -2087,13 +2279,13 @@
         el('span', { class: 't-start', dataset: { min: String(start) } }, fromMin(start)),
         el('span', { class: 't-end', dataset: { min: String(end) } }, fromMin(end)));
       label.style.gridColumn = '1';
-      label.style.gridRow = String(i + 2);
+      label.style.gridRow = String(i + row0);
       table.append(label);
     }
-    DAYS.forEach((d, di) => {
+    days.forEach((d, di) => {
       const wrap = el('div', { class: 'overview-day', dataset: { day: d } });
       wrap.style.gridColumn = String(di + 2);
-      wrap.style.gridRow = '2 / -1';
+      wrap.style.gridRow = detail ? '1 / -1' : '2 / -1';
       const bands = byDay[d];
       const clusterOf = new Map();
       for (const cl of overviewSectionClusters(bands)) {
@@ -2112,6 +2304,7 @@
           cluster.style.gridColumn = '1';
           cluster.style.gridRow = `${r0 + 1} / ${r1 + 1}`;
           cluster.style.setProperty('--secs', String(cl.items.length));
+          if (detail && cl.items.length > panes) panes = cl.items.length;
           for (let i = 0; i < cl.items.length; i++) {
             const secBand = cl.items[i];
             const s0 = ticks.indexOf(toMin(secBand.start));
@@ -2139,8 +2332,8 @@
     });
     applyOverviewDayFocus(table);
     applyOverviewHighlight(table);
-    frag.append(el('div', { class: 'overview-wrap', dataset: { tour: 'overview' } }, table));
-    return frag;
+    if (detail) table.style.setProperty('--panes', String(panes));
+    return table;
   }
 
   function applyOverviewDayFocus(table) {
@@ -2180,6 +2373,7 @@
     if (!table) return;
     const focus = state.overviewFocus;
     const sel = state.overviewSel;
+    const dayBoard = table.classList.contains('is-day-board');
     const { starts, ends } = overviewTickMembership(table);
     table.querySelectorAll('.overview-time .t-start').forEach(n => {
       const T = Number(n.dataset.min);
@@ -2190,7 +2384,7 @@
       const T = Number(n.dataset.min);
       const isSelEnd = !!(sel && T === sel.end);
       const endOnly = ends.has(T) && !starts.has(T);
-      const show = isSelEnd || (!!focus && endOnly && !(sel && T === sel.start));
+      const show = isSelEnd || ((dayBoard || !!focus) && endOnly && !(sel && T === sel.start));
       n.classList.toggle('is-idle', !show);
     });
   }
@@ -2261,12 +2455,28 @@
     return blockTitle(b);
   }
 
+  function uniqueBandValue(band, read) {
+    const values = [];
+    for (const b of band.items || []) {
+      const v = read(b);
+      if (v && !values.includes(v)) values.push(v);
+    }
+    return values.length === 1 ? values[0] : '';
+  }
+
+  function dayMetaLine(cls, glyph, text) {
+    if (!text) return null;
+    return el('span', { class: cls }, icon(glyph), el('span', null, text));
+  }
+
   function renderOverviewCell(band, day) {
     if (!band) return el('div', { class: 'overview-cell empty', role: 'cell' });
     const start = toMin(band.start);
     const end = toMin(band.end);
     const sectionId = band.kind === 'section' && band.items[0] ? String(band.items[0].section || '') : '';
     const picked = overviewSelMatches(day, start, sectionId);
+    const detail = state.layout === 'day';
+    const compact = detail && (end - start) < 60;
     const attrs = {
       role: 'button', tabindex: 0,
       dataset: { start: String(start), end: String(end), day, ...(sectionId ? { section: sectionId } : {}) },
@@ -2276,20 +2486,53 @@
       const b = band.items[0];
       const s = b && sectionsById[b.section];
       const id = s ? s.id : sectionId;
-      const name = s ? `S${id} ${L(s.short)}` : `S${id}`;
-      return el('div', {
-        class: `overview-cell section-block${picked ? ' is-picked' : ''}`,
-        ...attrs,
-        dataset: { ...attrs.dataset, color: s ? s.color : 'slate' },
-        'aria-label': name
-      }, `S${id}`);
+      const short = s ? L(s.short) : '';
+      const dataset = { ...attrs.dataset, color: s ? s.color : 'slate' };
+      if (!detail) {
+        const name = short ? `S${id} ${short}` : `S${id}`;
+        return el('div', {
+          class: `overview-cell section-block${picked ? ' is-picked' : ''}`,
+          ...attrs, dataset, 'aria-label': name
+        }, `S${id}`);
+      }
+      const room = roomOf(b);
+      const chair = chairOf(b);
+      const secNo = `${t('section')} ${id}`;
+      const aria = [secNo, short, room, chair].filter(Boolean).join(', ');
+      const cls = `overview-cell section-block${picked ? ' is-picked' : ''}${compact ? ' is-compact' : ' is-detail'}`;
+      const roomLine = dayMetaLine('sec-room', 'pin', room);
+      const chairLine = dayMetaLine('sec-chair', 'user', chair);
+      if (compact) {
+        return el('div', { class: cls, ...attrs, dataset, 'aria-label': aria },
+          el('span', { class: 'sec-id' }, secNo), roomLine, chairLine);
+      }
+      return el('div', { class: cls, ...attrs, dataset, 'aria-label': aria },
+        el('span', { class: 'sec-line' }, el('span', { class: 'sec-id' }, secNo), short ? el('span', { class: 'sec-name' }, short) : null),
+        roomLine, chairLine);
     }
     const glyph = bandGlyph(band);
     const label = overviewBandLabel(band);
     const kindClass = band.kind === 'plenary' ? 'plenary-band' : `kind-${band.kind}`;
-    return el('div', { class: `overview-cell ${kindClass}${picked ? ' is-picked' : ''}`, ...attrs },
-      glyph ? icon(glyph) : null,
-      el('span', { class: 'overview-label' }, label));
+    const quiet = band.kind === 'break' || band.kind === 'lunch';
+    if (!detail || quiet) {
+      return el('div', { class: `overview-cell ${kindClass}${picked ? ' is-picked' : ''}`, ...attrs },
+        glyph ? icon(glyph) : null,
+        el('span', { class: 'overview-label' }, label));
+    }
+    const room = uniqueBandValue(band, roomOf);
+    const chair = uniqueBandValue(band, chairOf);
+    const aria = [label, room, chair].filter(Boolean).join(', ');
+    const roomLine = dayMetaLine('sec-room', 'pin', room);
+    const chairLine = dayMetaLine('sec-chair', 'user', chair);
+    if (compact) {
+      return el('div', { class: `overview-cell ${kindClass} is-compact${picked ? ' is-picked' : ''}`, ...attrs, 'aria-label': aria },
+        glyph ? icon(glyph) : null,
+        el('span', { class: 'overview-label' }, label),
+        roomLine, chairLine);
+    }
+    return el('div', { class: `overview-cell ${kindClass} is-detail${picked ? ' is-picked' : ''}`, ...attrs, 'aria-label': aria },
+      el('span', { class: 'sec-line' }, glyph ? icon(glyph) : null, el('span', { class: 'overview-label' }, label)),
+      roomLine, chairLine);
   }
 
   function nowCard(date, now) {
@@ -2882,19 +3125,28 @@
     f.append(el('div', { class: 'foot-row' },
       D.settings.website ? el('a', { href: D.settings.website, target: '_blank', rel: 'noopener' }, icon('external'), ` ${t('website')}`) : null,
       D.settings.contact ? el('span', null, `${t('contact')}: ${D.settings.contact}`) : null,
-      el('button', { class: 'btn ghost sm', type: 'button', onclick: () => { renderPrint(); window.print(); } }, icon('printer'), t(state.view === 'sections' ? 'printSection' : 'print')),
+      el('button', { class: 'btn ghost sm', type: 'button', dataset: { printBtn: '1' }, onclick: () => { renderPrint(); window.print(); } }, icon('printer'), el('span', { class: 'print-label' }, t(printLabelKey()))),
       el('button', { class: 'btn ghost sm', type: 'button', dataset: { installBtn: true }, onclick: openInstall, hidden: isStandalone() }, icon('smartphone'), t('install')),
       el('button', { class: 'btn ghost sm', type: 'button', onclick: () => downloadICS(Object.values(D.talks).filter(x => x.date), 'nucleus2026-programme.ics') }, icon('download'), t('exportAll')),
       el('a', { class: 'xs', href: 'https://fonts.google.com/specimen/Onest', target: '_blank', rel: 'noopener' }, t('fontLicence'))));
   }
 
-  function setPrintPage(overview) {
+  function printLabelKey() {
+    if (state.view === 'sections') return 'printSection';
+    if (state.view === 'schedule' && state.layout === 'day') return 'printDay';
+    return 'print';
+  }
+
+  function setPrintPage(kind) {
     let tag = document.getElementById('print-page-style');
     if (!tag) { tag = document.createElement('style'); tag.id = 'print-page-style'; document.head.append(tag); }
-    tag.textContent = overview
+    const landscape = kind === 'overview' || kind === 'day';
+    tag.textContent = kind === 'day'
+      ? '@media print { @page { size: A4 landscape; margin: 10mm; } }'
+      : landscape
       ? '@media print { @page { size: A4 landscape; margin: 6mm; } }'
       : '@media print { @page { margin: 14mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #444; } } }';
-    document.documentElement.dataset.print = overview ? 'overview' : 'detail';
+    document.documentElement.dataset.print = landscape ? kind : 'detail';
   }
 
   function talkStatusMark(tk) {
@@ -2913,12 +3165,17 @@
   }
 
   function renderPrint() {
-    const overview = state.view === 'schedule' && state.layout === 'overview';
-    setPrintPage(overview);
+    const kind = state.view === 'schedule' && (state.layout === 'overview' || state.layout === 'day') ? state.layout : 'detail';
+    setPrintPage(kind);
     const root = $('#print-root'); root.innerHTML = '';
-    root.className = overview ? 'print-root print-overview' : 'print-root';
+    root.className = kind === 'detail' ? 'print-root' : `print-root print-overview${kind === 'day' ? ' print-day' : ''}`;
+    if (kind === 'day') {
+      root.append(el('h1', null, L(D.settings.shortTitle) || 'ЯДРО-2026'));
+      renderPrintDay(root);
+      return;
+    }
     root.append(el('h1', null, L(D.settings.title) || 'ЯДРО-2026'), el('div', { class: 'print-sub' }, [L(D.settings.city), L(D.settings.venue), fmtRange(), `${t('updated')}: ${fmtStamp(D.generatedAt)}`].filter(Boolean).join(' · ')));
-    if (overview) { renderPrintOverview(root); return; }
+    if (kind === 'overview') { renderPrintOverview(root); return; }
     if (state.view === 'sections') { renderPrintSection(root); return; }
     renderPrintProgramme(root);
   }
@@ -3021,6 +3278,23 @@
     clone.style.transformOrigin = 'top left';
     clone.style.marginRight = `${(s - 1) * w}px`;
     clone.style.marginBottom = `${(s - 1) * h}px`;
+  }
+
+  function renderPrintDay(root) {
+    const live = document.querySelector('.overview.is-day-board');
+    if (!live) return;
+    root.append(el('h2', null, fmtLong(state.day)));
+    const clone = live.cloneNode(true);
+    clone.classList.add('print-overview-grid', 'print-day-grid');
+    clone.classList.remove('is-day-focus', 'is-morph-source', 'is-morph-target', 'is-zooming');
+    clone.querySelectorAll('.is-picked, .is-hl, .is-focus, .is-active').forEach(n => {
+      n.classList.remove('is-picked', 'is-hl', 'is-focus', 'is-active');
+    });
+    const range = clone.querySelector('.overview-range');
+    if (range) range.remove();
+    const stage = el('div', { class: 'print-overview-stage' });
+    stage.append(clone);
+    root.append(stage);
   }
 
   // ------------------------------------------------------------------ mobile gestures
@@ -3331,7 +3605,7 @@
   }
   window.addEventListener('scroll', scheduleDaySpy, { passive: true });
   window.addEventListener('resize', scheduleDaySpy);
-  window.addEventListener('hashchange', () => { if (suppressHash) return; applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); else if (openBlockId) openBlockDetail(openBlockId); });
+  window.addEventListener('hashchange', () => { if (suppressHash) return; boardMorphToken++; clearInlineOverviewFade(); applyHash(); if (!state.day) state.day = pickInitialDay(); renderAll(); if (openTalkId) openDetail(openTalkId); else if (openBlockId) openBlockDetail(openBlockId); });
   window.addEventListener('beforeprint', renderPrint);
   window.matchMedia('(min-width: 900px)').addEventListener('change', () => {
     syncInstallUi();

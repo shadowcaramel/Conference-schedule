@@ -964,6 +964,76 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   box-shadow: 0 0 0 2px var(--accent);
   z-index: 2;
 }
+.overview-wrap:has(.overview.is-day-board) { overflow-x: hidden; }
+.overview.is-day-board {
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.overview.is-day-board .overview-day,
+.overview.is-day-board .overview-sec-cluster,
+.overview.is-day-board .overview-cell { min-width: 0; }
+.overview.is-day-board .overview-cell.section-block { font-size: 13px; }
+.overview.is-day-board .overview-cell.is-detail,
+.overview.is-day-board .overview-cell.is-compact {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.overview.is-day-board .overview-cell.is-detail {
+  flex-direction: column;
+  gap: 1px;
+  padding: 3px 8px;
+  overflow: hidden;
+}
+.overview.is-day-board .sec-line {
+  display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 0.35em;
+  width: 100%; min-width: 0; font-weight: 750; line-height: 1.15; text-align: center;
+}
+.overview.is-day-board .sec-id { font-weight: 750; }
+.overview.is-day-board .sec-name { font-weight: 650; min-width: 0; }
+.overview.is-day-board .sec-room,
+.overview.is-day-board .sec-chair {
+  display: flex; align-items: flex-start; justify-content: center; gap: 0.28em;
+  font-weight: 550; font-size: 0.92em; line-height: 1.15; max-width: 100%; opacity: 0.86;
+}
+.overview.is-day-board .sec-room .ico,
+.overview.is-day-board .sec-chair .ico {
+  width: 0.95em; height: 0.95em; margin-top: 0.1em;
+}
+.overview.is-day-board .overview-cell.is-detail .sec-room,
+.overview.is-day-board .overview-cell.is-detail .sec-chair,
+.overview.is-day-board .overview-cell.is-detail .sec-room > span,
+.overview.is-day-board .overview-cell.is-detail .sec-chair > span {
+  white-space: normal; overflow-wrap: anywhere;
+}
+.overview.is-day-board .overview-cell.is-compact {
+  flex-direction: row;
+  gap: 6px; padding: 2px 6px; font-size: 12px; font-weight: 650;
+  overflow: hidden;
+}
+.overview.is-day-board .overview-cell.is-compact .overview-label {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+.overview.is-day-board .overview-cell.is-detail .overview-label { white-space: normal; }
+@media (max-width: 719px) {
+  .overview.is-day-board {
+    grid-template-columns: 3rem minmax(0, 1fr);
+    height: 62rem; min-height: 62rem;
+  }
+  .overview.is-day-board .overview-cell.section-block { font-size: 10px; line-height: 1.1; }
+  .overview.is-day-board .overview-cell.is-detail { padding: 1px 2px; gap: 0; }
+  .overview.is-day-board .sec-room,
+  .overview.is-day-board .sec-chair { line-height: 1.1; }
+  .overview.is-day-board .overview-cell.is-compact {
+    flex-wrap: wrap; row-gap: 0; column-gap: 4px; padding: 1px 2px; font-size: 10px;
+  }
+  .overview.is-day-board .overview-time .t-start { font-size: 0.62rem; }
+  .overview.is-day-board .overview-time .t-end { font-size: 0.55rem; }
+}
+.overview.is-zooming .overview-cell:not(.is-focus) { opacity: 0 !important; }
+.daybar-action[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
 
 .fact a.v { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; line-height: 1.3; }
 
@@ -1024,7 +1094,8 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
     --sec-l-text: 28%; --sec-c-text: .16;
     --sec-l-soft: 78%; --sec-c-soft: .10;
   }
-  html[data-print="overview"] .print-overview-grid [data-color] {
+  html[data-print="overview"] .print-overview-grid [data-color],
+  html[data-print="day"] .print-overview-grid [data-color] {
     --sec-tint: hsl(var(--h) 70% 82%);
     --sec-soft: hsl(var(--h) 55% 68%);
     --sec-stripe: hsl(var(--h) 60% 46%);
@@ -1048,6 +1119,50 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   .print-overview-grid .overview-cell:not(.head) { cursor: default; font-size: 10pt; }
   .print-overview-grid .overview-cell.section-block { font-size: 11pt; }
   .print-overview-grid .overview-cell .ico { width: 1.15em; height: 1.15em; }
+  html[data-print="day"] {
+    font-size: 12pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  html[data-print="day"],
+  html[data-print="day"] body { margin: 0; padding: 0; }
+  /* Fits A4 landscape (297×210mm) with the dialog's default margins, not only the 6mm CSS box that "Save as PDF" uses. */
+  html[data-print="day"] .print-root {
+    width: 100%;
+    max-width: 270mm;
+    height: 180mm;
+    max-height: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    color: #111; background: #fff;
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: avoid; page-break-after: avoid;
+  }
+  html[data-print="day"] .print-root h1 { font-size: 14pt; margin: 0 0 1pt; line-height: 1.15; }
+  html[data-print="day"] .print-root h2 {
+    font-size: 12pt; margin: 0 0 2mm; padding: 0; border: 0; font-weight: 650; line-height: 1.15;
+  }
+  html[data-print="day"] .print-root .print-sub { display: none; }
+  html[data-print="day"] .print-overview-stage {
+    flex: 1 1 auto; height: 0; min-height: 0; width: 100%;
+    overflow: hidden;
+  }
+  html[data-print="day"] .print-day-grid.overview {
+    grid-template-columns: 14mm minmax(0, 1fr);
+    width: 100% !important; height: 100% !important;
+    min-width: 0 !important; min-height: 0 !important;
+    max-width: 100% !important; max-height: 100% !important;
+    transform: none !important; margin: 0 !important;
+  }
+  html[data-print="day"] .print-day-grid .overview-cell:not(.head) { font-size: 12pt; }
+  html[data-print="day"] .print-day-grid .overview-cell.section-block { font-size: 13pt; }
+  html[data-print="day"] .print-day-grid .sec-room,
+  html[data-print="day"] .print-day-grid .sec-chair { font-size: 11pt; }
+  html[data-print="day"] .print-day-grid .overview-cell.is-compact { font-size: 11pt; }
+  html[data-print="day"] .print-day-grid .overview-time .t-start { font-size: 12pt; }
+  html[data-print="day"] .print-day-grid .overview-time .t-end { font-size: 10pt; color: #444; }
   .install-banner { display: none !important; }
 }
 
@@ -1188,3 +1303,13 @@ html.tour-lock { overscroll-behavior: none; }
 
 /* ---------- View transitions (progressive enhancement) --------------------- */
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 220ms; }
+.overview-day.is-morph-source,
+.overview-day.is-morph-target,
+.overview.is-day-board.is-morph-source,
+.overview.is-day-board.is-morph-target { view-transition-name: day-board; }
+[data-print-btn].is-morph { view-transition-name: print-action; }
+::view-transition-group(day-board),
+::view-transition-group(print-action) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(.2, .7, .2, 1);
+}
