@@ -977,6 +977,10 @@ mark { background: var(--warn-soft); color: inherit; border-radius: 3px; padding
   .print-root h1 { font-size: 16pt; margin-bottom: 2pt; }
   .print-root .print-sub { color: #444; margin-bottom: 8pt; font-size: 9pt; }
   .print-root h2 { font-size: 15pt; margin: 14pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5px solid #000; break-after: avoid; }
+  .print-root .p-day + .p-day { break-before: page; }
+  .print-root .print-section-head { font-size: 13pt; font-weight: 700; margin: 0 0 4pt; }
+  .print-root .p-talk.is-cancelled .pt-title,
+  .print-root .p-block-title.is-cancelled { text-decoration: line-through; }
   .print-root .p-slot { display: grid; grid-template-columns: 5.2em 1fr; gap: 0 10pt; padding: 5pt 0; border-top: 1px solid #ddd; break-inside: avoid; }
   .print-root .p-slot.allow-break { break-inside: auto; }
   .print-root .p-time { font-variant-numeric: tabular-nums; font-weight: 700; }

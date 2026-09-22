@@ -1,30 +1,48 @@
 /* Isolated schematic one-armed bandit. Colours come from app.css tokens.
-   Visual height matches .seg (~36px). Prefix .slot- so it can drop into Моё later. */
+   Contour of a cartoon cabinet: dome, well, circular windows, plinth, lever.
+   Root class is .bandit — the timeline already uses .slot. */
 
-.slot {
-  --slot-h: 36px;
-  --slot-win: 24px;
-  --slot-gap: 5px;
-  --slot-pad-x: 10px;
-  --slot-pad-y: 5px;
-  --slot-cell: 24px;
+.bandit {
+  --slot-cell: 16px;
   position: relative;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   min-height: 44px;
-  padding-top: 4px;
+  padding-top: 6px;
 }
 
 .slot-boom {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 2px);
-  transform: translate(-50%, 0);
-  z-index: 2;
+  bottom: 10px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%);
+}
+.bandit.is-boom .slot-boom {
+  visibility: visible;
+  opacity: 1;
+}
+.slot-blast {
+  display: block;
+  width: 108px;
+  height: auto;
+  pointer-events: none;
+}
+.slot-boom-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 11px 4px 8px;
+  padding: 3px 10px;
   border-radius: var(--r-pill);
   border: 1.5px solid var(--now);
   background: var(--now-soft);
@@ -34,32 +52,11 @@
   letter-spacing: .12em;
   line-height: 1;
   white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-}
-.slot.is-boom .slot-boom {
-  visibility: visible;
-  opacity: 1;
-  animation: slot-boom-pop 1.6s var(--ease);
-}
-.slot-burst {
-  width: 12px;
-  height: 12px;
-  flex: 0 0 auto;
-  background:
-    radial-gradient(circle at 50% 50%, var(--now) 1.4px, transparent 1.6px),
-    linear-gradient(var(--now), var(--now)) 50% 0 / 1.5px 100% no-repeat,
-    linear-gradient(90deg, var(--now), var(--now)) 0 50% / 100% 1.5px no-repeat,
-    linear-gradient(45deg, transparent 46%, var(--now) 46%, var(--now) 54%, transparent 54%),
-    linear-gradient(-45deg, transparent 46%, var(--now) 46%, var(--now) 54%, transparent 54%);
 }
 
 .slot-hit {
   display: inline-flex;
-  align-items: center;
-  gap: 0;
-  height: var(--slot-h);
+  align-items: flex-end;
   margin: 0;
   padding: 0;
   border: 0;
@@ -76,56 +73,59 @@
 .slot-hit:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 12px;
+  border-radius: 18px;
 }
+.slot-hit:active:not(:disabled) .slot-figure { transform: scale(.98); }
 
-.slot-body {
-  box-sizing: border-box;
-  height: var(--slot-h);
-  padding: var(--slot-pad-y) var(--slot-pad-x);
-  border: 1.5px solid var(--border-2);
-  border-radius: 11px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+.slot-figure {
+  position: relative;
+  width: 132px;
+  height: 58px;
+  color: var(--border-2);
 }
-.slot-hit:active:not(:disabled) .slot-body { transform: scale(.97); }
-.slot.is-spinning .slot-body { border-color: var(--border-2); }
-.slot.is-jackpot .slot-body {
-  border-color: var(--now);
-  box-shadow: 0 0 0 3px var(--now-soft);
+.bandit.is-jackpot .slot-figure { color: var(--now); }
+
+.slot-shell {
+  display: block;
+  width: 120px;
+  height: 58px;
 }
+.slot-shell svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.slot-shell path,
+.slot-shell rect {
+  fill: var(--surface);
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.slot-shell .slot-well { fill: var(--surface-2); }
 
 .slot-windows {
+  position: absolute;
+  left: 26px;
+  top: 23px;
   display: flex;
-  align-items: center;
-  gap: var(--slot-gap);
+  gap: 4px;
 }
 
 .slot-window {
-  box-sizing: border-box;
-  width: var(--slot-win);
-  height: var(--slot-win);
+  box-sizing: content-box;
+  width: var(--slot-cell);
+  height: var(--slot-cell);
+  padding: 0;
   overflow: hidden;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  border-radius: 50%;
+  border: 0;
+  box-shadow: inset 0 0 0 1.25px currentColor;
+  background: var(--surface);
   position: relative;
-}
-.slot-window::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    var(--surface-2),
-    transparent 28%,
-    transparent 72%,
-    var(--surface-2)
-  );
-  opacity: .7;
+  line-height: 0;
 }
 
 .slot-reel {
@@ -144,8 +144,9 @@
   color: var(--text-2);
 }
 .slot-sym svg {
-  width: 15px;
-  height: 15px;
+  display: block;
+  width: 12px;
+  height: 12px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -154,50 +155,64 @@
 }
 
 .slot-arm {
+  position: absolute;
+  left: 104px;
+  top: 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 18px;
-  height: calc(var(--slot-h) + 6px);
-  margin-left: -2px;
-  margin-top: -8px;
-  transform-origin: 50% 22px;
-  transition: transform 180ms var(--ease);
+  width: 16px;
+  height: 34px;
+  transform-origin: 8px 32px;
 }
-.slot.is-spinning .slot-arm { transform: rotate(32deg); }
+.bandit.is-spinning .slot-arm { animation: slot-pull 720ms var(--ease) both; }
 .slot-knob {
-  width: 11px;
-  height: 11px;
+  width: 9px;
+  height: 9px;
   flex: 0 0 auto;
   border-radius: 50%;
-  border: 1.5px solid var(--border-2);
+  border: 1.6px solid currentColor;
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 .slot-stem {
   width: 2px;
   flex: 1 1 auto;
-  min-height: 10px;
+  min-height: 8px;
   margin-top: -1px;
-  background: var(--border-2);
+  background: currentColor;
   border-radius: 1px;
 }
 
-@keyframes slot-boom-pop {
-  0% { transform: translate(-50%, 2px) scale(.94); }
-  18% { transform: translate(-50%, -4px) scale(1.05); }
-  100% { transform: translate(-50%, -4px) scale(1); }
+@keyframes slot-pull {
+  0% { transform: rotate(0deg); }
+  38% { transform: rotate(42deg); }
+  100% { transform: rotate(0deg); }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .slot-reel { transition: none !important; }
-  .slot-arm { transition: none !important; }
-  .slot.is-spinning .slot-arm { transform: none; }
-  .slot-hit:active:not(:disabled) .slot-body { transform: none; }
-  .slot.is-boom .slot-boom {
-    animation: none !important;
+  .slot-arm { animation: none !important; }
+  .bandit.is-spinning .slot-arm { animation: none !important; transform: none; }
+  .slot-hit:active:not(:disabled) .slot-figure { transform: none; }
+  .slot-blast { display: none !important; }
+  .bandit.is-boom .slot-boom {
     opacity: 1 !important;
     visibility: visible;
-    transform: translate(-50%, -4px) scale(1);
+    bottom: calc(100% + 2px);
+    transform: translateX(-50%);
   }
+}
+
+/* Quiet easter egg at the bottom of «Моё». */
+.my-slot {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0 4px;
+}
+.my-slot .bandit:not(.is-jackpot) .slot-figure {
+  opacity: 0.55;
+  transition: opacity var(--dur) var(--ease);
+}
+.my-slot:hover .slot-figure,
+.my-slot:focus-within .slot-figure {
+  opacity: 1;
 }

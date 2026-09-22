@@ -176,7 +176,7 @@
       myEmptyTitle: 'Пока ничего не отмечено', myEmpty: 'Нажмите ★ у любого доклада или постера — он появится здесь. Отметки хранятся в этом браузере, входить в систему не нужно.',
       myHint: 'Отметки хранятся только на этом устройстве и в этом браузере. Чтобы перенести их на другое устройство, воспользуйтесь кнопкой «Поделиться».',
       conflict: 'пересекается с', removedFromProgramme: 'Удалено из программы', imported: 'Добавлено в «Моё»',
-      print: 'Версия для печати', localTime: 'Время местное', website: 'Сайт конференции', sponsorSite: 'Сайт спонсора', contact: 'Оргкомитет', fontLicence: 'Шрифт Onest (OFL)',
+      print: 'Версия для печати', printSection: 'Печать секции', localTime: 'Время местное', website: 'Сайт конференции', sponsorSite: 'Сайт спонсора', contact: 'Оргкомитет', fontLicence: 'Шрифт Onest (OFL)',
       close: 'Закрыть', openTalk: 'Открыть доклад', dayOf: 'День', of: 'из', noTalks: 'Нет докладов', tbc: 'уточняется',
       allDays: 'Все дни', posterHint: 'Номера стендов будут указаны позже.', sectionsHint: 'Полная программа каждой секции по дням.',
       plenarySection: 'Пленарные доклады', close2: 'Закрыть', starredCount: 'отмечено', dayTabs: 'Дни конференции', viewsNav: 'Разделы',
@@ -231,7 +231,7 @@
       myEmptyTitle: 'Nothing starred yet', myEmpty: 'Tap ★ on any talk or poster and it will appear here. Stars are stored in this browser — no sign-in needed.',
       myHint: 'Stars are stored only on this device and in this browser. Use “Share” to move them to another device.',
       conflict: 'overlaps with', removedFromProgramme: 'Removed from the programme', imported: 'Added to “My”',
-      print: 'Print version', localTime: 'Local time', website: 'Conference website', sponsorSite: 'Sponsor website', contact: 'Organising committee', fontLicence: 'Onest typeface (OFL)',
+      print: 'Print version', printSection: 'Print section', localTime: 'Local time', website: 'Conference website', sponsorSite: 'Sponsor website', contact: 'Organising committee', fontLicence: 'Onest typeface (OFL)',
       close: 'Close', openTalk: 'Open talk', dayOf: 'Day', of: 'of', noTalks: 'No talks', tbc: 'to be confirmed',
       allDays: 'All days', posterHint: 'Board numbers will be announced later.', sectionsHint: 'Full programme of each section, day by day.',
       plenarySection: 'Plenary talks', close2: 'Close', starredCount: 'starred', dayTabs: 'Conference days', viewsNav: 'Sections',
@@ -2717,6 +2717,7 @@
     if (!talks.length && !posters.length) {
       frag.append(el('div', { class: 'empty' }, icon('star'), el('h3', null, t('myEmptyTitle')), el('p', null, t('myEmpty'))));
       if (missing.length) { state.favs = new Set(ids.filter(id => !missing.includes(id))); saveFavs(); }
+      appendMySlot(frag);
       return frag;
     }
     frag.append(el('div', { class: 'hint' }, icon('info'), el('span', null, t('myHint'))));
@@ -2750,7 +2751,18 @@
       for (const p of posters) list.append(renderPoster(p));
       group.append(list); frag.append(group);
     }
+    appendMySlot(frag);
     return frag;
+  }
+  function appendMySlot(frag) {
+    const host = el('div', { class: 'my-slot' });
+    frag.append(host);
+    if (typeof mountSlotMachine !== 'function') return;
+    mountSlotMachine(host, {
+      lang: state.lang,
+      haptic: false,
+      onSpinEnd(result) { haptic(result.jackpot ? 'success' : 'tick'); },
+    });
   }
   function pageUrl(hash) {
     return `${location.href.split('#')[0]}${hash || ''}`;
@@ -2870,7 +2882,7 @@
     f.append(el('div', { class: 'foot-row' },
       D.settings.website ? el('a', { href: D.settings.website, target: '_blank', rel: 'noopener' }, icon('external'), ` ${t('website')}`) : null,
       D.settings.contact ? el('span', null, `${t('contact')}: ${D.settings.contact}`) : null,
-      el('button', { class: 'btn ghost sm', type: 'button', onclick: () => { renderPrint(); window.print(); } }, icon('printer'), t('print')),
+      el('button', { class: 'btn ghost sm', type: 'button', onclick: () => { renderPrint(); window.print(); } }, icon('printer'), t(state.view === 'sections' ? 'printSection' : 'print')),
       el('button', { class: 'btn ghost sm', type: 'button', dataset: { installBtn: true }, onclick: openInstall, hidden: isStandalone() }, icon('smartphone'), t('install')),
       el('button', { class: 'btn ghost sm', type: 'button', onclick: () => downloadICS(Object.values(D.talks).filter(x => x.date), 'nucleus2026-programme.ics') }, icon('download'), t('exportAll')),
       el('a', { class: 'xs', href: 'https://fonts.google.com/specimen/Onest', target: '_blank', rel: 'noopener' }, t('fontLicence'))));
@@ -2881,8 +2893,23 @@
     if (!tag) { tag = document.createElement('style'); tag.id = 'print-page-style'; document.head.append(tag); }
     tag.textContent = overview
       ? '@media print { @page { size: A4 landscape; margin: 6mm; } }'
-      : '@media print { @page { margin: 14mm 12mm; } }';
+      : '@media print { @page { margin: 14mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #444; } } }';
     document.documentElement.dataset.print = overview ? 'overview' : 'detail';
+  }
+
+  function talkStatusMark(tk) {
+    if (tk.status === 'cancelled') return ` (${t('cancelled')})`;
+    if (tk.status === 'moved') return ` (${t('moved')})`;
+    return '';
+  }
+
+  function printTalkRow(tk) {
+    const cancelled = tk.status === 'cancelled';
+    return el('div', { class: `p-talk${cancelled ? ' is-cancelled' : ''}` },
+      el('span', { class: 'pt-time' }, tk.start),
+      el('span', null,
+        el('div', { class: 'pt-title' }, `${tk.number}. `, ...titleNodes(tk.title), talkStatusMark(tk)),
+        el('div', { class: 'pt-speaker' }, [speakerName(tk), tk.org].filter(Boolean).join(', '))));
   }
 
   function renderPrint() {
@@ -2892,8 +2919,14 @@
     root.className = overview ? 'print-root print-overview' : 'print-root';
     root.append(el('h1', null, L(D.settings.title) || 'ЯДРО-2026'), el('div', { class: 'print-sub' }, [L(D.settings.city), L(D.settings.venue), fmtRange(), `${t('updated')}: ${fmtStamp(D.generatedAt)}`].filter(Boolean).join(' · ')));
     if (overview) { renderPrintOverview(root); return; }
+    if (state.view === 'sections') { renderPrintSection(root); return; }
+    renderPrintProgramme(root);
+  }
+
+  function renderPrintProgramme(root) {
     for (const date of DAYS) {
-      root.append(el('h2', null, fmtLong(date)));
+      const day = el('section', { class: 'p-day' });
+      day.append(el('h2', null, fmtLong(date)));
       for (const slot of slotsForDay(date)) {
         const hasTalks = slot.blocks.some(b => b.talks.length > 1);
         const body = el('div');
@@ -2906,17 +2939,55 @@
           if (talks.length === 1 && b.type !== 'section') {
             const tk = talks[0];
             const heading = b.type === 'plenary' ? titleNodes(tk.title) : [`${title}. `, ...titleNodes(tk.title)];
-            blk.append(el('div', { class: 'p-block-title' }, ...heading), el('div', { class: 'p-block-meta' }, [speakerName(tk), tk.org, meta].filter(Boolean).join(' · ')));
+            blk.append(el('div', { class: `p-block-title${tk.status === 'cancelled' ? ' is-cancelled' : ''}` }, ...heading, talkStatusMark(tk)), el('div', { class: 'p-block-meta' }, [speakerName(tk), tk.org, meta].filter(Boolean).join(' · ')));
           } else {
             blk.append(el('div', { class: 'p-block-title' }, title), meta ? el('div', { class: 'p-block-meta' }, meta) : null);
-            for (const tk of talks) blk.append(el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, tk.start), el('span', null, el('div', { class: 'pt-title' }, `${tk.number}. `, ...titleNodes(tk.title)), el('div', { class: 'pt-speaker' }, [speakerName(tk), tk.org].filter(Boolean).join(', ')))));
+            for (const tk of talks) blk.append(printTalkRow(tk));
           }
           body.append(blk);
         }
-        root.append(el('div', { class: `p-slot${hasTalks ? ' allow-break' : ''}` }, el('div', { class: 'p-time' }, slot.start, el('small', null, slot.end)), body));
+        day.append(el('div', { class: `p-slot${hasTalks ? ' allow-break' : ''}` }, el('div', { class: 'p-time' }, slot.start, el('small', null, slot.end)), body));
       }
+      root.append(day);
     }
-    root.append(el('h2', null, t('posters')), el('div', { class: 'p-posters' }, ...D.posters.map(p => el('div', { class: 'p-talk' }, el('span', { class: 'pt-time' }, p.board || ''), el('span', null, el('div', { class: 'pt-title' }, ...titleNodes(p.title)), el('div', { class: 'pt-speaker' }, [speakerName(p), p.org, sectionsById[p.section] ? L(sectionsById[p.section].short) : ''].filter(Boolean).join(' · ')))))));
+    root.append(el('section', { class: 'p-day' },
+      el('h2', null, t('posters')),
+      el('div', { class: 'p-posters' }, ...D.posters.map(p => el('div', { class: `p-talk${p.status === 'cancelled' ? ' is-cancelled' : ''}` }, el('span', { class: 'pt-time' }, p.board || ''), el('span', null, el('div', { class: 'pt-title' }, ...titleNodes(p.title), talkStatusMark(p)), el('div', { class: 'pt-speaker' }, [speakerName(p), p.org, sectionsById[p.section] ? L(sectionsById[p.section].short) : ''].filter(Boolean).join(' · '))))))));
+  }
+
+  function renderPrintSection(root) {
+    const ordered = D.sections.filter(s => s.id !== 'P').concat(D.sections.filter(s => s.id === 'P'));
+    const s = sectionsById[state.section] || ordered[0];
+    if (!s) return;
+    const blocks = D.blocks
+      .filter(b => b.section === s.id && b.talks.length && (s.id === 'P' || b.type === 'section'))
+      .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+    const head = [s.id === 'P' ? t('plenarySection') : `${t('section')} ${s.id} · ${L(s.short)}`];
+    if (s.id !== 'P' && L(s.full) !== L(s.short)) head.push(L(s.full));
+    if (s.id !== 'P') {
+      const chairs = sittingChairs(s.id);
+      head.push(`${chairs.length > 1 ? t('chairs') : t('chair')}: ${chairs.length ? chairs.join(', ') : t('tbc')}`);
+    }
+    root.append(el('div', { class: 'print-section-head' }, head.join(' · ')));
+    const byDay = new Map();
+    for (const b of blocks) {
+      if (!byDay.has(b.date)) byDay.set(b.date, []);
+      byDay.get(b.date).push(b);
+    }
+    for (const [date, dayBlocks] of byDay) {
+      const day = el('section', { class: 'p-day' });
+      day.append(el('h2', null, fmtLong(date)));
+      for (const b of dayBlocks) {
+        const sittingChair = chairOf(b);
+        const meta = [roomOf(b), sittingChair ? `${t('chair')}: ${sittingChair}` : ''].filter(Boolean).join(' · ');
+        const body = el('div');
+        if (s.id === 'P') body.append(el('div', { class: 'p-block-title' }, blockTitle(b)));
+        if (meta) body.append(el('div', { class: 'p-block-meta' }, meta));
+        for (const tk of b.talks.map(id => D.talks[id]).filter(Boolean)) body.append(printTalkRow(tk));
+        day.append(el('div', { class: 'p-slot allow-break' }, el('div', { class: 'p-time' }, b.start, el('small', null, b.end)), body));
+      }
+      root.append(day);
+    }
   }
 
   function renderPrintOverview(root) {

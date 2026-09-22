@@ -27,7 +27,7 @@ utf8_stdout()
 ENV_FILE = ROOT / ".ftp.env"
 SKIP_NAMES = {
     ".nojekyll", "desktop.ini", "thumbs.db", ".ds_store",
-    "slot.html", "slot-machine.js", "slot-machine.css",
+    "slot.html",
 }
 PUBLIC_URL_DEFAULT = "http://nucleus.togudv.ru/timetable/"
 
