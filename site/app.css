@@ -414,7 +414,9 @@ html[data-theme="dark"] .seg-btn[aria-pressed="true"] { background: var(--accent
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips.scroll { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; margin: 0 -12px; padding-left: 12px; padding-right: 12px; }
 .chips.scroll::-webkit-scrollbar { display: none; }
-@media (min-width: 900px) { .chips.scroll { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; } }
+@media (min-width: 900px), (hover: hover) and (pointer: fine) {
+  .chips.scroll { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; }
+}
 .chip {
   flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px 0 10px;
   border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
