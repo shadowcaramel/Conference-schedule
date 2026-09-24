@@ -826,7 +826,8 @@
     if (!hapticsApiOk()) return false;
     if (document.visibilityState !== 'visible') return false;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    if (isDesktop() || isFinePointer()) return false;
+    // A phone in landscape can be wider than 900px. That cutoff is layout, not the motor.
+    if (!isMobileClient() && (isDesktop() || isFinePointer())) return false;
     return true;
   }
   function haptic(kind, opts = {}) {
@@ -839,21 +840,6 @@
     lastHapticAt = now;
     if (opts.day) lastDayHapticAt = now;
     return true;
-  }
-  let hapticsArmed = false;
-  function hapticsHasActivation() {
-    try { return !!(navigator.userActivation && navigator.userActivation.hasBeenActive); }
-    catch { return false; }
-  }
-  function armHaptics() {
-    if (hapticsArmed || !canHaptic()) return;
-    try { navigator.vibrate(0); } catch { /* ignore */ }
-    if (hapticsHasActivation()) hapticsArmed = true;
-  }
-  function bindHapticUnlock() {
-    const opts = { capture: true, passive: true };
-    document.addEventListener('pointerup', armHaptics, opts);
-    document.addEventListener('click', armHaptics, opts);
   }
   function highlight(text, q) {
     if (!q) return text;
@@ -3615,7 +3601,6 @@
   });
   bindMobileGestures();
   bindMainClicks();
-  bindHapticUnlock();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       refreshNowMarkers();
