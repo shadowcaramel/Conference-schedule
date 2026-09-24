@@ -4,7 +4,7 @@
    HTTPS / localhost only; the page never registers this file on plain HTTP. */
 'use strict';
 
-const CACHE = 'nucleus2026-d5d72a7b';
+const CACHE = 'nucleus2026-030ccc03';
 const PRECACHE = [
   './',
   './index.html',
