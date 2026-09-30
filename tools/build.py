@@ -557,7 +557,7 @@ def main(argv: list[str]) -> int:
                   "(закройте книгу и повторите, чтобы подменить оригинал).")
             src = alt
     if not src.exists():
-        print(f"Не найден файл {PROGRAMME_XLSX}. Сначала выполните: python tools/migrate.py")
+        print(f"Не найден файл {PROGRAMME_XLSX}. Положите книгу и повторите сборку.")
         return 1
     try:
         wb = openpyxl.load_workbook(src, data_only=True)

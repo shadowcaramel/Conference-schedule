@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Shared constants for the ЯДРО-2026 programme tools (migrate.py / build.py).
+"""Shared layout of the programme workbook for tools/build.py.
 
 The normalized workbook ``data/programme.xlsx`` is the single source of truth.
-Everything here describes its layout so that both scripts agree on it.
+Column names here are the ones the build reads.
 """
 from __future__ import annotations
 
