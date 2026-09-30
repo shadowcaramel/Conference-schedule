@@ -37,6 +37,7 @@ from common import (  # noqa: E402
     COLS_TALKS,
     DATA_DIR,
     PLENARY_SECTION,
+    ROOT,
     PROGRAMME_XLSX,
     SHEET_BLOCKS,
     SHEET_CHANGES,
@@ -54,7 +55,7 @@ from common import (  # noqa: E402
 
 utf8_stdout()
 
-ORIGINAL_DEFAULT = DATA_DIR / "original" / "TimeTable&Programm (1).xlsx"
+ORIGINAL_DEFAULT = ROOT / "TimeTable&Programm_14_09.xlsx"
 REPORT_PATH = DATA_DIR / "migration-report.md"
 
 YEAR = 2026
@@ -101,6 +102,10 @@ SECTIONS = [
 SECTION_SHEETS = {
     "1": "1 Структура", "2": "2 Реакции", "3": "3 Методы", "4": "4 HEP",
     "5": "5 FBS", "6": "6 Астрофизика", "7": "7 Медицина",
+}
+# The 14.09 committee grid spells the section 7 tab this way.
+SECTION_SHEET_ALIASES = {
+    "7": ("7 Медицинв",),
 }
 
 # Plenary-sheet section tag -> section number
@@ -323,12 +328,22 @@ def parse_time_range(text: str) -> tuple[dt.time | None, dt.time | None]:
     return start, end
 
 
+def _section_sheet(wb, sec_no: str, sheet_name: str):
+    """Open a section tab, accepting the 14.09 alias «7 Медицинв»."""
+    names = (sheet_name, *SECTION_SHEET_ALIASES.get(sec_no, ()))
+    for name in names:
+        if name in wb.sheetnames:
+            return wb[name]
+    raise KeyError(sheet_name)
+
+
 def read_sections(wb) -> tuple[list[dict], list[dict]]:
     """Returns (talks, blocks) from the seven section sheets."""
     talks: list[dict] = []
     blocks: list[dict] = []
     for sec_no, sheet_name in SECTION_SHEETS.items():
-        ws = wb[sheet_name]
+        ws = _section_sheet(wb, sec_no, sheet_name)
+        sheet_name = ws.title
         current: dict | None = None
         seen_numbers: set[int] = set()
         for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
