@@ -1,10 +1,12 @@
 ---
-description: Upload the programme to nucleus.togudv.ru only when the user explicitly asks.
+description: This branch is not uploaded to nucleus.togudv.ru.
 alwaysApply: true
 ---
 
-# FTP deploy is on demand
+# No FTP deploy from dev
 
-Do not upload to `nucleus.togudv.ru` after ordinary edits. Test locally (`site/index.html` or `python -m http.server 8080 --directory site`).
+Do not upload this branch to `nucleus.togudv.ru`. The conference site keeps the finished ЯДРО-2026 / NUCLEUS-2026 programme.
 
-When the user explicitly asks to publish, deploy, or upload the timetable, follow the `deploy-timetable` skill and run `python tools/deploy.py` (preview with `--dry-run`). Never commit `.ftp.env` or print the FTP password.
+Test locally (`site/index.html` or `python -m http.server 8080 --directory site`). GitHub Pages updates when `dev` is pushed.
+
+If the user asks to publish to the conference server or FTP, follow the `deploy-timetable` skill: refuse the upload. Never commit `.ftp.env` or print an FTP password.

@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Publish site/ to the conference FTP (on demand — not after every edit).
+"""FTP upload of site/. The dev branch does not publish to the conference host.
 
-Test locally first (open site/index.html or python -m http.server). Then:
-
-    python tools/deploy.py --dry-run   # show what would change
-    python tools/deploy.py             # upload files whose size differs
-    python tools/deploy.py --build     # rebuild from Excel, then upload
-    python tools/deploy.py --all       # overwrite every public file
-
-Credentials: environment FTP_HOST / FTP_USER / FTP_PASS, or gitignored .ftp.env
-in the repo root (copy from .ftp.env.example). Never commit the password.
+nucleus.togudv.ru keeps the ЯДРО-2026 / NUCLEUS-2026 programme that was deployed
+during the conference. This script exits before opening a connection when that
+host is the target.
 """
 from __future__ import annotations
 
@@ -59,8 +53,8 @@ def require_creds(env: dict[str, str]) -> tuple[str, int, str, str, str]:
     missing = [n for n, v in (("FTP_HOST", host), ("FTP_USER", user), ("FTP_PASS", password)) if not v]
     if missing:
         print("Нет учётных данных FTP: " + ", ".join(missing))
-        print(f"Скопируйте {ENV_FILE.name}.example → {ENV_FILE.name} и заполните пароль "
-              "(файл в .gitignore, в git не попадёт).")
+        print(f"Задайте FTP_HOST, FTP_USER и FTP_PASS или заполните {ENV_FILE.name}. "
+              "Хост nucleus.togudv.ru эта ветка не принимает.")
         raise SystemExit(1)
     return host, port, user, password, url
 
@@ -153,6 +147,16 @@ def run_build() -> int:
 
 
 def main(argv: list[str]) -> int:
+    env = load_env()
+    host = (env.get("FTP_HOST") or "").strip().lower()
+    url = (env.get("FTP_PUBLIC_URL") or PUBLIC_URL_DEFAULT).strip().lower()
+    if "nucleus.togudv.ru" in host or "nucleus.togudv.ru" in url or not host:
+        print(
+            "Ветка dev не публикуется на nucleus.togudv.ru. "
+            "Сайт конференции остаётся тем, что уже выложено для ЯДРО-2026 / NUCLEUS-2026."
+        )
+        return 1
+
     dry_run = "--dry-run" in argv
     force_all = "--all" in argv
     do_build = "--build" in argv
@@ -166,7 +170,7 @@ def main(argv: list[str]) -> int:
     tags = stamp_site_cache()
     if tags:
         print("Кэш: " + ", ".join(f"{k}={v}" for k, v in tags.items()), flush=True)
-    host, port, user, password, public_url = require_creds(load_env())
+    host, port, user, password, public_url = require_creds(env)
     files = local_files()
     if not files:
         print(f"В {SITE_DIR} нет файлов для публикации.")

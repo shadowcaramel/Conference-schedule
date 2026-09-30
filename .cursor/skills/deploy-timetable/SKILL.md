@@ -1,30 +1,15 @@
 ---
 name: deploy-timetable
 description: >-
-  Publishes the ЯДРО-2026 programme folder site/ to nucleus.togudv.ru over FTP.
-  Use only when the user explicitly asks to publish, deploy, or upload the
-  timetable to the conference server or FTP. Do not run after ordinary local
-  edits, previews, or polish — those are tested locally first.
+  Refuses to publish this branch to nucleus.togudv.ru. The conference site
+  already has the finished ЯДРО-2026 / NUCLEUS-2026 programme. Do not run
+  tools/deploy.py for that host.
 ---
 
-# Deploy timetable (on demand)
+# Do not deploy this branch to the conference site
 
-The live site is [http://nucleus.togudv.ru/timetable/](http://nucleus.togudv.ru/timetable/). Excel, `data/`, `tools/`, and git metadata never go on the FTP.
+The live conference programme stays at [http://nucleus.togudv.ru/timetable/](http://nucleus.togudv.ru/timetable/). It is the tagged snapshot `NUCLEUS-2026` (same commit as `ЯДРО-2026`) on `main`.
 
-## When to run
+`dev` is not uploaded there. If the user asks to publish, deploy, or upload the timetable to nucleus.togudv.ru or FTP, say so and stop. Do not run `python tools/deploy.py`. The script exits on its own when the target is that host.
 
-- **Do** run when the user says publish / deploy / upload / выложить на сайт / залить на FTP.
-- **Do not** run after routine code or Excel edits. They test locally: open `site/index.html`, or `python -m http.server 8080 --directory site`.
-- If unsure, ask. Prefer `--dry-run` over uploading.
-
-## How to deploy
-
-1. If `data/programme.xlsx` changed and `site/data.js` is stale, rebuild first (`python tools/build.py` or pass `--build`).
-2. Preview: `python tools/deploy.py --dry-run`
-3. Upload: `python tools/deploy.py` (only files whose size differs). Use `--all` only if they ask to overwrite everything.
-   The script stamps `?v=` hashes on `data.js` / `app.js` / `app.css` in `index.html` before upload so phones do not keep a stale programme.
-4. Confirm the live URL in the browser (schedule renders, RU/EN works, no missing CSS/JS). After a cache-busting change, check that `data.js?v=` is present in `index.html` and that HTML/JS responses prefer `Cache-Control: no-cache` when `.htaccess` is honoured.
-
-Credentials come from gitignored `.ftp.env` (copy `.ftp.env.example`) or `FTP_HOST` / `FTP_USER` / `FTP_PASS`. Never print the password, never commit `.ftp.env`, never write the password into the repo.
-
-Do not delete extra files on the server. Do not invent a different host, path, or protocol.
+Preview the site locally: open `site/index.html`, or `python -m http.server 8080 --directory site`. The public demo of this branch is GitHub Pages, updated by a push to `dev`.
