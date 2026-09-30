@@ -1,3 +1,7 @@
+> Конференция завершена. Ветка `main` хранит программу, которая была на сайте. Снимок — тег [NUCLEUS-2026](https://github.com/shadowcaramel/Conference-schedule/releases/tag/NUCLEUS-2026) (тот же коммит — тег `ЯДРО-2026`). Дальше работа идёт в ветке [`dev`](https://github.com/shadowcaramel/Conference-schedule/tree/dev).
+>
+> The conference is over. `main` keeps the programme that was deployed. The snapshot is tag [NUCLEUS-2026](https://github.com/shadowcaramel/Conference-schedule/releases/tag/NUCLEUS-2026) (the same commit as tag `ЯДРО-2026`). Development continues on [`dev`](https://github.com/shadowcaramel/Conference-schedule/tree/dev).
+
 # ЯДРО-2026 — программа конференции
 
 Интерактивное расписание (русский / English) для сайта [nucleus.togudv.ru](http://nucleus.togudv.ru/). Работает без сервера: достаточно открыть папку `site/` в браузере или отдать администратору один HTML-файл.
