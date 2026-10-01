@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/session.schema.json",
+  "title": "Sessions",
+  "type": "array",
+  "items": { "$ref": "#/$defs/session" },
+  "$defs": {
+    "chair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["person_id"],
+      "properties": {
+        "person_id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "label": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "date", "start", "end", "type", "contribution_ids"],
+      "properties": {
+        "id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "date": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/date"
+        },
+        "start": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/time"
+        },
+        "end": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/time"
+        },
+        "type": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/sessionType"
+        },
+        "title": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+        },
+        "track_id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "room_id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "chairs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/chair" }
+        },
+        "contribution_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+          }
+        },
+        "note": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/person.schema.json",
+  "title": "People",
+  "type": "array",
+  "items": { "$ref": "#/$defs/person" },
+  "$defs": {
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "family", "given"],
+      "properties": {
+        "id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "family": { "type": "string", "minLength": 1 },
+        "given": { "type": "string", "minLength": 1 },
+        "patronymic": { "type": "string" },
+        "email": { "type": "string" }
+      }
+    }
+  }
+}

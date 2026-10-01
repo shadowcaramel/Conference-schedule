@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/room.schema.json",
+  "title": "Rooms",
+  "type": "array",
+  "items": { "$ref": "#/$defs/room" },
+  "$defs": {
+    "room": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "label": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+        },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/conference.schema.json",
+  "title": "Conference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "short_title",
+    "date_start",
+    "date_end",
+    "city",
+    "venue",
+    "timezone",
+    "footnote",
+    "languages",
+    "defaults",
+    "session_types"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+    },
+    "title": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+    },
+    "short_title": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+    },
+    "date_start": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/date"
+    },
+    "date_end": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/date"
+    },
+    "city": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+    },
+    "venue": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+    },
+    "timezone": { "type": "string", "minLength": 1 },
+    "website": { "type": "string" },
+    "contact": { "type": "string" },
+    "footnote": {
+      "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_min"],
+      "properties": {
+        "duration_min": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 1 },
+          "required": ["plenary", "jubilee", "sponsor", "section"],
+          "properties": {
+            "plenary": { "type": "integer", "minimum": 1 },
+            "jubilee": { "type": "integer", "minimum": 1 },
+            "sponsor": { "type": "integer", "minimum": 1 },
+            "section": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "session_types": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+      }
+    }
+  }
+}
