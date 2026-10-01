@@ -12,4 +12,4 @@ The live conference programme stays at [http://nucleus.togudv.ru/timetable/](htt
 
 `dev` is not uploaded there. If the user asks to publish, deploy, or upload the timetable to nucleus.togudv.ru or FTP, say so and stop. Do not run `python tools/deploy.py`. The script exits on its own when the target is that host.
 
-Preview the site locally: open `site/index.html`, or `python -m http.server 8080 --directory site`. The public demo of this branch is GitHub Pages, updated by a push to `dev`.
+Preview the site locally: `python tools/build.py`, then open `site/index.html`, or `python -m http.server 8080 --directory site`. `site/data.js` is built and is not committed. The public demo of this branch is GitHub Pages. A push to `dev` validates and builds before it deploys.

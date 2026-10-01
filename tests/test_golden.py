@@ -40,12 +40,7 @@ def test_check_does_not_fail_on_warnings() -> None:
 
 
 def test_app_js_is_unchanged_from_dev() -> None:
-    """The front end is out of scope for this change."""
-    import subprocess
-    diff = subprocess.run(
-        ["git", "diff", "--exit-code", "origin/dev", "--", "site/app.js"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    assert diff.returncode == 0, diff.stdout.decode("utf-8", errors="replace")
+    """The front end is out of scope. This is the SHA-256 of site/app.js on origin/dev."""
+    import hashlib
+    digest = hashlib.sha256((ROOT / "site" / "app.js").read_bytes()).hexdigest()
+    assert digest == "a1e0a7a8f21592e4cb27d58bb790493df95d66c724ae46372e603ae513349bbb"

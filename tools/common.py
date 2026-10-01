@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Shared layout of the programme workbook for tools/build.py.
+"""Shared paths and time helpers for the programme tools.
 
-The normalized workbook ``data/programme.xlsx`` is the single source of truth.
-Column names here are the ones the build reads.
+Programme content lives in ``data/*.json``. Room labels, session-type labels,
+and default durations live in those files, not here.
 """
 from __future__ import annotations
 
@@ -14,138 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
-PROGRAMME_XLSX = DATA_DIR / "programme.xlsx"
 SITE_DIR = ROOT / "site"
 DIST_DIR = ROOT / "dist"
-
-# --------------------------------------------------------------------------- sheets
-SHEET_SETTINGS = "Настройки"
-SHEET_SECTIONS = "Секции"
-SHEET_BLOCKS = "Блоки"
-SHEET_TALKS = "Доклады"
-SHEET_POSTERS = "Постеры"
-SHEET_CHANGES = "Изменения"
-
-# --------------------------------------------------------------------------- columns
-COLS_SETTINGS = ["Параметр", "Значение (RU)", "Значение (EN)", "Пояснение"]
-
-COLS_SECTIONS = [
-    "№",
-    "Краткое название (RU)",
-    "Краткое название (EN)",
-    "Полное название (RU)",
-    "Полное название (EN)",
-    "Председатель (RU)",
-    "Председатель (EN)",
-    "Цвет",
-    "Аудитория",
-]
-
-COLS_BLOCKS = [
-    "Дата",
-    "Начало",
-    "Конец",
-    "Тип",
-    "Название (RU)",
-    "Название (EN)",
-    "Секция",
-    "Доклады",
-    "Аудитория",
-    "Председатель (RU)",
-    "Председатель (EN)",
-    "Примечание (RU)",
-    "Примечание (EN)",
-]
-
-COLS_TALKS = [
-    "ID",
-    "Секция",
-    "№",
-    "Фамилия",
-    "Имя",
-    "Отчество",
-    "Организация",
-    "Email",
-    "Название",
-    "Длительность (мин)",
-    "Начало",
-    "Статус",
-    "Тематика",
-    "Примечание (RU)",
-    "Примечание (EN)",
-    "Сайт",
-    "Логотип",
-    "Спонсор (RU)",
-    "Спонсор (EN)",
-]
-
-COLS_POSTERS = [
-    "ID",
-    "Фамилия",
-    "Имя",
-    "Отчество",
-    "Организация",
-    "Email",
-    "Название",
-    "Секция",
-    "№ стенда",
-    "Статус",
-    "Примечание (RU)",
-    "Примечание (EN)",
-]
-
-COLS_CHANGES = ["Дата/время", "Текст (RU)", "Текст (EN)"]
-
-# --------------------------------------------------------------------------- vocabularies
-# Block types: RU key used in the sheet -> (machine id, EN label, RU label)
-BLOCK_TYPES = {
-    "пленарный": ("plenary", "Plenary talk", "Пленарный доклад"),
-    "юбилейный": ("jubilee", "Anniversary talk", "Юбилейный доклад"),
-    "спонсор": ("sponsor", "Sponsor talk", "Доклад спонсора"),
-    "секция": ("section", "Section", "Секция"),
-    "перерыв": ("break", "Coffee break", "Кофе-брейк"),
-    "обед": ("lunch", "Lunch", "Обед"),
-    "регистрация": ("registration", "Registration", "Регистрация"),
-    "открытие": ("opening", "Opening", "Открытие"),
-    "закрытие": ("closing", "Closing", "Закрытие"),
-    "постеры": ("poster", "Poster session", "Постерная сессия"),
-    "мероприятие": ("social", "Social event", "Мероприятие"),
-}
-
-TALK_STATUSES = {
-    "": "ok",
-    "отменён": "cancelled",
-    "отменен": "cancelled",
-    "перенесён": "moved",
-    "перенесен": "moved",
-}
-
-# Spreadsheet stores a short campus code; build.py expands it for the site.
-# Hall numbers stay in Russian (ц/л) because that is what is on the signs.
-# `144ц` is a retired alias of `библиотека` so leftover cells never print the old tag.
-LIBRARY_ROOM = {"ru": "Читальный зал библиотеки", "en": "Library reading hall"}
-ROOM_LABELS = {
-    "235ц": {"ru": "235ц, Актовый зал", "en": "235ц, Assembly Hall"},
-    "библиотека": LIBRARY_ROOM,
-    "144ц": LIBRARY_ROOM,
-    "117л": {"ru": "117л, Интеллектуальный центр", "en": "117л, Intellectual Center"},
-    "315л": {"ru": "315л", "en": "315л"},
-    "вестибюль": {"ru": "Вестибюль, 1 эт.", "en": "Central lobby, 1st floor"},
-    "холл2": {"ru": "Коридор и холл 2-го этажа", "en": "Hallway, 2nd floor"},
-    "причал": {"ru": "4-й причал, Речной вокзал", "en": "Pier 4, River Terminal"},
-    "интурист": {"ru": "Ресторан «Интурист», Амурский бульвар, 2", "en": "Restaurant Inturist, Amursky Boulevard, 2"},
-}
-
-PLENARY_SECTION = "P"
-
-DEFAULT_DURATION = {
-    "plenary": 30,
-    "jubilee": 30,
-    "sponsor": 15,
-    "section": 15,
-}
-
-# --------------------------------------------------------------------------- helpers
 
 
 def utf8_stdout() -> None:
@@ -179,13 +49,13 @@ def parse_time(value) -> dt.time | None:
     if isinstance(value, dt.time):
         return value.replace(second=0, microsecond=0)
     if isinstance(value, (int, float)):
-        minutes = int(round(float(value) * 24 * 60)) % (24 * 60)
-        return dt.time(minutes // 60, minutes % 60)
-    m = _TIME_RE.match(str(value))
-    if m:
-        h, mi = int(m.group(1)), int(m.group(2))
-        if 0 <= h < 24 and 0 <= mi < 60:
-            return dt.time(h, mi)
+        minutes_in_day = int(round(float(value) * 24 * 60)) % (24 * 60)
+        return dt.time(minutes_in_day // 60, minutes_in_day % 60)
+    match = _TIME_RE.match(str(value))
+    if match:
+        hour, minute = int(match.group(1)), int(match.group(2))
+        if 0 <= hour < 24 and 0 <= minute < 60:
+            return dt.time(hour, minute)
     return None
 
 
@@ -206,20 +76,6 @@ def parse_date(value) -> dt.date | None:
     return None
 
 
-def expand_room(value) -> dict | str:
-    """Turn a campus code (or already-expanded label) into a bilingual room dict.
-
-    Empty cells stay ``""``. Unknown text is used as-is for both languages.
-    """
-    text = clean(value)
-    if not text:
-        return ""
-    for code, labels in ROOM_LABELS.items():
-        if text == code or text.startswith(code):
-            return {"ru": labels["ru"], "en": labels["en"]}
-    return {"ru": text, "en": text}
-
-
 def fmt_time(t: dt.time | None) -> str:
     return "" if t is None else f"{t.hour:02d}:{t.minute:02d}"
 
@@ -237,6 +93,7 @@ def stamp_site_cache(site_dir: Path | None = None) -> dict[str, str]:
     """Put content hashes on app.css / app.js / data.js in index.html and bump sw.js CACHE.
 
     Phones otherwise keep a stale data.js for hours (no Cache-Control on the FTP host).
+    The committed files do not carry these hashes; the build writes them.
     """
     site = site_dir or SITE_DIR
     tags: dict[str, str] = {}
@@ -264,7 +121,7 @@ def stamp_site_cache(site_dir: Path | None = None) -> dict[str, str]:
         tags["sw"] = sw_tag
         sw = sw_path.read_text(encoding="utf-8")
         sw, n = re.subn(
-            r"const CACHE = 'nucleus2026-[^']+';",
+            r"const CACHE = 'nucleus2026(?:-[^']*)?';",
             f"const CACHE = 'nucleus2026-{sw_tag}';",
             sw,
             count=1,
