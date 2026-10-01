@@ -74,7 +74,7 @@ Plenary, jubilee, and sponsor are session types. They are not copied onto the co
 
 Talks and posters share this list.
 
-`id`, `format` (`oral` or `poster`), optional `track_id`, optional `session_id`, optional `order`, optional `number` (the old «№»: `8`, `Ю1`, `С2`), `title`, `authors`, `duration_min`, optional `start` pin, `status` (`ok`, `cancelled`, `moved`), optional `topic_id` (a track, used by plenary talks), optional `note`, optional `sponsor_id`, optional `board` (posters).
+`id`, `format` (`oral` or `poster`), optional `track_id`, optional `session_id`, optional `order`, optional `number` (the old «№»: `8`, `Ю1`, `С2`), `title`, `authors`, `duration_min` (omitted for posters; they have no slot of their own), optional `start` pin, `status` (`ok`, `cancelled`, `moved`), optional `topic_id` (a track, used by plenary talks), optional `note`, optional `sponsor_id`, optional `board` (posters).
 
 `authors` is an ordered list of `{ "person_id", "affiliation_ids", "presenting" }`. Today each contribution has one presenting author. Several are allowed. The site still shows one name: the first author with `presenting: true`, or the first author if none is marked. Several `affiliation_ids` are joined with a comma for that one line.
 

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "117л",
+    "label": {
+      "ru": "117л, Интеллектуальный центр",
+      "en": "117л, Intellectual Center"
+    }
+  },
+  {
+    "id": "235ц",
+    "label": {
+      "ru": "235ц, Актовый зал",
+      "en": "235ц, Assembly Hall"
+    }
+  },
+  {
+    "id": "315л",
+    "label": {
+      "ru": "315л",
+      "en": "315л"
+    }
+  },
+  {
+    "id": "библиотека",
+    "label": {
+      "ru": "Читальный зал библиотеки",
+      "en": "Library reading hall"
+    },
+    "aliases": [
+      "144ц"
+    ]
+  },
+  {
+    "id": "вестибюль",
+    "label": {
+      "ru": "Вестибюль, 1 эт.",
+      "en": "Central lobby, 1st floor"
+    }
+  },
+  {
+    "id": "интурист",
+    "label": {
+      "ru": "Ресторан «Интурист», Амурский бульвар, 2",
+      "en": "Restaurant Inturist, Amursky Boulevard, 2"
+    }
+  },
+  {
+    "id": "причал",
+    "label": {
+      "ru": "4-й причал, Речной вокзал",
+      "en": "Pier 4, River Terminal"
+    }
+  },
+  {
+    "id": "холл2",
+    "label": {
+      "ru": "Коридор и холл 2-го этажа",
+      "en": "Hallway, 2nd floor"
+    }
+  }
+]

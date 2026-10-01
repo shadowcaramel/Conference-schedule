@@ -1,0 +1,98 @@
+[
+  {
+    "id": "1",
+    "short": {
+      "ru": "Структура ядра",
+      "en": "Nuclear structure"
+    },
+    "full": {
+      "ru": "Экспериментальные и теоретические исследования свойств атомных ядер",
+      "en": "Experimental and theoretical studies of the properties of atomic nuclei"
+    },
+    "color": "blue"
+  },
+  {
+    "id": "2",
+    "short": {
+      "ru": "Ядерные реакции",
+      "en": "Nuclear reactions"
+    },
+    "full": {
+      "ru": "Экспериментальные и теоретические исследования ядерных реакций",
+      "en": "Experimental and theoretical studies of nuclear reactions"
+    },
+    "color": "green"
+  },
+  {
+    "id": "3",
+    "short": {
+      "ru": "Методы и технологии",
+      "en": "Methods and technologies"
+    },
+    "full": {
+      "ru": "Современные ядерно-физические методы, технологии и установки",
+      "en": "Modern nuclear-physics methods, technologies and facilities"
+    },
+    "color": "orange"
+  },
+  {
+    "id": "4",
+    "short": {
+      "ru": "HEP",
+      "en": "HEP"
+    },
+    "full": {
+      "ru": "Релятивистская ядерная физика, физика элементарных частиц и физика высоких энергий",
+      "en": "Relativistic nuclear physics, particle physics and high-energy physics"
+    },
+    "color": "red"
+  },
+  {
+    "id": "5",
+    "short": {
+      "ru": "FBS",
+      "en": "FBS"
+    },
+    "full": {
+      "ru": "Физика малочастичных систем",
+      "en": "Physics of few-body systems"
+    },
+    "color": "purple"
+  },
+  {
+    "id": "6",
+    "short": {
+      "ru": "Астрофизика",
+      "en": "Astrophysics"
+    },
+    "full": {
+      "ru": "Ядерная астрофизика и физика нейтрино",
+      "en": "Nuclear astrophysics and neutrino physics"
+    },
+    "color": "teal"
+  },
+  {
+    "id": "7",
+    "short": {
+      "ru": "Ядерная медицина",
+      "en": "Nuclear medicine"
+    },
+    "full": {
+      "ru": "Ядерная медицина, радиационная терапия и радиоэкология",
+      "en": "Nuclear medicine, radiation therapy and radioecology"
+    },
+    "color": "pink"
+  },
+  {
+    "id": "P",
+    "short": {
+      "ru": "Пленарные доклады",
+      "en": "Plenary talks"
+    },
+    "full": {
+      "ru": "Пленарные доклады",
+      "en": "Plenary talks"
+    },
+    "color": "slate"
+  }
+]

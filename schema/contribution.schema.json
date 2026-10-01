@@ -25,7 +25,7 @@
     "contribution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "format", "title", "authors", "duration_min", "status"],
+      "required": ["id", "format", "title", "authors", "status"],
       "properties": {
         "id": {
           "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"

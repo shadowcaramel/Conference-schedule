@@ -1,0 +1,98 @@
+[
+  {
+    "id": "CHG-001",
+    "at": "2026-09-07T19:40",
+    "text": {
+      "ru": "Опубликована предварительная программа.",
+      "en": "Preliminary programme published."
+    }
+  },
+  {
+    "id": "CHG-002",
+    "at": "2026-09-11T20:48",
+    "text": {
+      "ru": "Указаны аудитории. Не приедут (доклады отменены): Зисаптов, Танирапм, Догутм П. Б., Патепов, Монедин, Ненсев; постеры Мивинеплов, Фадасов, Садабупсов, Ламкин, Гипасова, Раселотина, Monensova.",
+      "en": "Rooms added. Cancelled (will not attend): Zisaptov, Tanirapm, Dogutmb P. B., Patepov, Monedin, Nensev; posters Mivineplov, Fadasov, Sadabupsov, Lamkin, Gipasova, Raselotina, Monensova."
+    }
+  },
+  {
+    "id": "CHG-003",
+    "at": "2026-09-14T17:02",
+    "text": {
+      "ru": "Обновление по программе 14.09: комнаты секций 1–2, читальный зал библиотеки, регистрация в вестибюле, постеры в холле 2 этажа (восстановлены в программе), председатели пленарных заседаний, правки списков докладов.",
+      "en": "Update from the 14.09 programme: sections 1–2 rooms, library reading hall, registration in the central lobby, posters in the 2nd-floor hallway (restored), plenary session chairs, talk-list edits."
+    }
+  },
+  {
+    "id": "CHG-004",
+    "at": "2026-09-15T17:25",
+    "text": {
+      "ru": "Юбилейные доклады — 30 мин. Концерт в актовом зале. Экскурсия — 4-й причал; банкет — ресторан «Интурист».",
+      "en": "Anniversary talks are 30 min. Concert in the Assembly Hall. Excursion: Pier 4; conference dinner: Restaurant Inturist."
+    }
+  },
+  {
+    "id": "CHG-005",
+    "at": "2026-09-18T20:40",
+    "text": {
+      "ru": "Председатели секционных заседаний. Доклад Б. Ф. Кефонева перенесён в постерную сессию. Время постеров 23.09, 16:45–18:00.",
+      "en": "Section session chairs published. B. F. Kefonev’s talk moved to the poster session. Poster session time 23 Sep, 16:45–18:00."
+    }
+  },
+  {
+    "id": "CHG-006",
+    "at": "2026-09-21T13:27",
+    "text": {
+      "ru": "Перестановки докладов: Д. Д. Тенамсов (секция 2) и З. М. Микелп поменялись местами во вторник; пленарные Д. Л. Тебова и Н. Лепнова — среда и суббота. Организация К. К. Тедекдева: БАР ОТ-СЕЛМ, МорПУ.",
+      "en": "Talks swapped: D. D. Tenamsov (section 2) and Z. M. Mikelpba on Tuesday; plenaries of D. L. Tebbov and N. Lepnov — Wednesday and Saturday. Affiliation of K. K. Tedekdbalev: BAR OT–SELM, MorPU."
+    }
+  },
+  {
+    "id": "CHG-007",
+    "at": "2026-09-22T16:29",
+    "text": {
+      "ru": "Р. М. Гиприн не приедет: его доклад снят, секция 6 в среду начинается в 14:00 без него. В пятницу секция 3 — в 315л, секция 7 — в 117л.",
+      "en": "R. M. Giprin will not attend: his talk is removed, and section 6 on Wednesday starts at 14:00 without it. On Friday, section 3 is in 315л and section 7 is in 117л."
+    }
+  },
+  {
+    "id": "CHG-008",
+    "at": "2026-09-22T17:12",
+    "text": {
+      "ru": "Секция 7: Р. С. Норофова, R. Ninogov, С. Ф. Сасзев и Л. Ф. Гинилр перенесены на пятницу, 14:45–15:45, после уже стоящих докладов. Остальные доклады секции 7 во вторник сдвинуты вперёд.",
+      "en": "Section 7: R. S. Norofova, R. Ninogov, S. F. Saszbev and L. F. Ginilrb are moved to Friday 14:45–15:45, after the existing section 7 talks. The other Tuesday section 7 talks move up."
+    }
+  },
+  {
+    "id": "CHG-009",
+    "at": "2026-09-22T17:36",
+    "text": {
+      "ru": "Секция 7 в пятницу после кофе, 16:15–17:15, 117л: П. Л. Дакофоская, затем Б. Н. Кегимг, Г. Д. Лопертев и К. С. Навекмова. Вечерняя секция 7 во вторник сокращена.",
+      "en": "Section 7 on Friday after coffee, 16:15–17:15, room 117л: P. L. Dakofoskaya, then B. N. Kegimgbal, G. D. Lopertev and K. S. Navekmbaova. Tuesday evening section 7 is shortened."
+    }
+  },
+  {
+    "id": "CHG-010",
+    "at": "2026-09-22T20:03",
+    "text": {
+      "ru": "В «Сетке» выделите день и нажмите «Подробный день»: время, аудитории и председатели заседаний. Печать этого дня — один альбомный лист A4.",
+      "en": "In Overview, highlight a day and press Detailed day for times, rooms, and sitting chairs. Print that day as one landscape A4."
+    }
+  },
+  {
+    "id": "CHG-011",
+    "at": "2026-09-23T13:28",
+    "text": {
+      "ru": "Экскурсия на теплоходе в четверг перенесена на 15:30–18:30.",
+      "en": "Thursday boat excursion moved to 15:30–18:30."
+    }
+  },
+  {
+    "id": "CHG-012",
+    "at": "2026-09-24T10:57",
+    "text": {
+      "ru": "Доклад Е. З. Кокепасова (секция 1, пятница) снят. Остальные доклады этого заседания сдвинуты вперёд, начало по-прежнему в 14:00.",
+      "en": "E. Z. Kokepasbov’s talk (section 1, Friday) is removed. The other talks in that sitting move up; it still starts at 14:00."
+    }
+  }
+]

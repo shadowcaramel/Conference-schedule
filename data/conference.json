@@ -1,0 +1,85 @@
+{
+  "id": "nucleus-2026",
+  "title": {
+    "ru": "ЯДРО-2026 — Международная конференция по физике",
+    "en": "NUCLEUS-2026 — International Conference on Physics"
+  },
+  "short_title": {
+    "ru": "ЯДРО-2026",
+    "en": "NUCLEUS-2026"
+  },
+  "date_start": "2026-09-21",
+  "date_end": "2026-09-26",
+  "city": {
+    "ru": "Хабаровск",
+    "en": "Khabarovsk"
+  },
+  "venue": {
+    "ru": "Тихоокеанский государственный университет",
+    "en": "Pacific National University"
+  },
+  "timezone": "Asia/Vladivostok",
+  "website": "http://nucleus.togudv.ru/",
+  "footnote": {
+    "ru": "Время указано местное (Хабаровск, UTC+10). Программа может уточняться.",
+    "en": "All times are local (Khabarovsk, UTC+10). The programme is subject to change."
+  },
+  "languages": [
+    "ru",
+    "en"
+  ],
+  "defaults": {
+    "duration_min": {
+      "plenary": 30,
+      "jubilee": 30,
+      "sponsor": 15,
+      "section": 15
+    }
+  },
+  "session_types": {
+    "plenary": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "jubilee": {
+      "ru": "Юбилейный доклад",
+      "en": "Anniversary talk"
+    },
+    "sponsor": {
+      "ru": "Доклад спонсора",
+      "en": "Sponsor talk"
+    },
+    "section": {
+      "ru": "Секция",
+      "en": "Section"
+    },
+    "break": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "lunch": {
+      "ru": "Обед",
+      "en": "Lunch"
+    },
+    "registration": {
+      "ru": "Регистрация",
+      "en": "Registration"
+    },
+    "opening": {
+      "ru": "Открытие",
+      "en": "Opening"
+    },
+    "closing": {
+      "ru": "Закрытие",
+      "en": "Closing"
+    },
+    "poster": {
+      "ru": "Постерная сессия",
+      "en": "Poster session"
+    },
+    "social": {
+      "ru": "Мероприятие",
+      "en": "Social event"
+    }
+  }
+}
