@@ -1,0 +1,52 @@
+{
+  "id": "demo",
+  "title": {
+    "ru": "Демо",
+    "en": "Demo"
+  },
+  "short_title": {
+    "ru": "Демо",
+    "en": "Demo"
+  },
+  "date_start": "2026-09-21",
+  "date_end": "2026-09-22",
+  "city": {
+    "ru": "Город",
+    "en": "City"
+  },
+  "venue": {
+    "ru": "Зал",
+    "en": "Hall"
+  },
+  "timezone": "Asia/Vladivostok",
+  "footnote": {
+    "ru": "Сноска",
+    "en": "Note"
+  },
+  "languages": [
+    "ru",
+    "en"
+  ],
+  "defaults": {
+    "duration_min": {
+      "plenary": 30,
+      "jubilee": 30,
+      "sponsor": 15,
+      "section": 15
+    }
+  },
+  "session_types": {
+    "plenary": {
+      "ru": "Пленарный",
+      "en": "Plenary"
+    },
+    "section": {
+      "ru": "Секция",
+      "en": "Section"
+    },
+    "poster": {
+      "ru": "Постеры",
+      "en": "Posters"
+    }
+  }
+}

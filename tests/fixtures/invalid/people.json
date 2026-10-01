@@ -1,0 +1,14 @@
+[
+  {
+    "id": "PER-0001",
+    "family": "One",
+    "given": "Ann",
+    "email": "per-0001@example.org"
+  },
+  {
+    "id": "PER-0002",
+    "family": "Two",
+    "given": "Bob",
+    "email": "per-0002@example.org"
+  }
+]

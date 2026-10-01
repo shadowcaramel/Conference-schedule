@@ -133,7 +133,7 @@ Warnings:
 - A contribution with no session
 - A bilingual title whose English string is empty (conference title, track titles, session title, or a bilingual contribution title)
 - One person listed on two contributions whose times overlap
-- A chair of a session who is also a presenting author of a contribution at that time
+- A chair of a session who is also presenting a contribution in a different session at that time. Speaking in the sitting they chair is not a warning.
 
 People are matched on person id, so two contributions by the same person are visible even when the strings differ. Posters in one poster session overlap each other, because a poster has no clock time of its own.
 
