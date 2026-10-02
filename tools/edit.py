@@ -11,19 +11,23 @@ Preview and publish are later slices. This server does not upload anything.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import mimetypes
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 import threading
-from datetime import date
+from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import DATA_DIR, ROOT, utf8_stdout  # noqa: E402
-from dataio import FILES, canonical_value, load_data, write_data  # noqa: E402
+from common import DATA_DIR, ROOT, SITE_DIR, utf8_stdout  # noqa: E402
+from dataio import FILES, canonical_value, dumps, load_data, write_data  # noqa: E402
 from schedule import place  # noqa: E402
 from validate import validate_data  # noqa: E402
 
@@ -618,6 +622,247 @@ def propose_change(data_dir: Path, body: dict) -> dict:
     return {"proposal": {"at": date.today().isoformat(), "text": texts, "kind": kind}}
 
 
+def _index_records(data: dict, kind: str) -> dict[str, dict]:
+    value = data.get(kind)
+    if isinstance(value, dict):
+        ident = value.get("id")
+        return {ident: value} if isinstance(ident, str) else {}
+    if not isinstance(value, list):
+        return {}
+    return {item["id"]: item for item in value if isinstance(item, dict) and isinstance(item.get("id"), str)}
+
+
+def summarize_programmes(before: dict, after: dict) -> list[str]:
+    """Plain sentences such as '3 talks moved, 1 cancelled'."""
+    before_talks = _index_records(before, "contributions")
+    after_talks = _index_records(after, "contributions")
+    moved = cancelled = retimed = added = removed = 0
+    for cid, talk in after_talks.items():
+        old = before_talks.get(cid)
+        if old is None:
+            added += 1
+            continue
+        if (old.get("session_id") or "") != (talk.get("session_id") or ""):
+            moved += 1
+        elif old.get("status") != "cancelled" and talk.get("status") == "cancelled":
+            cancelled += 1
+        elif (
+            (old.get("start") or "") != (talk.get("start") or "")
+            or old.get("duration_min") != talk.get("duration_min")
+            or old.get("order") != talk.get("order")
+        ):
+            retimed += 1
+    removed = len(set(before_talks) - set(after_talks))
+    names = 0
+    before_people = _index_records(before, "people")
+    for pid, person in _index_records(after, "people").items():
+        old = before_people.get(pid)
+        if old and (old.get("family"), old.get("given"), old.get("patronymic")) != (
+            person.get("family"),
+            person.get("given"),
+            person.get("patronymic"),
+        ):
+            names += 1
+
+    def phrase(count: int, one: str, many: str) -> str | None:
+        if count <= 0:
+            return None
+        return f"{count} {one if count == 1 else many}"
+
+    parts = [
+        phrase(moved, "talk moved", "talks moved"),
+        phrase(cancelled, "talk cancelled", "talks cancelled"),
+        phrase(retimed, "talk retimed", "talks retimed"),
+        phrase(names, "name corrected", "names corrected"),
+        phrase(added, "talk added", "talks added"),
+        phrase(removed, "talk removed", "talks removed"),
+    ]
+    lines = [part for part in parts if part]
+    if lines:
+        return [", ".join(lines) + "."]
+    if json.dumps(before, sort_keys=True) == json.dumps(after, sort_keys=True):
+        return ["No programme changes."]
+    return ["Other programme records changed."]
+
+
+def load_dev_baseline(repo: Path) -> dict | None:
+    blobs: dict = {}
+    for kind, filename in FILES.items():
+        result = subprocess.run(
+            ["git", "show", f"origin/dev:data/{filename}"],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            return None
+        blobs[kind] = json.loads(result.stdout)
+    return blobs
+
+
+def diff_programmes(before: dict, after: dict) -> str:
+    chunks: list[str] = []
+    for kind, filename in FILES.items():
+        old = dumps(before.get(kind)) if kind in before else ""
+        new = dumps(after.get(kind)) if kind in after else ""
+        if old == new:
+            continue
+        chunks.extend(
+            difflib.unified_diff(
+                old.splitlines(),
+                new.splitlines(),
+                fromfile=f"a/data/{filename}",
+                tofile=f"b/data/{filename}",
+                lineterm="",
+            )
+        )
+    text = "\n".join(chunks)
+    if len(text) > 200_000:
+        return text[:200_000] + "\n… diff truncated"
+    return text
+
+
+def review_programme(data_dir: Path, repo: Path) -> dict:
+    current = load_data(data_dir)
+    diag = validate_data(current)
+    baseline = load_dev_baseline(repo)
+    if baseline is None:
+        summary = ["Could not read the dev version of the programme."]
+        diff = ""
+    else:
+        summary = summarize_programmes(baseline, current)
+        diff = diff_programmes(baseline, current)
+    return {
+        "summary": summary,
+        "diff": diff,
+        "errors": list(diag.errors),
+        "warnings": list(diag.warnings),
+    }
+
+
+def build_preview(data_dir: Path, site_dir: Path) -> Path:
+    dest = Path(tempfile.mkdtemp(prefix="editor-preview-"))
+    shutil.copytree(site_dir, dest, dirs_exist_ok=True)
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "build.py"), "--data", str(data_dir), "--site", str(dest)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        tail = (result.stdout or result.stderr or "preview build failed").strip().splitlines()
+        raise EditError(409, tail[-1] if tail else "preview build failed")
+    return dest
+
+
+def _run_git(runner, args: list[str], cwd: Path, check: bool = True):
+    try:
+        result = runner(args, cwd=cwd, capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        raise EditError(500, f"{args[0]} is not available") from exc
+    if check and result.returncode != 0:
+        detail = (result.stderr or result.stdout or "command failed").strip()
+        raise EditError(500, detail)
+    return result
+
+
+def publish_programme(repo: Path, data_dir: Path, summary: str, runner=subprocess.run) -> dict:
+    """Commit data/ on a new branch and open a pull request into dev."""
+    current = load_data(data_dir)
+    diag = validate_data(current)
+    if diag.errors:
+        raise EditError(
+            409,
+            "Publishing is blocked until the validation errors are fixed.",
+            {"errors": list(diag.errors)},
+        )
+    if data_dir.resolve() != (repo / "data").resolve():
+        raise EditError(400, "publish only commits the repository data directory")
+    branch = f"editor/programme-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    if branch == "main" or branch.startswith("main/") or branch == "dev":
+        raise EditError(400, "refusing to publish on main or dev")
+    _run_git(runner, ["git", "checkout", "-b", branch], repo)
+    _run_git(runner, ["git", "add", "--", "data"], repo)
+    committed = _run_git(runner, ["git", "commit", "-m", "Update the programme"], repo, check=False)
+    nothing = "nothing to commit" in f"{committed.stdout}{committed.stderr}"
+    if committed.returncode != 0 and not nothing:
+        raise EditError(500, (committed.stderr or committed.stdout or "commit failed").strip())
+    compare_url = f"https://github.com/shadowcaramel/Conference-schedule/compare/dev...{branch}?expand=1"
+    try:
+        pushed = _run_git(runner, ["git", "push", "-u", "origin", branch], repo, check=False)
+    except EditError as exc:
+        return {"branch": branch, "compare_url": compare_url, "pull_request": None, "detail": exc.message}
+    if pushed.returncode != 0:
+        return {
+            "branch": branch,
+            "compare_url": compare_url,
+            "pull_request": None,
+            "detail": (pushed.stderr or pushed.stdout or "push failed").strip(),
+        }
+    body = summary or "Programme update."
+    try:
+        opened = _run_git(
+            runner,
+            [
+                "gh",
+                "pr",
+                "create",
+                "--base",
+                "dev",
+                "--head",
+                branch,
+                "--title",
+                "Update the programme",
+                "--body",
+                body,
+            ],
+            repo,
+            check=False,
+        )
+    except EditError as exc:
+        return {"branch": branch, "compare_url": compare_url, "pull_request": None, "detail": exc.message}
+    if opened.returncode != 0:
+        return {
+            "branch": branch,
+            "compare_url": compare_url,
+            "pull_request": None,
+            "detail": (opened.stderr or "gh pr create failed. Open the compare URL.").strip(),
+        }
+    return {
+        "branch": branch,
+        "compare_url": compare_url,
+        "pull_request": opened.stdout.strip(),
+        "detail": "",
+    }
+
+
+def publish_status(pr_url: str, runner=subprocess.run) -> dict:
+    if not pr_url:
+        raise EditError(400, "a pull request URL is required")
+    try:
+        result = runner(
+            ["gh", "pr", "view", pr_url, "--json", "state,url,statusCheckRollup"],
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return {"state": "unknown", "checks": [], "detail": "gh is not available"}
+    if result.returncode != 0:
+        return {"state": "unknown", "checks": [], "detail": (result.stderr or "could not read the pull request").strip()}
+    payload = json.loads(result.stdout or "{}")
+    checks = []
+    for item in payload.get("statusCheckRollup") or []:
+        if not isinstance(item, dict):
+            continue
+        checks.append(
+            {
+                "name": item.get("name") or item.get("context") or "check",
+                "status": item.get("conclusion") or item.get("state") or item.get("status") or "unknown",
+            }
+        )
+    return {"state": payload.get("state") or "unknown", "url": payload.get("url") or pr_url, "checks": checks, "detail": ""}
+
+
 def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     check_host(host)
     directory = Path(data_dir)
@@ -637,6 +882,26 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                         payload = read_programme(directory)
                         payload["undo"] = len(self.server.undo)  # type: ignore[attr-defined]
                     self._send_json(200, payload)
+                    return
+                if path == "/api/review":
+                    with self.server.lock:  # type: ignore[attr-defined]
+                        payload = review_programme(directory, ROOT)
+                    self._send_json(200, payload)
+                    return
+                if path == "/api/publish/status":
+                    query = parse_qs(urlparse(self.path).query)
+                    pr_url = (query.get("pr") or [""])[0]
+                    payload = publish_status(pr_url)
+                    self._send_json(200, payload)
+                    return
+                if path.startswith("/preview"):
+                    preview = getattr(self.server, "preview_dir", None)
+                    if preview is None:
+                        raise EditError(404, "Build a preview first")
+                    rel = path[len("/preview") :] or "/index.html"
+                    if rel in {"", "/"}:
+                        rel = "/index.html"
+                    self._send_static(rel, Path(preview))
                     return
                 if path == "/api/undo":
                     with self.server.lock:  # type: ignore[attr-defined]
@@ -686,6 +951,14 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                 with self.server.lock:  # type: ignore[attr-defined]
                     if path == "/api/validate" and method == "POST":
                         payload = validate_request(directory, body)
+                        status = 200
+                    elif path == "/api/preview" and method == "POST":
+                        self.server.preview_dir = build_preview(directory, SITE_DIR)  # type: ignore[attr-defined]
+                        payload = {"url": "/preview/index.html"}
+                        status = 200
+                    elif path == "/api/publish" and method == "POST":
+                        reviewed = review_programme(directory, ROOT)
+                        payload = publish_programme(ROOT, directory, " ".join(reviewed["summary"]))
                         status = 200
                     elif path == "/api/changes/propose" and method == "POST":
                         payload = propose_change(directory, body)
@@ -775,13 +1048,13 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
             self.end_headers()
             self.wfile.write(raw)
 
-        def _send_static(self, url_path: str) -> None:
+        def _send_static(self, url_path: str, root_dir: Path | None = None) -> None:
             rel = unquote(url_path)
             if rel.endswith("/"):
                 rel += "index.html"
             if rel == "":
                 rel = "/index.html"
-            root = assets.resolve()
+            root = (root_dir or assets).resolve()
             candidate = (root / rel.lstrip("/")).resolve()
             if root != candidate and root not in candidate.parents:
                 raise EditError(403, "path is outside the editor build")

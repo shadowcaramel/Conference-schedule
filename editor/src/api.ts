@@ -99,3 +99,33 @@ export type ChangeRequest = {
 export function proposeChange(body: ChangeRequest): Promise<{ proposal: { at: string; text: Record<string, string> } }> {
   return send("POST", "/api/changes/propose", body);
 }
+
+export type ReviewReport = {
+  summary: string[];
+  diff: string;
+  errors: string[];
+  warnings: string[];
+};
+
+export type PublishResult = {
+  branch: string;
+  compare_url: string;
+  pull_request: string | null;
+  detail?: string;
+};
+
+export function loadReview(): Promise<ReviewReport> {
+  return send<ReviewReport>("GET", "/api/review");
+}
+
+export function openPreview(): Promise<{ url: string }> {
+  return send("POST", "/api/preview", {});
+}
+
+export function publishProgramme(): Promise<PublishResult> {
+  return send<PublishResult>("POST", "/api/publish", {});
+}
+
+export function publishStatus(prUrl: string): Promise<{ state: string; checks: { name: string; status: string }[]; detail: string }> {
+  return send("GET", `/api/publish/status?pr=${encodeURIComponent(prUrl)}`);
+}
