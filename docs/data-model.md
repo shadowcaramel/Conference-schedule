@@ -154,4 +154,4 @@ Keep ids stable. To swap two talks, exchange their `order` (and `session_id` if 
 
 ## Site output
 
-`window.PROGRAMME` keeps the shape `site/app.js` already reads: `settings`, `sections`, `days`, `blocks`, `talks` (object keyed by id), `posters`, `changes`. Empty strings and `status: ok` are omitted. `generatedAt` is the build time.
+`window.PROGRAMME` keeps the shape `site/app.js` already reads: `settings`, `sections`, `days`, `blocks`, `talks` (object keyed by id), `posters`, `changes`. Empty strings and `status: ok` are omitted. `generatedAt` is the build time. Keys in `talks` follow the old Доклады sheet: jubilees, plenary numbers 1–5, sponsor talks, the remaining plenaries, then section talks by id. The site looks each talk up by id.
