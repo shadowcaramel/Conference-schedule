@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { createRecord, loadProgramme, reorderTalk, undoEdit } from "./api";
+import { createRecord, loadProgramme, proposeChange, reorderTalk, undoEdit, type ChangeRequest } from "./api";
+import { ChangePrompt, type ChangeProposal } from "./ChangePrompt";
 import { ContributionForm } from "./ContributionForm";
 import { DiagnosticsList } from "./DiagnosticsList";
 import { DuplicatesBanner } from "./DuplicatesBanner";
@@ -25,6 +26,7 @@ export function App() {
   const [kind, setKind] = useState<RecordKind>("people");
   const [recordId, setRecordId] = useState<string | null>(null);
   const [undoDepth, setUndoDepth] = useState(0);
+  const [changeOffer, setChangeOffer] = useState<ChangeProposal | null>(null);
 
   const reload = useCallback(() => {
     return loadProgramme()
@@ -68,6 +70,14 @@ export function App() {
       document.documentElement.lang = displayLang;
     }
   }, [programme, displayLang]);
+
+  const offerChange = useCallback((body: ChangeRequest) => {
+    proposeChange(body)
+      .then((result) => setChangeOffer(result.proposal))
+      .catch((reason: unknown) => {
+        toast.error(reason instanceof Error ? reason.message : "Could not prepare a changes-feed entry");
+      });
+  }, []);
 
   const createPerson = useCallback(async (draft: { family: string; given: string }) => {
     const result = await createRecord("people", draft);
@@ -369,6 +379,7 @@ export function App() {
               setRecordId(null);
               void reload();
             }}
+            onOfferChange={offerChange}
           />
         ) : formContribution && (mode === "timetable" || kind === "contributions") ? (
           <ContributionForm
@@ -394,6 +405,7 @@ export function App() {
               setUndoDepth(next.undo ?? 0);
               setDraftDiagnostics(null);
             }}
+            onOfferChange={offerChange}
           />
         ) : mode === "timetable" && session ? (
           <SessionDetail
@@ -402,11 +414,16 @@ export function App() {
             displayLang={displayLang}
             onOpen={openContribution}
             onReorder={(id, direction) => {
+              const previousStart = programme.placement.contributions[id]?.start || "";
               reorderTalk(id, direction)
                 .then((next) => {
                   setProgramme(next);
                   setUndoDepth(next.undo ?? 0);
                   toast.success(direction === "up" ? "Moved up" : "Moved down");
+                  const nextStart = next.placement.contributions[id]?.start || "";
+                  if (nextStart !== previousStart) {
+                    offerChange({ kind: "retimed", contribution_id: id, previous_start: previousStart });
+                  }
                 })
                 .catch((reason: unknown) => {
                   toast.error(reason instanceof Error ? reason.message : "Could not reorder");
@@ -421,6 +438,36 @@ export function App() {
             </p>
           </section>
         )}
+        {changeOffer ? (
+          <ChangePrompt
+            proposal={changeOffer}
+            languages={languages}
+            onSkip={() => setChangeOffer(null)}
+            onSave={async (body) => {
+              const result = await createRecord("changes", body);
+              setProgramme((current) => {
+                if (!current) {
+                  return current;
+                }
+                const change = result.record as unknown as Programme["changes"][number];
+                const changes = current.changes.some((item) => item.id === change.id)
+                  ? current.changes.map((item) => (item.id === change.id ? change : item))
+                  : [...current.changes, change];
+                return {
+                  ...current,
+                  changes,
+                  placement: result.placement,
+                  diagnostics: result.diagnostics,
+                };
+              });
+              if (typeof result.undo === "number") {
+                setUndoDepth(result.undo);
+              }
+              setChangeOffer(null);
+              toast.success("Added to the changes feed");
+            }}
+          />
+        ) : null}
         <DiagnosticsList
           diagnostics={diagnostics}
           programme={programme}
