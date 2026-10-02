@@ -87,3 +87,15 @@ export function reorderTalk(contributionId: string, direction: "up" | "down"): P
 export function undoEdit(): Promise<Programme> {
   return send<Programme>("POST", "/api/undo");
 }
+
+export type ChangeRequest = {
+  kind: "cancelled" | "moved" | "retimed";
+  contribution_id?: string;
+  session_id?: string;
+  previous_start?: string;
+  previous_end?: string;
+};
+
+export function proposeChange(body: ChangeRequest): Promise<{ proposal: { at: string; text: Record<string, string> } }> {
+  return send("POST", "/api/changes/propose", body);
+}

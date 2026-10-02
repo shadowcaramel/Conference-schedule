@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { saveRecord, validateRecord } from "./api";
+import { saveRecord, validateRecord, type ChangeRequest } from "./api";
 import { bilingualPayload, languageMap } from "./bilingual";
 import { DeleteControl } from "./DeleteControl";
 import { NamePicker, type NameOption } from "./NamePicker";
@@ -16,6 +16,7 @@ type Props = {
   onDraftDiagnostics: (diagnostics: Diagnostics) => void;
   onCreatePerson: (draft: { family: string; given: string }) => Promise<string>;
   onDeleted: () => void;
+  onOfferChange?: (body: ChangeRequest) => void;
 };
 
 const FORM_TITLE: Record<Exclude<RecordKind, "contributions">, string> = {
@@ -100,6 +101,7 @@ export function RecordForm({
   onDraftDiagnostics,
   onCreatePerson,
   onDeleted,
+  onOfferChange,
 }: Props) {
   const languages = programme.conference.languages ?? [];
   const shown = useMemo(() => displayOrder(languages, displayLang), [languages, displayLang]);
@@ -189,9 +191,22 @@ export function RecordForm({
     event.preventDefault();
     setSaving(true);
     try {
-      const result = await saveRecord(kind, prepared());
+      const next = prepared();
+      const result = await saveRecord(kind, next);
       toast.success("Saved");
       onSaved(result);
+      if (
+        kind === "sessions" &&
+        onOfferChange &&
+        (asText(next.start) !== asText(record.start) || asText(next.end) !== asText(record.end))
+      ) {
+        onOfferChange({
+          kind: "retimed",
+          session_id: String(record.id),
+          previous_start: asText(record.start),
+          previous_end: asText(record.end),
+        });
+      }
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Save failed");
     } finally {

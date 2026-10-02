@@ -16,6 +16,7 @@ import mimetypes
 import re
 import sys
 import threading
+from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
@@ -513,6 +514,110 @@ def reorder_contribution(data_dir: Path, body: dict) -> dict:
     )
 
 
+def _plain(value: object, lang: str, languages: list[str]) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        text = value.get(lang)
+        if isinstance(text, str) and text.strip():
+            return text
+        for code in languages:
+            alt = value.get(code)
+            if isinstance(alt, str) and alt.strip():
+                return alt
+    return ""
+
+
+def _change_sentence(kind: str, lang: str, title: str, detail: str, previous: str) -> str:
+    if lang == "ru":
+        if kind == "cancelled":
+            return f"Отменён доклад «{title}»."
+        if kind == "moved":
+            return f"Перенос: «{title}» теперь {detail}."
+        was = f" (было {previous})" if previous else ""
+        return f"Новое время: «{title}» {detail}{was}."
+    if kind == "cancelled":
+        return f"Cancelled: {title}."
+    if kind == "moved":
+        return f"Moved: {title} is now {detail}."
+    was = f" (was {previous})" if previous else ""
+    return f"New time: {title} {detail}{was}."
+
+
+def propose_change(data_dir: Path, body: dict) -> dict:
+    """Prefill a changes-feed entry. This does not write."""
+    kind = body.get("kind")
+    if kind not in {"cancelled", "moved", "retimed"}:
+        raise EditError(400, "kind must be cancelled, moved, or retimed")
+    data = load_data(data_dir)
+    conference = data.get("conference") if isinstance(data.get("conference"), dict) else {}
+    languages = [code for code in (conference.get("languages") or []) if isinstance(code, str)] or ["en", "ru"]
+    placed = placement_payload(data)
+    cid = body.get("contribution_id")
+    if isinstance(cid, str) and cid:
+        contrib = next(
+            (item for item in data.get("contributions") or [] if isinstance(item, dict) and item.get("id") == cid),
+            None,
+        )
+        if contrib is None:
+            raise EditError(404, f"no contributions record {cid}")
+        slot = (placed.get("contributions") or {}).get(cid) or {}
+        session_id = contrib.get("session_id") or ""
+        session = next(
+            (item for item in data.get("sessions") or [] if isinstance(item, dict) and item.get("id") == session_id),
+            None,
+        )
+        texts = {}
+        for lang in languages:
+            talk_title = _plain(contrib.get("title"), lang, languages) or cid
+            if kind == "cancelled":
+                line_detail = ""
+            elif kind == "moved":
+                label = _plain(session.get("title"), lang, languages) if isinstance(session, dict) else ""
+                when = slot.get("start") or ""
+                line_detail = f"in {label or session_id or 'the programme'}"
+                if lang == "ru":
+                    line_detail = f"в секции «{label or session_id or 'программе'}»"
+                if when:
+                    line_detail += f" at {when}" if lang != "ru" else f" в {when}"
+            else:
+                when = slot.get("start") or body.get("start") or ""
+                line_detail = f"starts at {when}" if when else "has a new time"
+                if lang == "ru":
+                    line_detail = f"начинается в {when}" if when else "получил новое время"
+            prev = body.get("previous_start") if isinstance(body.get("previous_start"), str) else ""
+            texts[lang] = _change_sentence(kind, lang, talk_title, line_detail, prev if kind == "retimed" else "")
+    else:
+        session_id = body.get("session_id")
+        if not isinstance(session_id, str) or not session_id:
+            raise EditError(400, "a contribution_id or session_id is required")
+        session = next(
+            (item for item in data.get("sessions") or [] if isinstance(item, dict) and item.get("id") == session_id),
+            None,
+        )
+        if session is None:
+            raise EditError(404, f"no sessions record {session_id}")
+        slot = (placed.get("sessions") or {}).get(session_id) or {}
+        texts = {}
+        prev_start = body.get("previous_start") if isinstance(body.get("previous_start"), str) else ""
+        prev_end = body.get("previous_end") if isinstance(body.get("previous_end"), str) else ""
+        previous = f"{prev_start}–{prev_end}" if prev_start or prev_end else ""
+        for lang in languages:
+            label = _plain(session.get("title"), lang, languages) or session_id
+            start = slot.get("start") or session.get("start") or ""
+            end = slot.get("effective_end") or session.get("end") or ""
+            if lang == "ru":
+                detail = f"теперь {start}–{end}"
+            else:
+                detail = f"now runs {start}–{end}"
+            texts[lang] = _change_sentence("retimed", lang, label, detail, previous)
+    if "ru" not in texts:
+        texts["ru"] = texts.get("en", "")
+    if "en" not in texts:
+        texts["en"] = texts.get("ru", "")
+    return {"proposal": {"at": date.today().isoformat(), "text": texts, "kind": kind}}
+
+
 def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     check_host(host)
     directory = Path(data_dir)
@@ -581,6 +686,9 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                 with self.server.lock:  # type: ignore[attr-defined]
                     if path == "/api/validate" and method == "POST":
                         payload = validate_request(directory, body)
+                        status = 200
+                    elif path == "/api/changes/propose" and method == "POST":
+                        payload = propose_change(directory, body)
                         status = 200
                     elif path == "/api/undo" and method == "POST":
                         payload = self._undo()

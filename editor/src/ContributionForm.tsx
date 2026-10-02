@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { saveContribution, scheduleTalk, validateContribution } from "./api";
 import { DeleteControl } from "./DeleteControl";
 import { NamePicker, type NameOption } from "./NamePicker";
+import type { ChangeRequest } from "./api";
 import type { Author, Contribution, Diagnostics, ForRecord, Programme, SaveResult } from "./types";
 import { displayOrder, languageLabel, sessionLabel, textOf } from "./text";
 
@@ -16,6 +17,7 @@ type Props = {
   onCreatePerson: (draft: { family: string; given: string }) => Promise<string>;
   onDeleted: () => void;
   onProgramme: (programme: Programme) => void;
+  onOfferChange: (body: ChangeRequest) => void;
 };
 
 const EMPTY_RECORD: ForRecord = { id: "", errors: [], warnings: [] };
@@ -102,6 +104,7 @@ export function ContributionForm({
   onCreatePerson,
   onDeleted,
   onProgramme,
+  onOfferChange,
 }: Props) {
   const languages = programme.conference.languages ?? [];
   const shown = useMemo(() => displayOrder(languages, displayLang), [languages, displayLang]);
@@ -202,9 +205,18 @@ export function ContributionForm({
     event.preventDefault();
     setSaving(true);
     try {
+      const previousStart = programme.placement.contributions[draft.id]?.start || draft.start || "";
+      const wasCancelled = contribution.status === "cancelled";
+      const previousDuration = contribution.duration_min;
+      const previousPin = contribution.start || "";
       const result = await saveContribution(payload);
       toast.success("Saved");
       onSaved(result);
+      if (payload.status === "cancelled" && !wasCancelled) {
+        onOfferChange({ kind: "cancelled", contribution_id: draft.id });
+      } else if ((payload.start || "") !== previousPin || payload.duration_min !== previousDuration) {
+        onOfferChange({ kind: "retimed", contribution_id: draft.id, previous_start: previousStart });
+      }
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Save failed");
     } finally {
@@ -270,6 +282,8 @@ export function ContributionForm({
           type="button"
           className="text-button pressable"
           onClick={() => {
+            const previousStart = slot?.start || "";
+            const previousSession = draft.session_id || "";
             scheduleTalk({
               contribution_id: draft.id,
               session_id: targetSession,
@@ -278,6 +292,20 @@ export function ContributionForm({
               .then((next) => {
                 toast.success(targetSession ? "Talk moved" : "Talk unscheduled");
                 onProgramme(next);
+                const nextStart = next.placement.contributions[draft.id]?.start || "";
+                if (targetSession !== previousSession) {
+                  onOfferChange({
+                    kind: "moved",
+                    contribution_id: draft.id,
+                    previous_start: previousStart,
+                  });
+                } else if (nextStart !== previousStart) {
+                  onOfferChange({
+                    kind: "retimed",
+                    contribution_id: draft.id,
+                    previous_start: previousStart,
+                  });
+                }
               })
               .catch((error: unknown) => {
                 toast.error(error instanceof Error ? error.message : "Could not move the talk");
@@ -500,6 +528,7 @@ export function ContributionForm({
           const result = await saveContribution({ ...payload, status: "cancelled" });
           toast.success("Marked cancelled");
           onSaved(result);
+          onOfferChange({ kind: "cancelled", contribution_id: draft.id });
         }}
       />
     </form>
