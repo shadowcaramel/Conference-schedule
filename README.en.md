@@ -63,7 +63,7 @@ If the conference host later turns on HTTPS, the code can stay. The service work
 
 ## Left out on purpose
 
-No QR code for the registration desk. No abstract PDFs. No server-side sync of «Моё» across phones (that would need a login). No editing GUI yet: the JSON files are edited by hand, and `tools/dataio.py` is the form CI accepts.
+No QR code for the registration desk. No abstract PDFs. No server-side sync of «Моё» across phones (that would need a login). A local editor for the JSON is described at the bottom of this file. It is not the public site, and it does not upload to the conference server. `tools/dataio.py` is still the form CI accepts.
 
 The typeface is [Onest](https://fonts.google.com/specimen/Onest) ([simpals/onest](https://github.com/simpals/onest)), SIL Open Font License, files in `site/assets/fonts/`. Interface icons are inline [Lucide](https://lucide.dev/) SVGs.
 
@@ -161,3 +161,21 @@ Set `HAPTICS_ON` or `TOUR_ON` to `false` to turn the feature off for everyone. Y
 
 - `'room'` (the default) — columns left to right: library → assembly hall → 117л → 315л.
 - `'section'` — section numbers S1…S7.
+
+## Editor
+
+A local editor for one person, on this computer. It listens on `127.0.0.1` only. It does not deploy, and it does not upload to nucleus.togudv.ru.
+
+Node and the Python tools are both required:
+
+```text
+cd editor
+npm install
+npm run build
+cd ..
+python tools/edit.py
+```
+
+Open http://127.0.0.1:8765/. The timetable is read-only: days by room, and a click lists that session’s talks in running order with the clock times from `tools/schedule.py`. The contribution form can be edited. People, organizations, and tracks are chosen by name. The timetable shows the first language in `conference.languages`; the header control cycles that list and remembers the choice in this browser. Language fields on the form stay side by side in that order. Ids are read-only. Errors and warnings come from `tools/validate.py` and can be saved; they show on the contribution and in the Checks list.
+
+`npm run dev` in `editor/` proxies `/api` to the same Python server. Every save goes through `tools/dataio.py`. Pull requests into `dev` build the editor. GitHub Pages still publishes only the `site/` folder.
