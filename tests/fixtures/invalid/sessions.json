@@ -1,0 +1,75 @@
+[
+  {
+    "id": "B001",
+    "date": "2026-09-21",
+    "start": "10:00",
+    "end": "11:00",
+    "type": "section",
+    "title": {
+      "ru": "B001",
+      "en": "B001"
+    },
+    "track_id": "1",
+    "room_id": "R1",
+    "chairs": [
+      {
+        "person_id": "PER-0001",
+        "label": {
+          "ru": "One A.",
+          "en": "A. One"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "C-01"
+    ]
+  },
+  {
+    "id": "B002",
+    "date": "2026-09-21",
+    "start": "10:30",
+    "end": "11:30",
+    "type": "section",
+    "title": {
+      "ru": "B002",
+      "en": "B002"
+    },
+    "track_id": "1",
+    "room_id": "R2",
+    "contribution_ids": [
+      "C-02"
+    ]
+  },
+  {
+    "id": "B003",
+    "date": "2026-09-21",
+    "start": "14:00",
+    "end": "15:00",
+    "type": "section",
+    "title": {
+      "ru": "B003",
+      "en": "B003"
+    },
+    "track_id": "2",
+    "room_id": "R1",
+    "contribution_ids": [
+      "C-03"
+    ]
+  },
+  {
+    "id": "B004",
+    "date": "2026-09-21",
+    "start": "14:30",
+    "end": "15:30",
+    "type": "section",
+    "title": {
+      "ru": "B004",
+      "en": "B004"
+    },
+    "track_id": "2",
+    "room_id": "R1",
+    "contribution_ids": [
+      "C-04"
+    ]
+  }
+]

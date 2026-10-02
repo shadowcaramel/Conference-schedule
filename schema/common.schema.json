@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/common.schema.json",
+  "title": "Shared programme types",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S+$"
+    },
+    "bilingual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ru", "en"],
+      "properties": {
+        "ru": { "type": "string" },
+        "en": { "type": "string" }
+      }
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "sessionType": {
+      "enum": [
+        "plenary",
+        "jubilee",
+        "sponsor",
+        "section",
+        "break",
+        "lunch",
+        "registration",
+        "opening",
+        "closing",
+        "poster",
+        "social"
+      ]
+    },
+    "color": {
+      "enum": ["blue", "green", "orange", "red", "purple", "teal", "pink", "slate"]
+    },
+    "contributionFormat": {
+      "enum": ["oral", "poster"]
+    },
+    "contributionStatus": {
+      "enum": ["ok", "cancelled", "moved"]
+    },
+    "resourceKind": {
+      "enum": ["slides", "video", "abstract", "photo", "poster"]
+    }
+  }
+}

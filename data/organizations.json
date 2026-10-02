@@ -1,0 +1,181 @@
+[
+  {
+    "id": "ORG-001",
+    "name": "Department of Physics, Lirenthal University (Ostia, Valemarcha)"
+  },
+  {
+    "id": "ORG-002",
+    "name": "Institute of Coastal Mechanics (Calderon, Montavia)"
+  },
+  {
+    "id": "ORG-003",
+    "name": "KNR Valemarchi"
+  },
+  {
+    "id": "ORG-004",
+    "name": "Miral Sci. Lab., Polverton LtD (Ostwick, Valeria)"
+  },
+  {
+    "id": "ORG-005",
+    "name": "Mireldan Univ., Ostia"
+  },
+  {
+    "id": "ORG-006",
+    "name": "БАР ОТ"
+  },
+  {
+    "id": "ORG-007",
+    "name": "БАР ОТ ЗЕОН"
+  },
+  {
+    "id": "ORG-008",
+    "name": "БАР ОТ-СЕЛМ"
+  },
+  {
+    "id": "ORG-009",
+    "name": "БАР ОТ-СЕЛМ, МорПУ"
+  },
+  {
+    "id": "ORG-010",
+    "name": "БАРХАН"
+  },
+  {
+    "id": "ORG-011",
+    "name": "БАРХАф"
+  },
+  {
+    "id": "ORG-012",
+    "name": "БЮР Прибреж"
+  },
+  {
+    "id": "ORG-013",
+    "name": "ВИР"
+  },
+  {
+    "id": "ORG-014",
+    "name": "ВИР БУК"
+  },
+  {
+    "id": "ORG-015",
+    "name": {
+      "ru": "Гамматек",
+      "en": "Gammatech"
+    },
+    "url": "https://gammatech.pro/",
+    "logo": "gammatech.png"
+  },
+  {
+    "id": "ORG-016",
+    "name": {
+      "ru": "Диджитайзер",
+      "en": "Digitizer"
+    },
+    "url": "https://edigitizer.ru/",
+    "logo": "digitizer.svg"
+  },
+  {
+    "id": "ORG-017",
+    "name": "КВУ"
+  },
+  {
+    "id": "ORG-018",
+    "name": "КРН (Берег"
+  },
+  {
+    "id": "ORG-019",
+    "name": "КРН (Берег)"
+  },
+  {
+    "id": "ORG-020",
+    "name": "ЛАРЕН"
+  },
+  {
+    "id": "ORG-021",
+    "name": "ЛАРЕН КВУ"
+  },
+  {
+    "id": "ORG-022",
+    "name": "ЛАРН"
+  },
+  {
+    "id": "ORG-023",
+    "name": "ЛИСТ, КВУ"
+  },
+  {
+    "id": "ORG-024",
+    "name": "ЛКДЦ им. К.М. Орша"
+  },
+  {
+    "id": "ORG-025",
+    "name": "ЛУГ"
+  },
+  {
+    "id": "ORG-026",
+    "name": "ЛУГ, ЛАРН"
+  },
+  {
+    "id": "ORG-027",
+    "name": "МЕЛНИИ СЕВ"
+  },
+  {
+    "id": "ORG-028",
+    "name": {
+      "ru": "Научное оборудование",
+      "en": "Scientific Equipment"
+    },
+    "url": "https://spegroup.ru/",
+    "logo": "spegroup.svg"
+  },
+  {
+    "id": "ORG-029",
+    "name": "НОЛ Приволж"
+  },
+  {
+    "id": "ORG-030",
+    "name": "ОРВУ (Севера)"
+  },
+  {
+    "id": "ORG-031",
+    "name": "ОТ ЗЕОН"
+  },
+  {
+    "id": "ORG-032",
+    "name": "ОТ-СЕЛМ"
+  },
+  {
+    "id": "ORG-033",
+    "name": "ПЛИОН"
+  },
+  {
+    "id": "ORG-034",
+    "name": "РИВН"
+  },
+  {
+    "id": "ORG-035",
+    "name": "РифГУ"
+  },
+  {
+    "id": "ORG-036",
+    "name": "Северный политехнический университет прибрежного края (Северград, Валмерия)"
+  },
+  {
+    "id": "ORG-037",
+    "name": "СЕЛМ"
+  },
+  {
+    "id": "ORG-038",
+    "name": "ТЕЗО"
+  },
+  {
+    "id": "ORG-039",
+    "name": "ТЕЗО, ЛИСТ"
+  },
+  {
+    "id": "ORG-040",
+    "name": "ШАЛМ"
+  },
+  {
+    "id": "ORG-041",
+    "name": "ЯРЬ(Берег)"
+  }
+]

@@ -1,0 +1,1909 @@
+[
+  {
+    "id": "B001",
+    "date": "2026-09-21",
+    "start": "08:00",
+    "end": "09:00",
+    "type": "registration",
+    "title": {
+      "ru": "Регистрация участников",
+      "en": "Registration"
+    },
+    "room_id": "вестибюль",
+    "contribution_ids": []
+  },
+  {
+    "id": "B002",
+    "date": "2026-09-21",
+    "start": "09:00",
+    "end": "09:30",
+    "type": "opening",
+    "title": {
+      "ru": "Открытие конференции",
+      "en": "Opening ceremony"
+    },
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0099",
+        "label": {
+          "ru": "Кепагорин М. Г.",
+          "en": "M. G. Kepagorbain"
+        }
+      }
+    ],
+    "contribution_ids": []
+  },
+  {
+    "id": "B003",
+    "date": "2026-09-21",
+    "start": "09:30",
+    "end": "10:00",
+    "type": "jubilee",
+    "title": {
+      "ru": "Юбилейный доклад",
+      "en": "Anniversary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0099",
+        "label": {
+          "ru": "Кепагорин М. Г.",
+          "en": "M. G. Kepagorbain"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-J1"
+    ]
+  },
+  {
+    "id": "B004",
+    "date": "2026-09-21",
+    "start": "10:00",
+    "end": "10:30",
+    "type": "jubilee",
+    "title": {
+      "ru": "Юбилейный доклад",
+      "en": "Anniversary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0099",
+        "label": {
+          "ru": "Кепагорин М. Г.",
+          "en": "M. G. Kepagorbain"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-J2"
+    ]
+  },
+  {
+    "id": "B005",
+    "date": "2026-09-21",
+    "start": "10:30",
+    "end": "11:00",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B006",
+    "date": "2026-09-21",
+    "start": "11:00",
+    "end": "11:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0088",
+        "label": {
+          "ru": "Кавибуский К. П.",
+          "en": "K. P. Kavibubskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-01"
+    ]
+  },
+  {
+    "id": "B007",
+    "date": "2026-09-21",
+    "start": "11:30",
+    "end": "12:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0088",
+        "label": {
+          "ru": "Кавибуский К. П.",
+          "en": "K. P. Kavibubskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-02"
+    ]
+  },
+  {
+    "id": "B008",
+    "date": "2026-09-21",
+    "start": "12:00",
+    "end": "12:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0088",
+        "label": {
+          "ru": "Кавибуский К. П.",
+          "en": "K. P. Kavibubskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-03"
+    ]
+  },
+  {
+    "id": "B009",
+    "date": "2026-09-21",
+    "start": "12:30",
+    "end": "14:00",
+    "type": "lunch",
+    "title": {
+      "ru": "Обед",
+      "en": "Lunch"
+    },
+    "contribution_ids": []
+  },
+  {
+    "id": "B010",
+    "date": "2026-09-21",
+    "start": "14:00",
+    "end": "14:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0073",
+        "label": {
+          "ru": "Десувикл Л. Б.",
+          "en": "L. B. Desuviklb"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-04"
+    ]
+  },
+  {
+    "id": "B011",
+    "date": "2026-09-21",
+    "start": "14:30",
+    "end": "15:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0073",
+        "label": {
+          "ru": "Десувикл Л. Б.",
+          "en": "L. B. Desuviklb"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-05"
+    ]
+  },
+  {
+    "id": "B012",
+    "date": "2026-09-21",
+    "start": "15:00",
+    "end": "15:15",
+    "type": "sponsor",
+    "title": {
+      "ru": "Доклад спонсора",
+      "en": "Sponsor talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0073",
+        "label": {
+          "ru": "Десувикл Л. Б.",
+          "en": "L. B. Desuviklb"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-S1"
+    ]
+  },
+  {
+    "id": "B013",
+    "date": "2026-09-21",
+    "start": "15:15",
+    "end": "15:30",
+    "type": "sponsor",
+    "title": {
+      "ru": "Доклад спонсора",
+      "en": "Sponsor talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0073",
+        "label": {
+          "ru": "Десувикл Л. Б.",
+          "en": "L. B. Desuviklb"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-S2"
+    ]
+  },
+  {
+    "id": "B014",
+    "date": "2026-09-21",
+    "start": "15:30",
+    "end": "15:45",
+    "type": "sponsor",
+    "title": {
+      "ru": "Доклад спонсора",
+      "en": "Sponsor talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0073",
+        "label": {
+          "ru": "Десувикл Л. Б.",
+          "en": "L. B. Desuviklb"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-S3"
+    ]
+  },
+  {
+    "id": "B015",
+    "date": "2026-09-21",
+    "start": "15:45",
+    "end": "16:15",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B016",
+    "date": "2026-09-21",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "1",
+    "room_id": "библиотека",
+    "chairs": [
+      {
+        "person_id": "PER-0204",
+        "label": {
+          "ru": "Д. Д. Тенамсов",
+          "en": "D. D. Tenamsov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S1-01",
+      "S1-02",
+      "S1-03",
+      "S1-04",
+      "S1-05",
+      "S1-06",
+      "S1-07"
+    ]
+  },
+  {
+    "id": "B017",
+    "date": "2026-09-21",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "2",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0126",
+        "label": {
+          "ru": "Р. Л. Монапопоаский",
+          "en": "R. L. Monappaskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S2-02",
+      "S2-03",
+      "S2-04",
+      "S2-05",
+      "S2-06",
+      "S2-07",
+      "S2-23"
+    ]
+  },
+  {
+    "id": "B018",
+    "date": "2026-09-21",
+    "start": "16:15",
+    "end": "17:45",
+    "type": "section",
+    "track_id": "3",
+    "room_id": "117л",
+    "chairs": [
+      {
+        "person_id": "PER-0177",
+        "label": {
+          "ru": "П. Н. Рориб",
+          "en": "P. N. Roribb"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S3-01",
+      "S3-02",
+      "S3-03",
+      "S3-04",
+      "S3-05",
+      "S3-06"
+    ]
+  },
+  {
+    "id": "B019",
+    "date": "2026-09-21",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "7",
+    "room_id": "315л",
+    "chairs": [
+      {
+        "person_id": "PER-0189",
+        "label": {
+          "ru": "М. М. Супалов",
+          "en": "M. M. Supalov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S7-01",
+      "S7-02",
+      "S7-03",
+      "S7-04",
+      "S7-05",
+      "S7-06",
+      "S7-07"
+    ]
+  },
+  {
+    "id": "B020",
+    "date": "2026-09-21",
+    "start": "18:30",
+    "end": "20:30",
+    "type": "social",
+    "title": {
+      "ru": "Фуршет (welcome party)",
+      "en": "Welcome party"
+    },
+    "contribution_ids": []
+  },
+  {
+    "id": "B021",
+    "date": "2026-09-22",
+    "start": "09:00",
+    "end": "09:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0038",
+        "label": {
+          "ru": "Бусова Д. Г.",
+          "en": "D. G. Busova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-06"
+    ]
+  },
+  {
+    "id": "B022",
+    "date": "2026-09-22",
+    "start": "09:30",
+    "end": "10:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0038",
+        "label": {
+          "ru": "Бусова Д. Г.",
+          "en": "D. G. Busova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-07"
+    ]
+  },
+  {
+    "id": "B023",
+    "date": "2026-09-22",
+    "start": "10:00",
+    "end": "10:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0038",
+        "label": {
+          "ru": "Бусова Д. Г.",
+          "en": "D. G. Busova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-08"
+    ]
+  },
+  {
+    "id": "B024",
+    "date": "2026-09-22",
+    "start": "10:30",
+    "end": "11:00",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B025",
+    "date": "2026-09-22",
+    "start": "11:00",
+    "end": "11:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0088",
+        "label": {
+          "ru": "Кавибуский К. П.",
+          "en": "K. P. Kavibubskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-09"
+    ]
+  },
+  {
+    "id": "B026",
+    "date": "2026-09-22",
+    "start": "11:30",
+    "end": "12:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0088",
+        "label": {
+          "ru": "Кавибуский К. П.",
+          "en": "K. P. Kavibubskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-10"
+    ]
+  },
+  {
+    "id": "B027",
+    "date": "2026-09-22",
+    "start": "12:00",
+    "end": "12:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0088",
+        "label": {
+          "ru": "Кавибуский К. П.",
+          "en": "K. P. Kavibubskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-11"
+    ]
+  },
+  {
+    "id": "B028",
+    "date": "2026-09-22",
+    "start": "12:30",
+    "end": "14:00",
+    "type": "lunch",
+    "title": {
+      "ru": "Обед",
+      "en": "Lunch"
+    },
+    "contribution_ids": []
+  },
+  {
+    "id": "B029",
+    "date": "2026-09-22",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "1",
+    "room_id": "библиотека",
+    "chairs": [
+      {
+        "person_id": "PER-0138",
+        "label": {
+          "ru": "К. С. Неров",
+          "en": "K. S. Nerov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S1-08",
+      "S1-09",
+      "S1-10",
+      "S1-11",
+      "S1-12",
+      "S1-13",
+      "S1-14"
+    ]
+  },
+  {
+    "id": "B030",
+    "date": "2026-09-22",
+    "start": "14:00",
+    "end": "15:30",
+    "type": "section",
+    "track_id": "2",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0058",
+        "label": {
+          "ru": "П. В. Гопавнова",
+          "en": "P. V. Gopavnova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S2-12",
+      "S2-10",
+      "S2-11",
+      "S2-08",
+      "S2-13",
+      "S2-14"
+    ]
+  },
+  {
+    "id": "B031",
+    "date": "2026-09-22",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "4",
+    "room_id": "117л",
+    "chairs": [
+      {
+        "person_id": "PER-0104",
+        "label": {
+          "ru": "М. Л. Лагогпов",
+          "en": "M. L. Lagogpov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S4-01",
+      "S4-02",
+      "S4-03",
+      "S4-04",
+      "S4-05",
+      "S4-06",
+      "S4-07"
+    ]
+  },
+  {
+    "id": "B032",
+    "date": "2026-09-22",
+    "start": "14:00",
+    "end": "15:15",
+    "type": "section",
+    "track_id": "7",
+    "room_id": "315л",
+    "chairs": [
+      {
+        "person_id": "PER-0031",
+        "label": {
+          "ru": "М. Н. Балов",
+          "en": "M. N. Balov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S7-08",
+      "S7-10",
+      "S7-11",
+      "S7-12",
+      "S7-13"
+    ]
+  },
+  {
+    "id": "B033",
+    "date": "2026-09-22",
+    "start": "15:45",
+    "end": "16:15",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B034",
+    "date": "2026-09-22",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "2",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0058",
+        "label": {
+          "ru": "П. В. Гопавнова",
+          "en": "P. V. Gopavnova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S2-15",
+      "S2-16",
+      "S2-17",
+      "S2-19",
+      "S2-20",
+      "S2-21"
+    ]
+  },
+  {
+    "id": "B035",
+    "date": "2026-09-22",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "3",
+    "room_id": "библиотека",
+    "chairs": [
+      {
+        "person_id": "PER-0194",
+        "label": {
+          "ru": "С. К. Тамирадеский",
+          "en": "S. K. Tamiradebskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S3-08",
+      "S3-09",
+      "S3-10",
+      "S3-11",
+      "S3-12",
+      "S3-13",
+      "S3-14"
+    ]
+  },
+  {
+    "id": "B036",
+    "date": "2026-09-22",
+    "start": "16:15",
+    "end": "17:30",
+    "type": "section",
+    "track_id": "4",
+    "room_id": "117л",
+    "chairs": [
+      {
+        "person_id": "PER-0181",
+        "label": {
+          "ru": "К. Сакакдова",
+          "en": "K. Sakakdbova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S4-08",
+      "S4-10",
+      "S4-11",
+      "S4-12",
+      "S4-14"
+    ]
+  },
+  {
+    "id": "B037",
+    "date": "2026-09-22",
+    "start": "16:15",
+    "end": "16:45",
+    "type": "section",
+    "track_id": "7",
+    "room_id": "315л",
+    "chairs": [
+      {
+        "person_id": "PER-0044",
+        "label": {
+          "ru": "Л. Д. Вефасев",
+          "en": "L. D. Vefasbaev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S7-18",
+      "S7-19"
+    ]
+  },
+  {
+    "id": "B038",
+    "date": "2026-09-22",
+    "start": "18:30",
+    "end": "19:30",
+    "type": "social",
+    "title": {
+      "ru": "Концерт",
+      "en": "Concert"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B039",
+    "date": "2026-09-23",
+    "start": "09:00",
+    "end": "09:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0194",
+        "label": {
+          "ru": "Тамирадеский С. К.",
+          "en": "S. K. Tamiradebskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-12"
+    ]
+  },
+  {
+    "id": "B040",
+    "date": "2026-09-23",
+    "start": "09:30",
+    "end": "10:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0194",
+        "label": {
+          "ru": "Тамирадеский С. К.",
+          "en": "S. K. Tamiradebskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-13"
+    ]
+  },
+  {
+    "id": "B041",
+    "date": "2026-09-23",
+    "start": "10:00",
+    "end": "10:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0194",
+        "label": {
+          "ru": "Тамирадеский С. К.",
+          "en": "S. K. Tamiradebskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-30"
+    ]
+  },
+  {
+    "id": "B042",
+    "date": "2026-09-23",
+    "start": "10:30",
+    "end": "11:00",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B043",
+    "date": "2026-09-23",
+    "start": "11:00",
+    "end": "11:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0044",
+        "label": {
+          "ru": "Вефасев Л. Д.",
+          "en": "L. D. Vefasbaev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-15"
+    ]
+  },
+  {
+    "id": "B044",
+    "date": "2026-09-23",
+    "start": "11:30",
+    "end": "12:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0044",
+        "label": {
+          "ru": "Вефасев Л. Д.",
+          "en": "L. D. Vefasbaev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-16"
+    ]
+  },
+  {
+    "id": "B045",
+    "date": "2026-09-23",
+    "start": "12:00",
+    "end": "12:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0044",
+        "label": {
+          "ru": "Вефасев Л. Д.",
+          "en": "L. D. Vefasbaev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-17"
+    ]
+  },
+  {
+    "id": "B046",
+    "date": "2026-09-23",
+    "start": "12:30",
+    "end": "14:00",
+    "type": "lunch",
+    "title": {
+      "ru": "Обед",
+      "en": "Lunch"
+    },
+    "contribution_ids": []
+  },
+  {
+    "id": "B047",
+    "date": "2026-09-23",
+    "start": "14:00",
+    "end": "16:15",
+    "type": "section",
+    "track_id": "1",
+    "room_id": "библиотека",
+    "chairs": [
+      {
+        "person_id": "PER-0062",
+        "label": {
+          "ru": "Б. Н. Гувлин",
+          "en": "B. N. Guvlin"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S1-15",
+      "S1-16",
+      "S1-17",
+      "S1-18",
+      "S1-19",
+      "S1-20",
+      "S1-21",
+      "S1-22"
+    ]
+  },
+  {
+    "id": "B048",
+    "date": "2026-09-23",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "2",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0190",
+        "label": {
+          "ru": "П. Т. Сутадаиский",
+          "en": "P. T. Sutadaibskiy"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S2-22",
+      "S2-24",
+      "S2-25",
+      "S2-26",
+      "S2-27",
+      "S2-28",
+      "S2-29"
+    ]
+  },
+  {
+    "id": "B049",
+    "date": "2026-09-23",
+    "start": "14:00",
+    "end": "16:15",
+    "type": "section",
+    "track_id": "5",
+    "room_id": "117л",
+    "chairs": [
+      {
+        "person_id": "PER-0035",
+        "label": {
+          "ru": "Л. Р. Бунип",
+          "en": "L. R. Bunip"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S5-01",
+      "S5-02",
+      "S5-03",
+      "S5-04",
+      "S5-05",
+      "S5-06",
+      "S5-07",
+      "S5-08",
+      "S5-09"
+    ]
+  },
+  {
+    "id": "B050",
+    "date": "2026-09-23",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "6",
+    "room_id": "315л",
+    "chairs": [
+      {
+        "person_id": "PER-0109",
+        "label": {
+          "ru": "Ф. Л. Латандов",
+          "en": "F. L. Latandbov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S6-02",
+      "S6-03",
+      "S6-04",
+      "S6-05",
+      "S6-06",
+      "S6-07",
+      "S6-08"
+    ]
+  },
+  {
+    "id": "B051",
+    "date": "2026-09-23",
+    "start": "16:15",
+    "end": "16:45",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B052",
+    "date": "2026-09-23",
+    "start": "16:45",
+    "end": "18:00",
+    "type": "poster",
+    "title": {
+      "ru": "Постерная сессия",
+      "en": "Poster session"
+    },
+    "room_id": "холл2",
+    "contribution_ids": [
+      "POST-01",
+      "POST-02",
+      "POST-03",
+      "POST-04",
+      "POST-05",
+      "POST-06",
+      "POST-07",
+      "POST-08",
+      "POST-09",
+      "POST-10",
+      "POST-11",
+      "POST-12",
+      "POST-13",
+      "POST-14",
+      "POST-15",
+      "POST-16",
+      "POST-17",
+      "POST-18",
+      "POST-19",
+      "POST-20",
+      "POST-21",
+      "POST-22",
+      "POST-23",
+      "POST-24",
+      "POST-25",
+      "POST-26",
+      "POST-27",
+      "POST-28",
+      "POST-29",
+      "POST-30",
+      "POST-31",
+      "POST-32",
+      "POST-33",
+      "POST-34",
+      "POST-35",
+      "POST-36",
+      "POST-37",
+      "POST-38",
+      "POST-39",
+      "POST-40",
+      "POST-41",
+      "POST-42",
+      "POST-43",
+      "POST-44",
+      "POST-45",
+      "POST-46",
+      "POST-47",
+      "POST-48"
+    ]
+  },
+  {
+    "id": "B053",
+    "date": "2026-09-24",
+    "start": "09:00",
+    "end": "09:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0165",
+        "label": {
+          "ru": "Ракефренко Д.",
+          "en": "D. Rakefrenko"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-21"
+    ]
+  },
+  {
+    "id": "B054",
+    "date": "2026-09-24",
+    "start": "09:30",
+    "end": "10:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0165",
+        "label": {
+          "ru": "Ракефренко Д.",
+          "en": "D. Rakefrenko"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-19"
+    ]
+  },
+  {
+    "id": "B055",
+    "date": "2026-09-24",
+    "start": "10:00",
+    "end": "10:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0165",
+        "label": {
+          "ru": "Ракефренко Д.",
+          "en": "D. Rakefrenko"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-22"
+    ]
+  },
+  {
+    "id": "B056",
+    "date": "2026-09-24",
+    "start": "10:30",
+    "end": "11:00",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B057",
+    "date": "2026-09-24",
+    "start": "11:00",
+    "end": "11:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0211",
+        "label": {
+          "ru": "Фафовев Т. Р.",
+          "en": "T. R. Fafovbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-20"
+    ]
+  },
+  {
+    "id": "B058",
+    "date": "2026-09-24",
+    "start": "11:30",
+    "end": "12:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0211",
+        "label": {
+          "ru": "Фафовев Т. Р.",
+          "en": "T. R. Fafovbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-18"
+    ]
+  },
+  {
+    "id": "B059",
+    "date": "2026-09-24",
+    "start": "12:00",
+    "end": "12:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0211",
+        "label": {
+          "ru": "Фафовев Т. Р.",
+          "en": "T. R. Fafovbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-23"
+    ]
+  },
+  {
+    "id": "B060",
+    "date": "2026-09-24",
+    "start": "12:30",
+    "end": "14:00",
+    "type": "lunch",
+    "title": {
+      "ru": "Обед",
+      "en": "Lunch"
+    },
+    "contribution_ids": []
+  },
+  {
+    "id": "B061",
+    "date": "2026-09-24",
+    "start": "15:30",
+    "end": "18:30",
+    "type": "social",
+    "title": {
+      "ru": "Экскурсия на теплоходе по Амуру",
+      "en": "Boat excursion on the Amur River"
+    },
+    "room_id": "причал",
+    "contribution_ids": []
+  },
+  {
+    "id": "B062",
+    "date": "2026-09-24",
+    "start": "19:00",
+    "end": "21:30",
+    "type": "social",
+    "title": {
+      "ru": "Банкет",
+      "en": "Conference dinner"
+    },
+    "room_id": "интурист",
+    "contribution_ids": []
+  },
+  {
+    "id": "B063",
+    "date": "2026-09-25",
+    "start": "09:00",
+    "end": "09:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0128",
+        "label": {
+          "ru": "Мувилонов М. М.",
+          "en": "M. M. Muvilonbaov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-24"
+    ]
+  },
+  {
+    "id": "B064",
+    "date": "2026-09-25",
+    "start": "09:30",
+    "end": "10:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0128",
+        "label": {
+          "ru": "Мувилонов М. М.",
+          "en": "M. M. Muvilonbaov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-25"
+    ]
+  },
+  {
+    "id": "B065",
+    "date": "2026-09-25",
+    "start": "10:00",
+    "end": "10:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0128",
+        "label": {
+          "ru": "Мувилонов М. М.",
+          "en": "M. M. Muvilonbaov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-26"
+    ]
+  },
+  {
+    "id": "B066",
+    "date": "2026-09-25",
+    "start": "10:30",
+    "end": "11:00",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B067",
+    "date": "2026-09-25",
+    "start": "11:00",
+    "end": "11:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0069",
+        "label": {
+          "ru": "Дакафов Д. Л.",
+          "en": "D. L. Dakafbov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-27"
+    ]
+  },
+  {
+    "id": "B068",
+    "date": "2026-09-25",
+    "start": "11:30",
+    "end": "12:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0069",
+        "label": {
+          "ru": "Дакафов Д. Л.",
+          "en": "D. L. Dakafbov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-28"
+    ]
+  },
+  {
+    "id": "B069",
+    "date": "2026-09-25",
+    "start": "12:00",
+    "end": "12:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0069",
+        "label": {
+          "ru": "Дакафов Д. Л.",
+          "en": "D. L. Dakafbov"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-29"
+    ]
+  },
+  {
+    "id": "B070",
+    "date": "2026-09-25",
+    "start": "12:30",
+    "end": "14:00",
+    "type": "lunch",
+    "title": {
+      "ru": "Обед",
+      "en": "Lunch"
+    },
+    "contribution_ids": []
+  },
+  {
+    "id": "B071",
+    "date": "2026-09-25",
+    "start": "14:00",
+    "end": "15:00",
+    "type": "section",
+    "track_id": "1",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0107",
+        "label": {
+          "ru": "Н. С. Ланрова",
+          "en": "N. S. Lanrbova"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S1-23",
+      "S1-25",
+      "S1-26",
+      "S1-27"
+    ]
+  },
+  {
+    "id": "B072",
+    "date": "2026-09-25",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "2",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0080",
+        "label": {
+          "ru": "В. Ф. Докзенко",
+          "en": "V. F. Dokzenko"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S2-30",
+      "S2-31",
+      "S2-32",
+      "S2-33",
+      "S2-34",
+      "S2-35",
+      "S2-36"
+    ]
+  },
+  {
+    "id": "B073",
+    "date": "2026-09-25",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "3",
+    "room_id": "315л",
+    "chairs": [
+      {
+        "person_id": "PER-0182",
+        "label": {
+          "ru": "Р. Б. Санебпев",
+          "en": "R. B. Sanebpbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S3-15",
+      "S3-16",
+      "S3-17",
+      "S3-18",
+      "S3-19",
+      "S3-20",
+      "S3-21"
+    ]
+  },
+  {
+    "id": "B074",
+    "date": "2026-09-25",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "4",
+    "room_id": "библиотека",
+    "chairs": [
+      {
+        "person_id": "PER-0192",
+        "label": {
+          "ru": "Б. Р. Тавпев",
+          "en": "B. R. Tavpbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S4-15",
+      "S4-16",
+      "S4-17",
+      "S4-18",
+      "S4-19",
+      "S4-20",
+      "S4-21"
+    ]
+  },
+  {
+    "id": "B075",
+    "date": "2026-09-25",
+    "start": "15:45",
+    "end": "16:15",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B076",
+    "date": "2026-09-25",
+    "start": "16:15",
+    "end": "17:30",
+    "type": "section",
+    "track_id": "3",
+    "room_id": "315л",
+    "chairs": [
+      {
+        "person_id": "PER-0182",
+        "label": {
+          "ru": "Р. Б. Санебпев",
+          "en": "R. B. Sanebpbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S3-22",
+      "S3-23",
+      "S3-24",
+      "S3-25",
+      "S3-26"
+    ]
+  },
+  {
+    "id": "B077",
+    "date": "2026-09-25",
+    "start": "16:15",
+    "end": "18:00",
+    "type": "section",
+    "track_id": "4",
+    "room_id": "библиотека",
+    "chairs": [
+      {
+        "person_id": "PER-0192",
+        "label": {
+          "ru": "Б. Р. Тавпев",
+          "en": "B. R. Tavpbev"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S4-22",
+      "S4-23",
+      "S4-24",
+      "S4-25",
+      "S4-26",
+      "S4-27",
+      "S4-28"
+    ]
+  },
+  {
+    "id": "B078",
+    "date": "2026-09-25",
+    "start": "14:00",
+    "end": "15:45",
+    "type": "section",
+    "track_id": "7",
+    "room_id": "117л",
+    "chairs": [
+      {
+        "person_id": "PER-0133",
+        "label": {
+          "ru": "П. Надпева",
+          "en": "P. Nadpeva"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S7-22",
+      "S7-23",
+      "S7-24",
+      "S7-09",
+      "S7-14",
+      "S7-15",
+      "S7-16"
+    ]
+  },
+  {
+    "id": "B079",
+    "date": "2026-09-26",
+    "start": "09:00",
+    "end": "09:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0035",
+        "label": {
+          "ru": "Бунип Л. Р.",
+          "en": "L. R. Bunip"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-31"
+    ]
+  },
+  {
+    "id": "B080",
+    "date": "2026-09-26",
+    "start": "09:30",
+    "end": "10:00",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0035",
+        "label": {
+          "ru": "Бунип Л. Р.",
+          "en": "L. R. Bunip"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-14"
+    ]
+  },
+  {
+    "id": "B081",
+    "date": "2026-09-26",
+    "start": "10:00",
+    "end": "10:30",
+    "type": "plenary",
+    "title": {
+      "ru": "Пленарный доклад",
+      "en": "Plenary talk"
+    },
+    "track_id": "P",
+    "room_id": "235ц",
+    "chairs": [
+      {
+        "person_id": "PER-0035",
+        "label": {
+          "ru": "Бунип Л. Р.",
+          "en": "L. R. Bunip"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "P-32"
+    ]
+  },
+  {
+    "id": "B082",
+    "date": "2026-09-26",
+    "start": "10:30",
+    "end": "11:00",
+    "type": "break",
+    "title": {
+      "ru": "Кофе-брейк",
+      "en": "Coffee break"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B083",
+    "date": "2026-09-26",
+    "start": "11:00",
+    "end": "11:30",
+    "type": "closing",
+    "title": {
+      "ru": "Закрытие конференции",
+      "en": "Closing ceremony"
+    },
+    "room_id": "235ц",
+    "contribution_ids": []
+  },
+  {
+    "id": "B084",
+    "date": "2026-09-25",
+    "start": "16:15",
+    "end": "17:15",
+    "type": "section",
+    "track_id": "7",
+    "room_id": "117л",
+    "chairs": [
+      {
+        "person_id": "PER-0133",
+        "label": {
+          "ru": "П. Надпева",
+          "en": "P. Nadpeva"
+        }
+      }
+    ],
+    "contribution_ids": [
+      "S3-27",
+      "S7-17",
+      "S7-20",
+      "S7-21"
+    ]
+  }
+]

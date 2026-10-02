@@ -14,7 +14,7 @@ from ftplib import FTP, error_perm
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import PROGRAMME_XLSX, ROOT, SITE_DIR, stamp_site_cache, utf8_stdout  # noqa: E402
+from common import DATA_DIR, ROOT, SITE_DIR, stamp_site_cache, utf8_stdout  # noqa: E402
 
 utf8_stdout()
 
@@ -98,10 +98,12 @@ def ensure_dir(ftp: FTP, remote_dir: str) -> None:
 
 def warn_if_stale() -> None:
     data_js = SITE_DIR / "data.js"
-    if not PROGRAMME_XLSX.exists() or not data_js.exists():
+    sources = list(DATA_DIR.glob("*.json"))
+    if not sources or not data_js.exists():
         return
-    if PROGRAMME_XLSX.stat().st_mtime > data_js.stat().st_mtime:
-        print("ПРЕДУПРЕЖДЕНИЕ: data/programme.xlsx новее, чем site/data.js. "
+    newest = max(path.stat().st_mtime for path in sources)
+    if newest > data_js.stat().st_mtime:
+        print("ПРЕДУПРЕЖДЕНИЕ: data/*.json новее, чем site/data.js. "
               "Локально: python tools/build.py  —  на сервер: python tools/deploy.py --build")
 
 

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/change.schema.json",
+  "title": "Changes",
+  "type": "array",
+  "items": { "$ref": "#/$defs/change" },
+  "$defs": {
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "at", "text"],
+      "properties": {
+        "id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T([01]\\d|2[0-3]):[0-5]\\d)?$"
+        },
+        "text": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/bilingual"
+        }
+      }
+    }
+  }
+}

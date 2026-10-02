@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "short": {
+      "ru": "Трек 1",
+      "en": "Track 1"
+    },
+    "full": {
+      "ru": "Трек 1",
+      "en": "Track 1"
+    },
+    "color": "blue"
+  },
+  {
+    "id": "2",
+    "short": {
+      "ru": "Трек 2",
+      "en": "Track 2"
+    },
+    "full": {
+      "ru": "Трек 2",
+      "en": "Track 2"
+    },
+    "color": "blue"
+  }
+]

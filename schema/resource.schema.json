@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conference-schedule.local/schema/resource.schema.json",
+  "title": "Resources",
+  "type": "array",
+  "items": { "$ref": "#/$defs/resource" },
+  "$defs": {
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "contribution_id", "kind", "url"],
+      "properties": {
+        "id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "contribution_id": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/id"
+        },
+        "kind": {
+          "$ref": "https://conference-schedule.local/schema/common.schema.json#/$defs/resourceKind"
+        },
+        "url": { "type": "string", "minLength": 1 },
+        "lang": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

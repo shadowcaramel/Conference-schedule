@@ -1,0 +1,4487 @@
+[
+  {
+    "id": "P-01",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B006",
+    "order": 1,
+    "number": "1",
+    "title": "Quasimagic Nuclei and Pseudospin Symmetry",
+    "authors": [
+      {
+        "person_id": "PER-0096",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-02",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B007",
+    "order": 1,
+    "number": "2",
+    "title": "First results and plans of the BM@N experiment at NICA",
+    "authors": [
+      {
+        "person_id": "PER-0016",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "4"
+  },
+  {
+    "id": "P-03",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B008",
+    "order": 1,
+    "number": "3",
+    "title": "Ядерная физика и диагностика",
+    "authors": [
+      {
+        "person_id": "PER-0194",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "3"
+  },
+  {
+    "id": "P-04",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B010",
+    "order": 1,
+    "number": "4",
+    "title": "Восьминуклонные системы под ab initio микроскопом: спектры, кластеризация, распад и резонансные ядерные реакции",
+    "authors": [
+      {
+        "person_id": "PER-0088",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-05",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B011",
+    "order": 1,
+    "number": "5",
+    "title": "Проект компактного многозадачного нейтринного детектора на основе галлий содержащих сцинтилляторов.",
+    "authors": [
+      {
+        "person_id": "PER-0174",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "6"
+  },
+  {
+    "id": "P-06",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B021",
+    "order": 1,
+    "number": "6",
+    "title": "Экспериментальные исследования ядерной структуры. Лаборатория ядерных реакций им. Г.Н. Флерова",
+    "authors": [
+      {
+        "person_id": "PER-0073",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "2"
+  },
+  {
+    "id": "P-07",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B022",
+    "order": 1,
+    "number": "7",
+    "title": "Status and physics program of the NICA-MPD experiment at JINR",
+    "authors": [
+      {
+        "person_id": "PER-0051",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-08",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B023",
+    "order": 1,
+    "number": "8",
+    "title": "Spin Physics Detector (SPD) at the NICA collider: status and outlooks",
+    "authors": [
+      {
+        "person_id": "PER-0184",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "3"
+  },
+  {
+    "id": "P-09",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B025",
+    "order": 1,
+    "number": "9",
+    "title": "Эффекты нарушения изотопической симметрии в ядерных столкновениях на SPS и NICA",
+    "authors": [
+      {
+        "person_id": "PER-0090",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "4"
+  },
+  {
+    "id": "P-10",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B026",
+    "order": 1,
+    "number": "10",
+    "title": "Исследования спиновых эффектов на ядерных мишенях в эксперименте СПАСЧАРМ",
+    "authors": [
+      {
+        "person_id": "PER-0069",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "4"
+  },
+  {
+    "id": "P-11",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B027",
+    "order": 1,
+    "number": "11",
+    "title": "ARIADNA Program for Applied Research at NICA: Present Status and Outlook.",
+    "authors": [
+      {
+        "person_id": "PER-0031",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-12",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B039",
+    "order": 1,
+    "number": "12",
+    "title": "Overview on progress in neutrino physics",
+    "authors": [
+      {
+        "person_id": "PER-0091",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "6"
+  },
+  {
+    "id": "P-13",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B040",
+    "order": 1,
+    "number": "13",
+    "title": "Актуальные проблемы развития ядерно-физических технологий для медицины и промышленности",
+    "authors": [
+      {
+        "person_id": "PER-0044",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "7"
+  },
+  {
+    "id": "P-14",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B080",
+    "order": 1,
+    "number": "31",
+    "title": "Обобщенная теория конечных ферми-систем: формализм, анализ и оценки новых эффектов",
+    "authors": [
+      {
+        "person_id": "PER-0197",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-15",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B043",
+    "order": 1,
+    "number": "15",
+    "title": "Physics opportunities for the fixed-target experiment at the Nuclotron with the SRC detector setup",
+    "authors": [
+      {
+        "person_id": "PER-0131",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-16",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B044",
+    "order": 1,
+    "number": "16",
+    "title": "Изучение свойств тяжелых и сверхтяжелых ядер в ЛЯР ОИЯИ",
+    "authors": [
+      {
+        "person_id": "PER-0085",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-17",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B045",
+    "order": 1,
+    "number": "17",
+    "title": "Коллаборация FLAP: задачи и перспективы",
+    "authors": [
+      {
+        "person_id": "PER-0061",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "3"
+  },
+  {
+    "id": "P-18",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B058",
+    "order": 1,
+    "number": "22",
+    "title": "Проблемы и перспективы физики частиц",
+    "authors": [
+      {
+        "person_id": "PER-0032",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "4"
+  },
+  {
+    "id": "P-19",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B054",
+    "order": 1,
+    "number": "19",
+    "title": "Probing nuclear structure with spectator nucleons from collisions of relativistic nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0128",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "4"
+  },
+  {
+    "id": "P-20",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B057",
+    "order": 1,
+    "number": "21",
+    "title": "Few-body systems with singular (zero-range) interactions: Some aspects of correct formulation and related problems.",
+    "authors": [
+      {
+        "person_id": "PER-0033",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "5"
+  },
+  {
+    "id": "P-21",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B053",
+    "order": 1,
+    "number": "18",
+    "title": "Международный центр нейтронных исследований на базе реактора ПИК",
+    "authors": [
+      {
+        "person_id": "PER-0136",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "3"
+  },
+  {
+    "id": "P-22",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B055",
+    "order": 1,
+    "number": "20",
+    "title": "Стенд для исследования световыхода органических сцинтилляторов: результаты эксперимента с генератором DT-нейтронов",
+    "authors": [
+      {
+        "person_id": "PER-0216",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "3"
+  },
+  {
+    "id": "P-23",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B059",
+    "order": 1,
+    "number": "23",
+    "title": "Эксперименты на пучках фотонов: проблемы и перспективы",
+    "authors": [
+      {
+        "person_id": "PER-0087",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "2"
+  },
+  {
+    "id": "P-24",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B063",
+    "order": 1,
+    "number": "24",
+    "title": "Exotic E1 resonances in nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0165",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-25",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B064",
+    "order": 1,
+    "number": "25",
+    "title": "Спонтанное и низкоэнергетическое вынужденное тройное деление ядер-актинидов: механизмы процесса и характеристики продуктов тройного деления",
+    "authors": [
+      {
+        "person_id": "PER-0038",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "2"
+  },
+  {
+    "id": "P-26",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B065",
+    "order": 1,
+    "number": "26",
+    "title": "Механизмы формирования спинов и угловые распределения фрагментов деления: bending- и wriggling-корреляции",
+    "authors": [
+      {
+        "person_id": "PER-0190",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-27",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B067",
+    "order": 1,
+    "number": "27",
+    "title": "Нейтринный телескоп Baikal-GVD: статус и основные физические результаты",
+    "authors": [
+      {
+        "person_id": "PER-0060",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "6"
+  },
+  {
+    "id": "P-28",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B068",
+    "order": 1,
+    "number": "28",
+    "title": "JUNO experiment: status report and perspectives",
+    "authors": [
+      {
+        "person_id": "PER-0109",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "6"
+  },
+  {
+    "id": "P-29",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B069",
+    "order": 1,
+    "number": "29",
+    "title": "Nuclear data in Russia: current status and possible prospects",
+    "authors": [
+      {
+        "person_id": "PER-0095",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "2"
+  },
+  {
+    "id": "P-30",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B041",
+    "order": 1,
+    "number": "14",
+    "title": "Description of backbending in even Pu nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0113",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-31",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B079",
+    "order": 1,
+    "number": "30",
+    "title": "Программа исследований структуры нуклонов и атомных ядер методом активной мишени",
+    "authors": [
+      {
+        "person_id": "PER-0177",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "1"
+  },
+  {
+    "id": "P-32",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B081",
+    "order": 1,
+    "number": "32",
+    "title": "Исследование реакций радиационного захвата протона на ядрах р- и sd-оболочки в рамках высокоточных оболочечных моделей",
+    "authors": [
+      {
+        "person_id": "PER-0062",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok",
+    "topic_id": "2"
+  },
+  {
+    "id": "P-J1",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B003",
+    "order": 1,
+    "number": "Ю1",
+    "title": "80 лет НИИЯФ МГУ",
+    "authors": [
+      {
+        "person_id": "PER-0032",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok"
+  },
+  {
+    "id": "P-J2",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B004",
+    "order": 1,
+    "number": "Ю2",
+    "title": "70 лет ОИЯИ",
+    "authors": [
+      {
+        "person_id": "PER-0102",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 30,
+    "status": "ok"
+  },
+  {
+    "id": "P-S1",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B012",
+    "order": 1,
+    "number": "С1",
+    "title": "Производимые и поставляемые ООО «Гамматек» системы: (ОЧГ-, CZT-, сцинтилляционные) – спектрометры, альфа-спектрометры, а также ФЭУ, Si-ФЭУ и модули электроники для построения научного эксперимента",
+    "authors": [
+      {
+        "person_id": "PER-0105",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok",
+    "sponsor_id": "ORG-015"
+  },
+  {
+    "id": "P-S2",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B013",
+    "order": 1,
+    "number": "С2",
+    "title": "Новые возможности отечественных диджитайзеров для задач ядерной физики",
+    "authors": [
+      {
+        "person_id": "PER-0161",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok",
+    "sponsor_id": "ORG-016"
+  },
+  {
+    "id": "P-S3",
+    "format": "oral",
+    "track_id": "P",
+    "session_id": "B014",
+    "order": 1,
+    "number": "С3",
+    "title": "Делитель пучка СИ в геометрии Лауэ",
+    "authors": [
+      {
+        "person_id": "PER-0196",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok",
+    "sponsor_id": "ORG-028"
+  },
+  {
+    "id": "POST-01",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 1,
+    "title": "Поиск распадов с нарушением принципа Паули и барионного числа с помощью детектора Борексино",
+    "authors": [
+      {
+        "person_id": "PER-0125",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-02",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 2,
+    "title": "Estimated B(E2) values for neutron-rich actinide nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0008",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-03",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 3,
+    "title": "Binding energy estimates for even-even actinide nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0008",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-04",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 4,
+    "title": "Evolution of the neutron shell gap for N>150 with increasing Z from 89 to 100",
+    "authors": [
+      {
+        "person_id": "PER-0008",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-05",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 5,
+    "title": "О природе низколежащих состояний ядра ⁷Li",
+    "authors": [
+      {
+        "person_id": "PER-0144",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-06",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 6,
+    "title": "О связи каналов в потенциальных кластерных моделях",
+    "authors": [
+      {
+        "person_id": "PER-0144",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-07",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 7,
+    "title": "Исследование деформаций предразрывных конфигураций фрагментов при эмиссии третьей легкой частицы",
+    "authors": [
+      {
+        "person_id": "PER-0034",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-08",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 8,
+    "title": "Измерения бета-спектра ⁹⁹Тс с помощью спектрометра на основе Si(Li)-детекторов",
+    "authors": [
+      {
+        "person_id": "PER-0046",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-09",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 9,
+    "title": "Характеристики α-распада неизвестных ядер в области Z ≥ 100",
+    "authors": [
+      {
+        "person_id": "PER-0010",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-10",
+    "format": "poster",
+    "track_id": "1",
+    "session_id": "B052",
+    "order": 10,
+    "title": "Влияние тензорных сил на нейтронную шубу в изотопах олова",
+    "authors": [
+      {
+        "person_id": "PER-0050",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-11",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 11,
+    "title": "Channeling radiation as a tool for GDR excitation in yttrium",
+    "authors": [
+      {
+        "person_id": "PER-0214",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-12",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 12,
+    "title": "Результаты измерения дифференциального сечения образования мгновенных гамма-квантов в реакциях быстрых нейтронов с ядрами титана",
+    "authors": [
+      {
+        "person_id": "PER-0216",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-13",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 13,
+    "title": "Результаты моделирования эксперимента по исследованию фотоядерных реакций на источнике комптоновского излучения",
+    "authors": [
+      {
+        "person_id": "PER-0118",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-14",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 14,
+    "title": "Расчёт сечений образования изомера серебра ¹⁰⁸mAg в (d,p) реакциях на ускорителе ЭГП-10",
+    "authors": [
+      {
+        "person_id": "PER-0083",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-15",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 15,
+    "title": "Изучение формата ENDF-6 для извлечения ядерных данных по реакциям с нейтронами",
+    "authors": [
+      {
+        "person_id": "PER-0143",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-16",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 16,
+    "title": "Исследование реакции n + ²H → n +n+p при энергии нейтронов 20 МэВ",
+    "authors": [
+      {
+        "person_id": "PER-0048",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-17",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 17,
+    "title": "Безнейтринный двойной электронный захват, стимулируемый рентгеновскими лучами",
+    "authors": [
+      {
+        "person_id": "PER-0063",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-18",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 18,
+    "title": "Экспериментальная установка для определения спектра энергии возбуждения ядра ¹⁰Be в реакции n + ⁹Be",
+    "authors": [
+      {
+        "person_id": "PER-0154",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-19",
+    "format": "poster",
+    "track_id": "2",
+    "session_id": "B052",
+    "order": 19,
+    "title": "Реакции слияния тяжелых ядер для астрофизических задач",
+    "authors": [
+      {
+        "person_id": "PER-0209",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-20",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 20,
+    "title": "Моделирование и измерение параметров дрейфа электронов в активной мишени",
+    "authors": [
+      {
+        "person_id": "PER-0039",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-21",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 21,
+    "title": "Детектор импульсного ионизирующего излучения с субнаносекундным временным разрешением на основе радиационно-наведенного поглощения света в лейкосапфире",
+    "authors": [
+      {
+        "person_id": "PER-0180",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-22",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 22,
+    "title": "Применение микроконтроллерных и микрокомпьютерных систем в измерительных комплексах на базе стандарта КАМАК",
+    "authors": [
+      {
+        "person_id": "PER-0017",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-23",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 23,
+    "title": "Моделирование кросс-толка нейтронов в плотноупакованных сцинтилляционных сборках для экспериментов по множественности мгновенных нейтронов деления",
+    "authors": [
+      {
+        "person_id": "PER-0026",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-24",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 24,
+    "title": "Диагностика пучков заряженных частиц и определение коэффициентов вторичной электронной эмиссии материалов",
+    "authors": [
+      {
+        "person_id": "PER-0106",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-25",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 25,
+    "title": "Исследование сцинтилляционных детекторов, применяемых в диагностических системах время-пролётной позитронно-эмиссионной томографии",
+    "authors": [
+      {
+        "person_id": "PER-0054",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-26",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 26,
+    "title": "Особенности ядерных реакций с получением ⁹⁹mTc на пучках протонов с энергиями до 100 МэВ",
+    "authors": [
+      {
+        "person_id": "PER-0169",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-27",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 27,
+    "title": "Стенд для проведения нейтронной активации",
+    "authors": [
+      {
+        "person_id": "PER-0117",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-28",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 28,
+    "title": "Измерение профиля пучка нейтронного поля центрального нейтронного канала на экспериментальных площадках установки РАДЭКС ИЯИ РАН",
+    "authors": [
+      {
+        "person_id": "PER-0206",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-29",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 29,
+    "title": "Применение на ускорительном комплексе У-70",
+    "authors": [
+      {
+        "person_id": "PER-0158",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-30",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 30,
+    "title": "Перспективы применения сухой ионно-плазменной технологии дезактивации оборудования ЯЭУ из титановых сплавов",
+    "authors": [
+      {
+        "person_id": "PER-0070",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-31",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 31,
+    "title": "Цифровая модель процесса неразрушающего контроля положения пружины в твэле гамма-абсорбционным методом",
+    "authors": [
+      {
+        "person_id": "PER-0141",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-32",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 32,
+    "title": "Анализ влияния локальных неоднородностей топливной таблетки на прохождение гамма-излучения через твэл",
+    "authors": [
+      {
+        "person_id": "PER-0141",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-33",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 33,
+    "title": "Математическое моделирование методов определения флюенса альфа-излучения источника, расположенного на сложной поверхности",
+    "authors": [
+      {
+        "person_id": "PER-0141",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-34",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 34,
+    "title": "Моделирование кросс-толка нейтронов в плотноупакованных сцинтилляционных сборках для экспериментов по множественности мгновенных нейтронов деления",
+    "authors": [
+      {
+        "person_id": "PER-0003",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-35",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 35,
+    "title": "Фемтосекундная лазерная система для исследования отклика сцинтилляторов γ-излучения",
+    "authors": [
+      {
+        "person_id": "PER-0187",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-36",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 36,
+    "title": "Подготовка малошумящего детектора на микроканальных пластинах для регистрации кумулятивных частиц в экспериментах на фиксированной мишени",
+    "authors": [
+      {
+        "person_id": "PER-0160",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-37",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 37,
+    "title": "Study of the correlation function between cells in the HGND at the BM@N experiment",
+    "authors": [
+      {
+        "person_id": "PER-0151",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-38",
+    "format": "poster",
+    "track_id": "4",
+    "session_id": "B052",
+    "order": 38,
+    "title": "Моделирование подпорогового рождения антипротонов и кумулятивных процессов в столкновениях тяжелых ионов",
+    "authors": [
+      {
+        "person_id": "PER-0090",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-39",
+    "format": "poster",
+    "track_id": "4",
+    "session_id": "B052",
+    "order": 39,
+    "title": "Рождение странных частиц в pp- и AA-столкновениях в расширенной модели мультипомеронного обмена",
+    "authors": [
+      {
+        "person_id": "PER-0090",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-40",
+    "format": "poster",
+    "track_id": "5",
+    "session_id": "B052",
+    "order": 40,
+    "title": "Квазиклассическое описание поведения малого числа тел для адронов и темной материи",
+    "authors": [
+      {
+        "person_id": "PER-0049",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-41",
+    "format": "poster",
+    "track_id": "6",
+    "session_id": "B052",
+    "order": 41,
+    "title": "Поиск бустерной темной материи, ускоренной электронами космических лучей",
+    "authors": [
+      {
+        "person_id": "PER-0056",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-42",
+    "format": "poster",
+    "track_id": "7",
+    "session_id": "B052",
+    "order": 42,
+    "title": "Методы раннего обнаружения аномалий в радионуклидных выбросах АЭС на основе статистик многолетнего мониторинга",
+    "authors": [
+      {
+        "person_id": "PER-0094",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-43",
+    "format": "poster",
+    "track_id": "7",
+    "session_id": "B052",
+    "order": 43,
+    "title": "Determination of the distribution coefficients of elements in the diacetyl/hydrochloric acid system for nuclear medicine applications",
+    "authors": [
+      {
+        "person_id": "PER-0024",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-44",
+    "format": "poster",
+    "track_id": "7",
+    "session_id": "B052",
+    "order": 44,
+    "title": "Анализ повреждения коллагена в костных биоимплантатах при радиационной стерилизации",
+    "authors": [
+      {
+        "person_id": "PER-0122",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-45",
+    "format": "poster",
+    "track_id": "7",
+    "session_id": "B052",
+    "order": 45,
+    "title": "Анализ больших массивов радиоэкологических измерений после крупных ядерных аварий: оценка эффективных периодов полувыведения и пространственных закономерностей на открытых данных",
+    "authors": [
+      {
+        "person_id": "PER-0148",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-46",
+    "format": "poster",
+    "track_id": "7",
+    "session_id": "B052",
+    "order": 46,
+    "title": "Математическое моделирование при исследовании материала для коллиматора смешанного гамма-нейтронного пучка циклотрона У-120",
+    "authors": [
+      {
+        "person_id": "PER-0079",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-47",
+    "format": "poster",
+    "track_id": "4",
+    "session_id": "B052",
+    "order": 47,
+    "title": "Fluctuations and correlations in relativistic nucleus–nucleus collisions",
+    "authors": [
+      {
+        "person_id": "PER-0011",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "POST-48",
+    "format": "poster",
+    "track_id": "3",
+    "session_id": "B052",
+    "order": 48,
+    "title": "Особенности изучения свойств пучков тяжёлых ионов высоких энергий",
+    "authors": [
+      {
+        "person_id": "PER-0100",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "status": "ok"
+  },
+  {
+    "id": "S1-01",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 1,
+    "number": "1",
+    "title": "Properties of two-nucleon momentum distributions for A=6 nuclei found within three-cluster model",
+    "authors": [
+      {
+        "person_id": "PER-0107",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-02",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 2,
+    "number": "2",
+    "title": "Остаточное нейтрон-протонное взаимодействие и локальные массовые соотношения",
+    "authors": [
+      {
+        "person_id": "PER-0175",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-03",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 3,
+    "number": "3",
+    "title": "Measuring te dependence of proton - neutron interaction on the ditance between them",
+    "authors": [
+      {
+        "person_id": "PER-0202",
+        "affiliation_ids": [
+          "ORG-004"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-04",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 4,
+    "number": "4",
+    "title": "Ab initio no core shell model calculations of sd-shell nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0138",
+        "affiliation_ids": [
+          "ORG-013"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-05",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 5,
+    "number": "5",
+    "title": "Экспериментальная и расчетная зависимости коэффициента внутренней конверсии электрон-позитронной пары от угла их разлета при испускании ее из высоко возбужденного ядра ⁸Ве*",
+    "authors": [
+      {
+        "person_id": "PER-0116",
+        "affiliation_ids": [
+          "ORG-013"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-06",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 6,
+    "number": "6",
+    "title": "Расчет асимптотических нормировочных коэффициентов для нестабильных изотопов олова с нуклонным потенциалом дисперсионной оптической модели",
+    "authors": [
+      {
+        "person_id": "PER-0086",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-07",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B016",
+    "order": 7,
+    "number": "7",
+    "title": "Neural Network Extrapolation of NCSM Results for the ¹⁷C Nuclear Spectrum",
+    "authors": [
+      {
+        "person_id": "PER-0217",
+        "affiliation_ids": [
+          "ORG-034"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-08",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 1,
+    "number": "8",
+    "title": "Wigner’s SU(4) spin-isospin symmetry and MNT&fragmentation nuclear reactions",
+    "authors": [
+      {
+        "person_id": "PER-0204",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-09",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 2,
+    "number": "9",
+    "title": "Новый экспериментальный метод изучения кластерной структуры ядер с помощью активной мишени",
+    "authors": [
+      {
+        "person_id": "PER-0135",
+        "affiliation_ids": [
+          "ORG-032"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-10",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 3,
+    "number": "10",
+    "title": "GEANT4-моделирование экспериментальной установки «Монумент». Выбор оптимальной толщины мишени ¹³⁶BaCO3 в исследовании обычного мюонного захвата",
+    "authors": [
+      {
+        "person_id": "PER-0218",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-11",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 4,
+    "number": "11",
+    "title": "Одночастичная структура изомерных состояний сферических ядер",
+    "authors": [
+      {
+        "person_id": "PER-0126",
+        "affiliation_ids": [
+          "ORG-037"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-12",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 5,
+    "number": "12",
+    "title": "Исследование структуры ядер с квадруполь-октупольной деформацией",
+    "authors": [
+      {
+        "person_id": "PER-0157",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-13",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 6,
+    "number": "13",
+    "title": "Мюонный захват на ядре ¹³⁶Ba",
+    "authors": [
+      {
+        "person_id": "PER-0150",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-14",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B029",
+    "order": 7,
+    "number": "14",
+    "title": "Проверка CVC-гипотезы и унитарности матрицы СКМ на основе анализа скорректированных значений Ft для сверхразрешённых β‑переходов",
+    "authors": [
+      {
+        "person_id": "PER-0119",
+        "affiliation_ids": [
+          "ORG-038"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-15",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 1,
+    "number": "15",
+    "title": "The β-delayed γ-transitions of neutron-rich nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0043",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-16",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 2,
+    "number": "16",
+    "title": "Fine structure in giant resonances",
+    "authors": [
+      {
+        "person_id": "PER-0195",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-17",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 3,
+    "number": "17",
+    "title": "Фотоядерные реакции на природном молибдене при энергии тормозного излучения 25 МэВ",
+    "authors": [
+      {
+        "person_id": "PER-0037",
+        "affiliation_ids": [
+          "ORG-010"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-18",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 4,
+    "number": "18",
+    "title": "Изоспиновое расщепление гигантского дипольного резонанса на средних и тяжелых ядрах",
+    "authors": [
+      {
+        "person_id": "PER-0082",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-19",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 5,
+    "number": "19",
+    "title": "Коэффициенты δ(Е2/М1) для переходов из вибрационных состояний в ¹⁸²⸴ ¹⁸⁴W",
+    "authors": [
+      {
+        "person_id": "PER-0205",
+        "affiliation_ids": [
+          "ORG-036"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-20",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 6,
+    "number": "20",
+    "title": "The method for verifying the enhancement of multipole transitions by vortex photons via activity measurement",
+    "authors": [
+      {
+        "person_id": "PER-0020",
+        "affiliation_ids": [
+          "ORG-018"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-21",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 7,
+    "number": "21",
+    "title": "Gamma de-excitation of ⁹⁰mZr isomer",
+    "authors": [
+      {
+        "person_id": "PER-0172",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-22",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B047",
+    "order": 8,
+    "number": "22",
+    "title": "Skyrme-type energy density functional with surface-peaked effective mass",
+    "authors": [
+      {
+        "person_id": "PER-0164",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-23",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B071",
+    "order": 1,
+    "number": "23",
+    "title": "Exploring the superheavy nuclei using ⁵⁰Ti and ⁵⁴Cr beams as the projectile",
+    "authors": [
+      {
+        "person_id": "PER-0123",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-25",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B071",
+    "order": 2,
+    "number": "25",
+    "title": "Исследование структуры и изомерии ядер гольмия",
+    "authors": [
+      {
+        "person_id": "PER-0155",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-26",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B071",
+    "order": 3,
+    "number": "26",
+    "title": "Эмпирическая систематика периодов полураспада спонтанного деления и альфа-распада тяжелых и сверхтяжелых ядер",
+    "authors": [
+      {
+        "person_id": "PER-0055",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S1-27",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B071",
+    "order": 4,
+    "number": "27",
+    "title": "Transition densities of spin-dipole excitations in ²⁰⁸Pb",
+    "authors": [
+      {
+        "person_id": "PER-0077",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-02",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 1,
+    "number": "1",
+    "title": "Анализ реакции срыва ¹³C(d,t)¹²C в области энергий 13–18 мэв: определение асимптотических нормировочных коэффициентов и структуры состояний ядра ¹²C",
+    "authors": [
+      {
+        "person_id": "PER-0058",
+        "affiliation_ids": [
+          "ORG-006"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-03",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 2,
+    "number": "2",
+    "title": "Полный и парциальные астрофизические S-факторы реакции ³He(d, p)⁴He в микроскопическом кластерном подходе",
+    "authors": [
+      {
+        "person_id": "PER-0042",
+        "affiliation_ids": [
+          "ORG-033"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-04",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 3,
+    "number": "3",
+    "title": "Ab initio description of scattering",
+    "authors": [
+      {
+        "person_id": "PER-0110",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-05",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 4,
+    "number": "4",
+    "title": "Multinucleon transfer reactions in ⁷Li, ¹²C,⁴⁰Ar, ⁴⁰⸴ ⁴⁸Ca + ¹⁹⁷Au",
+    "authors": [
+      {
+        "person_id": "PER-0002",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-06",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 5,
+    "number": "5",
+    "title": "Мультикластерная реализация задачи трёх тел на примере ядерных реакций с лёгкими ядрами",
+    "authors": [
+      {
+        "person_id": "PER-0089",
+        "affiliation_ids": [
+          "ORG-041"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-07",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 6,
+    "number": "6",
+    "title": "Учет кулоновской асимптотики в формализме осцилляторного представления теории рассеяния",
+    "authors": [
+      {
+        "person_id": "PER-0186",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-08",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B030",
+    "order": 4,
+    "number": "11",
+    "title": "Excitation and decay of the Gamow-Teller resonance and its satellites in compaund nuclei",
+    "authors": [
+      {
+        "person_id": "PER-0204",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-10",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B030",
+    "order": 2,
+    "number": "9",
+    "title": "Theoretical and experimental investigation on the optimization of accelerator driven subcritical reactors",
+    "authors": [
+      {
+        "person_id": "PER-0027",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-11",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B030",
+    "order": 3,
+    "number": "10",
+    "title": "Время-проекционная камера для исследования свойств распада сверхтяжелых ядер",
+    "authors": [
+      {
+        "person_id": "PER-0059",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-12",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B030",
+    "order": 1,
+    "number": "8",
+    "title": "Активная аргоновая защита в низкофоновых экспериментах по поиску двойного безнейтринного бета распада GERDA и LEGEND",
+    "authors": [
+      {
+        "person_id": "PER-0120",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-13",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B030",
+    "order": 5,
+    "number": "12",
+    "title": "Comparative study of simulated and measured isotope production in target and HPGe detector in muon capture experiments",
+    "authors": [
+      {
+        "person_id": "PER-0018",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-14",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B030",
+    "order": 6,
+    "number": "13",
+    "title": "Development of the evaluated cross sections database for (n,xγ)-type reactions",
+    "authors": [
+      {
+        "person_id": "PER-0028",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-15",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B034",
+    "order": 1,
+    "number": "15",
+    "title": "Measurements of the gamma-ray emission cross sections and angular distributions from (n, xγ) reactions with 14.1 MeV neutrons",
+    "authors": [
+      {
+        "person_id": "PER-0167",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-16",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B034",
+    "order": 2,
+    "number": "16",
+    "title": "Измерение выхода фотоядерной реакции (γ,p5n) на ядре висмута",
+    "authors": [
+      {
+        "person_id": "PER-0036",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-17",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B034",
+    "order": 3,
+    "number": "17",
+    "title": "Фотоядерные реакции с вылетом протонов на изотопах эрбия",
+    "authors": [
+      {
+        "person_id": "PER-0145",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-19",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B034",
+    "order": 4,
+    "number": "19",
+    "title": "Особенности фоторасщепления изотопов рения ¹⁸⁵⸴ ¹⁸⁷Re",
+    "authors": [
+      {
+        "person_id": "PER-0147",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-20",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B034",
+    "order": 5,
+    "number": "20",
+    "title": "Определение вероятностей формирования предразрывных конфигураций в тройном делении ядер",
+    "authors": [
+      {
+        "person_id": "PER-0038",
+        "affiliation_ids": [
+          "ORG-025"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-21",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B034",
+    "order": 6,
+    "number": "21",
+    "title": "Моменты инерции bending-моды и их влияние на спины фрагментов деления",
+    "authors": [
+      {
+        "person_id": "PER-0190",
+        "affiliation_ids": [
+          "ORG-025"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-22",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 1,
+    "number": "22",
+    "title": "Potential description of α+¹⁹⁷Au elastic scattering",
+    "authors": [
+      {
+        "person_id": "PER-0025",
+        "affiliation_ids": [
+          "ORG-001"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-23",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B017",
+    "order": 7,
+    "number": "7",
+    "title": "Описание дифференциальных сечений упругого рассеяния изотопов водорода в теории прямых ядерных реакций",
+    "authors": [
+      {
+        "person_id": "PER-0076",
+        "affiliation_ids": [
+          "ORG-033"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-24",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 2,
+    "number": "23",
+    "title": "Исследование рассеяния ⁶He - ⁴He на фрагмент-сепараторе АКУЛИНА-2",
+    "authors": [
+      {
+        "person_id": "PER-0121",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-25",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 3,
+    "number": "24",
+    "title": "Experimental studies of ¹⁰B(⁷Li, ⁸Li)⁹B transfer reaction at 58 MeV",
+    "authors": [
+      {
+        "person_id": "PER-0004",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-26",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 4,
+    "number": "25",
+    "title": "Экспериментальный поиск аномалии при снятии возбуждения ядра ⁸Ве* с испусканием электрон-позитронной пары в реакции взаимодействия нейтронов с энергией свыше 20 МэВ с ядром ¹⁰В",
+    "authors": [
+      {
+        "person_id": "PER-0092",
+        "affiliation_ids": [
+          "ORG-013"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-27",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 5,
+    "number": "26",
+    "title": "Изучение механизмов выбивания нейтрона в реакции ⁹Be(⁷Be, ⁶Be)X при промежуточной энергии",
+    "authors": [
+      {
+        "person_id": "PER-0068",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-28",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 6,
+    "number": "27",
+    "title": "Измерение угловых распределений распада ⁷He заселяемого в реакции ⁶He(d,p)",
+    "authors": [
+      {
+        "person_id": "PER-0078",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-29",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B048",
+    "order": 7,
+    "number": "28",
+    "title": "Analytical approach to the generation of angular momentum in spontaneous fission fragments",
+    "authors": [
+      {
+        "person_id": "PER-0007",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-30",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 1,
+    "number": "30",
+    "title": "Исследование протон-индуцированных реакций на висмуте-209",
+    "authors": [
+      {
+        "person_id": "PER-0137",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-31",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 2,
+    "number": "31",
+    "title": "²³⁷Np+⁴⁸Ca reaction and decay properties of ²⁸²Nh and descendant nuclei at DGFRS‑2",
+    "authors": [
+      {
+        "person_id": "PER-0012",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-32",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 3,
+    "number": "32",
+    "title": "Modeling of isotopic scaling and target ratio in transport statistical approach",
+    "authors": [
+      {
+        "person_id": "PER-0006",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-33",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 4,
+    "number": "33",
+    "title": "Роль нейтронного избытка в механизмах передачи нуклонов в реакциях тяжелых ионов ⁴⁰⸴ ⁴⁸Ca + ¹⁹⁷Au",
+    "authors": [
+      {
+        "person_id": "PER-0072",
+        "affiliation_ids": [
+          "ORG-026"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-34",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 5,
+    "number": "34",
+    "title": "Multi-agent modeling of collective dynamics in heavy nuclei fission",
+    "authors": [
+      {
+        "person_id": "PER-0041",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-35",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 6,
+    "number": "35",
+    "title": "Neutron yield uncertainty calculations for (α, n) reactions using the NeuCBOT program",
+    "authors": [
+      {
+        "person_id": "PER-0022",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S2-36",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B072",
+    "order": 7,
+    "number": "36",
+    "title": "Theoretical calculation of the angular anisotropy of gamma radiation on carbon, cromium and iron nuclei in inelastic neutron scattering",
+    "authors": [
+      {
+        "person_id": "PER-0064",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-01",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B018",
+    "order": 1,
+    "number": "1",
+    "title": "Исследование эффекта наложения сигналов (pile-up) при регистрации ат-мосферных мюонов в нейтринном телескопе Baikal-GVD.",
+    "authors": [
+      {
+        "person_id": "PER-0212",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-02",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B018",
+    "order": 2,
+    "number": "2",
+    "title": "Виртуальный генератор потока АТМОСФЕРНЫХ мюонов В варьируемом диапазоне энергий до 100 ТэВ",
+    "authors": [
+      {
+        "person_id": "PER-0081",
+        "affiliation_ids": [
+          "ORG-006"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-03",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B018",
+    "order": 3,
+    "number": "3",
+    "title": "Мюонная томография крупномасштабных объектов с применением компактных цилиндрических позиционно-чувствительных детекторов",
+    "authors": [
+      {
+        "person_id": "PER-0182",
+        "affiliation_ids": [
+          "ORG-006"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-04",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B018",
+    "order": 4,
+    "number": "4",
+    "title": "Реконструкция плотности многокомпонентных объектов в протонной радиографии с использованием метода роя частиц и преобразования Абеля",
+    "authors": [
+      {
+        "person_id": "PER-0215",
+        "affiliation_ids": [
+          "ORG-010"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-05",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B018",
+    "order": 5,
+    "number": "5",
+    "title": "Измерение ионизационных выходов ядер отдачи в аргоне",
+    "authors": [
+      {
+        "person_id": "PER-0176",
+        "affiliation_ids": [
+          "ORG-029"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-06",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B018",
+    "order": 6,
+    "number": "6",
+    "title": "Development of machine learning tool for photon identification using the electromagnetic calorimeter at SPD detector",
+    "authors": [
+      {
+        "person_id": "PER-0153",
+        "affiliation_ids": [
+          "ORG-038"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-08",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 1,
+    "number": "8",
+    "title": "Критический стенд «П»: современное состояние, особенности и роль исследований для развития технологии ВВЭР",
+    "authors": [
+      {
+        "person_id": "PER-0103",
+        "affiliation_ids": [
+          "ORG-006"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-09",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 2,
+    "number": "9",
+    "title": "Результаты экспериментов с тепловыми трубами с цезиевым теплоносителем",
+    "authors": [
+      {
+        "person_id": "PER-0193",
+        "affiliation_ids": [
+          "ORG-011"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-10",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 3,
+    "number": "10",
+    "title": "Низкофоновый детектор нейтронов на основе гелия-3",
+    "authors": [
+      {
+        "person_id": "PER-0162",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-11",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 4,
+    "number": "11",
+    "title": "Нейтрон-нейтронные методы дистанционного контроля с использованием меченых нейтронов",
+    "authors": [
+      {
+        "person_id": "PER-0108",
+        "affiliation_ids": [
+          "ORG-033"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-12",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 5,
+    "number": "12",
+    "title": "Моделирование ионной оптики сепаратора STAR с помощью программы SHEMAT",
+    "authors": [
+      {
+        "person_id": "PER-0065",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-13",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 6,
+    "number": "13",
+    "title": "Криогенная газовая ячейка охлаждения ионов. Особенности конструкции, вакуумная система, система газового обеспечения, система охлаждения",
+    "authors": [
+      {
+        "person_id": "PER-0168",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-14",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B035",
+    "order": 7,
+    "number": "14",
+    "title": "Измерение времени экстракции ионов из криогенной газовой ячейки охлаждения",
+    "authors": [
+      {
+        "person_id": "PER-0101",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-15",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 1,
+    "number": "15",
+    "title": "Нейтронные сцинтилляторы на основе кристалла ZnS(Ag)",
+    "authors": [
+      {
+        "person_id": "PER-0213",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-16",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 2,
+    "number": "16",
+    "title": "Физическая структура кросс-толка гамма-квантов в сферических многодетекторных сцинтилляционных системах",
+    "authors": [
+      {
+        "person_id": "PER-0075",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-17",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 3,
+    "number": "17",
+    "title": "Performance and light yield of CsI(pure) scintillation module prototypes at LN2 temperature",
+    "authors": [
+      {
+        "person_id": "PER-0019",
+        "affiliation_ids": [
+          "ORG-013"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-18",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 4,
+    "number": "18",
+    "title": "Пласстмассовые сцинтилляторы с возможностью разделения частиц по форме импульса",
+    "authors": [
+      {
+        "person_id": "PER-0030",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-19",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 5,
+    "number": "19",
+    "title": "Исследование радиационной стойкости SiC- и Si-детекторов после облучения альфа-частицами",
+    "authors": [
+      {
+        "person_id": "PER-0156",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-20",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 6,
+    "number": "20",
+    "title": "Average Spatial Resolution of Detector Layers of Four-Layer Position-Sensitive Detectors",
+    "authors": [
+      {
+        "person_id": "PER-0111",
+        "affiliation_ids": [
+          "ORG-037"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-21",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B073",
+    "order": 7,
+    "number": "21",
+    "title": "Применение диджитайзеров CAEN-ХХ42 для регистрации заряженных частиц",
+    "authors": [
+      {
+        "person_id": "PER-0152",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-22",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B076",
+    "order": 1,
+    "number": "22",
+    "title": "Исследование распределения поглощённой дозы в полимерных материалах при облучении ускоренными электронами",
+    "authors": [
+      {
+        "person_id": "PER-0127",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-23",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B076",
+    "order": 2,
+    "number": "23",
+    "title": "Влияние ²²²Rn на расчёт радиоуглеродного возраста древесных углей",
+    "authors": [
+      {
+        "person_id": "PER-0178",
+        "affiliation_ids": [
+          "ORG-027"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-24",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B076",
+    "order": 3,
+    "number": "24",
+    "title": "Nd/ZnS-модифицированные квантовые точки CdZnSeS как нанокомпоненты сцинтилляционных сред для поиска безнейтринного двойного β-распада ¹⁵⁰Nd",
+    "authors": [
+      {
+        "person_id": "PER-0057",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-25",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B076",
+    "order": 4,
+    "number": "25",
+    "title": "Results of ARFIM experiment setup for applied research of NOSU",
+    "authors": [
+      {
+        "person_id": "PER-0057",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-26",
+    "format": "oral",
+    "track_id": "3",
+    "session_id": "B076",
+    "order": 5,
+    "number": "26",
+    "title": "Neodymium-modified CdZnSeS/ZnS quantum dots: evolution of optical response and evidence limits for core/shell architecture",
+    "authors": [
+      {
+        "person_id": "PER-0057",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S3-27",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B084",
+    "order": 1,
+    "number": "29",
+    "title": "Перспективы применения сухой ионно-плазменной технологии дезактивации оборудования ЯЭУ из титановых сплавов",
+    "authors": [
+      {
+        "person_id": "PER-0070",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-01",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 1,
+    "number": "1",
+    "title": "Investigation of nuclear deformation influence on anisotropic flows in heavy-ion collisions at NICA energies",
+    "authors": [
+      {
+        "person_id": "PER-0098",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-02",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 2,
+    "number": "2",
+    "title": "Кумулятивные явления в области больших поперечных импульсов и их наблюдение в столкновениях ядер на коллайдере NICA",
+    "authors": [
+      {
+        "person_id": "PER-0163",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-03",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 3,
+    "number": "3",
+    "title": "Inclusive J/ψ Production as a Probe of Gluon Dynamics at NICA",
+    "authors": [
+      {
+        "person_id": "PER-0023",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-04",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 4,
+    "number": "4",
+    "title": "Моделирование кумулятивных эффектов в столкновениях тяжелых ионов при энергиях коллайдера NICA",
+    "authors": [
+      {
+        "person_id": "PER-0040",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-05",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 5,
+    "number": "5",
+    "title": "Методы определения центральности с использованием передних детекторов в эксперименте BM@N",
+    "authors": [
+      {
+        "person_id": "PER-0188",
+        "affiliation_ids": [
+          "ORG-014"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-06",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 6,
+    "number": "6",
+    "title": "Λd сorrelation function in Xe+CsI collisions at 3.8 AGeV in the BM@N experiment",
+    "authors": [
+      {
+        "person_id": "PER-0014",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-07",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B031",
+    "order": 7,
+    "number": "7",
+    "title": "Measurement of double differential inclusive cross sections of forward neutron emission in the BM@N experiment",
+    "authors": [
+      {
+        "person_id": "PER-0124",
+        "affiliation_ids": [
+          "ORG-014"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-08",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B036",
+    "order": 1,
+    "number": "8",
+    "title": "Influence of colour string configurations on rapidity multiplicity correlations",
+    "authors": [
+      {
+        "person_id": "PER-0134",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-10",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B036",
+    "order": 2,
+    "number": "9",
+    "title": "Экранирование заряда в многокомпонентной аблелевой модели Хиггса",
+    "authors": [
+      {
+        "person_id": "PER-0166",
+        "affiliation_ids": [
+          "ORG-040"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-11",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B036",
+    "order": 3,
+    "number": "10",
+    "title": "Ядро ⁸Be и состояние Хойла в диссоциации релятивистских ядер",
+    "authors": [
+      {
+        "person_id": "PER-0192",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-12",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B036",
+    "order": 4,
+    "number": "11",
+    "title": "Dibaryon d*(2380) : prediction, detection, understanding",
+    "authors": [
+      {
+        "person_id": "PER-0045",
+        "affiliation_ids": [
+          "ORG-014"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-14",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B036",
+    "order": 5,
+    "number": "12",
+    "title": "Mass spectrum of noncharmed and charmed meson states at finite temperature in extended linear-sigma model",
+    "authors": [
+      {
+        "person_id": "PER-0005",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-15",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 1,
+    "number": "15",
+    "title": "Source velocity in collisions of 2.1 GeV and 3.6 GeV protons with gold target.",
+    "authors": [
+      {
+        "person_id": "PER-0074",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-16",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 2,
+    "number": "16",
+    "title": "Особенности измерения свойств резонансов в эксперименте MPD в Xe+W столкновениях при энергии 2,5 A*ГэВ",
+    "authors": [
+      {
+        "person_id": "PER-0199",
+        "affiliation_ids": [
+          "ORG-009"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-17",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 3,
+    "number": "17",
+    "title": "Pauli equation in spaces of constant curvature and extended Nikiforov-Uvarov method",
+    "authors": [
+      {
+        "person_id": "PER-0179",
+        "affiliation_ids": [
+          "ORG-029"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-18",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 4,
+    "number": "18",
+    "title": "Минимизация объемных флуктуаций при поиске критической точки сильно взаимодействующей материи в релятивистских ядерных столкновениях",
+    "authors": [
+      {
+        "person_id": "PER-0104",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-19",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 5,
+    "number": "19",
+    "title": "Heavy-flavor jet quenching in pre-equilibrium medium",
+    "authors": [
+      {
+        "person_id": "PER-0021",
+        "affiliation_ids": [
+          "ORG-005"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-20",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 6,
+    "number": "20",
+    "title": "Overview of the STAR hot QCD results",
+    "authors": [
+      {
+        "person_id": "PER-0129",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-21",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B074",
+    "order": 7,
+    "number": "21",
+    "title": "Исследование выходов заряженных адронов в рамках гидродинамического моделирования с применением голографического уравнения состояния",
+    "authors": [
+      {
+        "person_id": "PER-0208",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-22",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 1,
+    "number": "22",
+    "title": "Исследование нейросетевых подходов к оценке прицельного параметра в столкновениях тяжелых ионов на основе 4π информации о событии",
+    "authors": [
+      {
+        "person_id": "PER-0142",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-23",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 2,
+    "number": "23",
+    "title": "Неравновесный квантовый гидродинамический подход и эмиссия фрагментов в столкновениях тяжелых ионов промежуточных энергий",
+    "authors": [
+      {
+        "person_id": "PER-0049",
+        "affiliation_ids": [
+          "ORG-008"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-24",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 3,
+    "number": "24",
+    "title": "Применение классического глауберовского подхода к описанию дейтрон-дейтронного взаимодействия",
+    "authors": [
+      {
+        "person_id": "PER-0219",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-25",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 4,
+    "number": "25",
+    "title": "О применении генераторов EPOS4, UrQMD, PHQMD и PYTHIA для анализа событий в физике сверхвысоких энергий",
+    "authors": [
+      {
+        "person_id": "PER-0173",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-26",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 5,
+    "number": "26",
+    "title": "Моделирование влияния деформации ядер на азимутальную анизотропию частиц в генераторе событий HYDJET++",
+    "authors": [
+      {
+        "person_id": "PER-0067",
+        "affiliation_ids": [
+          "ORG-021"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-27",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 6,
+    "number": "27",
+    "title": "Analysis of charged and identified hadron spectra with Tsallis distributions in O+O, Kr+Kr, and Xe+Xe collisions at √sₙₙ = 6 GeV using the UrQMD model",
+    "authors": [
+      {
+        "person_id": "PER-0009",
+        "affiliation_ids": [
+          "ORG-038"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S4-28",
+    "format": "oral",
+    "track_id": "4",
+    "session_id": "B077",
+    "order": 7,
+    "number": "28",
+    "title": "Измерение выстроенности K*⁻(892)-мезонов, образованных в каон-ядерных и пион-ядерных взаимодействиях на ускорительном комплексе У-70",
+    "authors": [
+      {
+        "person_id": "PER-0185",
+        "affiliation_ids": [
+          "ORG-031"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-01",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 1,
+    "number": "1",
+    "title": "Поиск тринейтрона в реакциях поглощения остановившихся пионов ядрами ⁹Be",
+    "authors": [
+      {
+        "person_id": "PER-0170",
+        "affiliation_ids": [
+          "ORG-038"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-02",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 2,
+    "number": "2",
+    "title": "Возможное существование синглетного дейтрона как дибарионного резонанса и проблема существования динейтрона",
+    "authors": [
+      {
+        "person_id": "PER-0159",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-03",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 3,
+    "number": "3",
+    "title": "Excited states of ⁶He nucleus in the SS-HORSE–NCSM approach",
+    "authors": [
+      {
+        "person_id": "PER-0066",
+        "affiliation_ids": [
+          "ORG-034"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-04",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 4,
+    "number": "4",
+    "title": "Ионизация атомов протонным ударом в представлении параболических квазиштурмовских функций",
+    "authors": [
+      {
+        "person_id": "PER-0029",
+        "affiliation_ids": [
+          "ORG-034"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-05",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 5,
+    "number": "5",
+    "title": "Атом водорода в поле лазерного импульса в представлении параболических волновых пакетов",
+    "authors": [
+      {
+        "person_id": "PER-0203",
+        "affiliation_ids": [
+          "ORG-034"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-06",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 6,
+    "number": "6",
+    "title": "Van der Waals dimers of neon",
+    "authors": [
+      {
+        "person_id": "PER-0139",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-07",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 7,
+    "number": "7",
+    "title": "Finding virtual states via wave-packet continuum discretization",
+    "authors": [
+      {
+        "person_id": "PER-0107",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-08",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 8,
+    "number": "8",
+    "title": "Resonances of a two-particle system on a 1D lattice",
+    "authors": [
+      {
+        "person_id": "PER-0146",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S5-09",
+    "format": "oral",
+    "track_id": "5",
+    "session_id": "B049",
+    "order": 9,
+    "number": "9",
+    "title": "3-3 рассеяние в системах трёх частиц с короткодействующими и кулоновскими взаимодействиями",
+    "authors": [
+      {
+        "person_id": "PER-0211",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-02",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 1,
+    "number": "1",
+    "title": "Эффекты динамо и осцилляций в спектрах нейтрино сверхновых",
+    "authors": [
+      {
+        "person_id": "PER-0063",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-03",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 2,
+    "number": "2",
+    "title": "Эффекты намагниченности ядер во взрывном нуклеосинтезе",
+    "authors": [
+      {
+        "person_id": "PER-0063",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-04",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 3,
+    "number": "3",
+    "title": "Search for rare processes within the νGeN experiment at Kalinin nuclear power plant",
+    "authors": [
+      {
+        "person_id": "PER-0207",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-05",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 4,
+    "number": "4",
+    "title": "Precise reactor antineutrino spectrum measurement with TAO detector",
+    "authors": [
+      {
+        "person_id": "PER-0191",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-06",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 5,
+    "number": "5",
+    "title": "Условия появления Λ-гиперонов в материи нейтронных звёзд в моделях среднего поля",
+    "authors": [
+      {
+        "person_id": "PER-0114",
+        "affiliation_ids": [
+          "ORG-020"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-07",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 6,
+    "number": "6",
+    "title": "Analysis of radiative capture of proton ¹¹B (p, γ) ¹²C at low energy",
+    "authors": [
+      {
+        "person_id": "PER-0001",
+        "affiliation_ids": [
+          "ORG-002"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S6-08",
+    "format": "oral",
+    "track_id": "6",
+    "session_id": "B050",
+    "order": 7,
+    "number": "7",
+    "title": "Characterization of the cosmic muon background in the νGeN experiment",
+    "authors": [
+      {
+        "person_id": "PER-0013",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-01",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 1,
+    "number": "1",
+    "title": "Подход к оптимизации распределения поглощенной дозы в биологическом объекте в лучевой терапии пучком ускоренных протонов",
+    "authors": [
+      {
+        "person_id": "PER-0112",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-02",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 2,
+    "number": "2",
+    "title": "Оценка рисков развития радиационно-индуцированных заболеваний при проведении лучевой терапии",
+    "authors": [
+      {
+        "person_id": "PER-0210",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-03",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 3,
+    "number": "3",
+    "title": "Измерение сечения реакции ¹²C(¹²C,X)¹¹C: особенности эксперимента и оценка неопределенностей",
+    "authors": [
+      {
+        "person_id": "PER-0198",
+        "affiliation_ids": [
+          "ORG-007"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-04",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 4,
+    "number": "4",
+    "title": "Реализация работы с данными КТ в системе планирования ионной лучевой терапии",
+    "authors": [
+      {
+        "person_id": "PER-0158",
+        "affiliation_ids": [
+          "ORG-007"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-05",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 5,
+    "number": "5",
+    "title": "Трекинг, измерение энергии и получение диагностических изображений с использованием кремниевых пиксельных сенсоров",
+    "authors": [
+      {
+        "person_id": "PER-0140",
+        "affiliation_ids": [
+          "ORG-035"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-06",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 6,
+    "number": "6",
+    "title": "Реконструкция трёхмерного дозового рапсределения при облучении биологических объектов пучками протонов высокой интенсивности",
+    "authors": [
+      {
+        "person_id": "PER-0071",
+        "affiliation_ids": [
+          "ORG-014"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-07",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B019",
+    "order": 7,
+    "number": "7",
+    "title": "Расчет характеристик черенковского детектора для контроля пучков протонов, используемых для флэш-терапии",
+    "authors": [
+      {
+        "person_id": "PER-0047",
+        "affiliation_ids": [
+          "ORG-014"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-08",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B032",
+    "order": 1,
+    "number": "8",
+    "title": "Количественная оценка содержания тория и урана в свинце для радиационной защиты методом ИСП-МС",
+    "authors": [
+      {
+        "person_id": "PER-0132",
+        "affiliation_ids": [
+          "ORG-022"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-09",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 4,
+    "number": "25",
+    "title": "Применение деформируемой регистрации изображений в лучевой терапии",
+    "authors": [
+      {
+        "person_id": "PER-0149",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-10",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B032",
+    "order": 2,
+    "number": "10",
+    "title": "Биофизическая модель электрических характеристик эритроцитов при лучевой терапии",
+    "authors": [
+      {
+        "person_id": "PER-0133",
+        "affiliation_ids": [
+          "ORG-030"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-11",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B032",
+    "order": 3,
+    "number": "11",
+    "title": "Корректировка и валидация алгоритма оценки прбега протонов в различных матералах на основании КТ-исследований",
+    "authors": [
+      {
+        "person_id": "PER-0071",
+        "affiliation_ids": [
+          "ORG-014"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-12",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B032",
+    "order": 4,
+    "number": "12",
+    "title": "Использование гамма-облученного оксида алюминия для изготовления генераторов технеция-99М",
+    "authors": [
+      {
+        "person_id": "PER-0084",
+        "affiliation_ids": [
+          "ORG-003"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-13",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B032",
+    "order": 5,
+    "number": "13",
+    "title": "Фотоядерное получение медицинских изотопов рения на осмиевых и иридиевых мишенях",
+    "authors": [
+      {
+        "person_id": "PER-0053",
+        "affiliation_ids": [],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-14",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 5,
+    "number": "26",
+    "title": "Ядерные реакции на кислороде, углероде, азоте и боре при облучении протонным пучком 160 МэВ",
+    "authors": [
+      {
+        "person_id": "PER-0015",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-15",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 6,
+    "number": "27",
+    "title": "Исследование влияния термопластических масок на поверхностную дозу и дозовое распределение в лучевой терапии",
+    "authors": [
+      {
+        "person_id": "PER-0183",
+        "affiliation_ids": [
+          "ORG-023"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-16",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 7,
+    "number": "28",
+    "title": "Биофизическое моделирование распределения температуры при гипертермии: обзор алгоритмов и проектирование расчётного модуля.",
+    "authors": [
+      {
+        "person_id": "PER-0052",
+        "affiliation_ids": [
+          "ORG-039"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-17",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B084",
+    "order": 2,
+    "number": "30",
+    "title": "Optimization of photoneutron source parameters for boron neutron capture therapy",
+    "authors": [
+      {
+        "person_id": "PER-0093",
+        "affiliation_ids": [
+          "ORG-012"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-18",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B037",
+    "order": 1,
+    "number": "18",
+    "title": "Спектральные измерения пучка быстрых нейтронов циклотрона У-120",
+    "authors": [
+      {
+        "person_id": "PER-0201",
+        "affiliation_ids": [
+          "ORG-019"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-19",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B037",
+    "order": 2,
+    "number": "19",
+    "title": "Статус проекта по созданию комплекса нейтронной терапии на базе компактного нейтронного генератора НГ-24МТ",
+    "authors": [
+      {
+        "person_id": "PER-0189",
+        "affiliation_ids": [
+          "ORG-024"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-20",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B084",
+    "order": 3,
+    "number": "31",
+    "title": "Особенности вычислительного прогнозирования отклика ионизационных камер для радиотерапевтического применения",
+    "authors": [
+      {
+        "person_id": "PER-0115",
+        "affiliation_ids": [
+          "ORG-024"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-21",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B084",
+    "order": 4,
+    "number": "32",
+    "title": "Моделирование комбинированного воздействия ионизирующего излучения и озона для стерилизации биоматериалов",
+    "authors": [
+      {
+        "person_id": "PER-0130",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-22",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 1,
+    "number": "22",
+    "title": "Применение шумоподавляющих фильтров при плёночной дозиметрии радиохирургических планов лечения",
+    "authors": [
+      {
+        "person_id": "PER-0171",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-23",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 2,
+    "number": "23",
+    "title": "Методика дозиметрии источника для электронной поверхностной брахитерапии",
+    "authors": [
+      {
+        "person_id": "PER-0097",
+        "affiliation_ids": [
+          "ORG-017"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  },
+  {
+    "id": "S7-24",
+    "format": "oral",
+    "track_id": "7",
+    "session_id": "B078",
+    "order": 3,
+    "number": "24",
+    "title": "Накопление золошлаковых отходов и выбросов котельного комплекса и рост онкологической заболеваемости",
+    "authors": [
+      {
+        "person_id": "PER-0200",
+        "affiliation_ids": [
+          "ORG-030"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 15,
+    "status": "ok"
+  }
+]

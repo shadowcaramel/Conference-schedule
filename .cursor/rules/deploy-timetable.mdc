@@ -7,6 +7,6 @@ alwaysApply: true
 
 Do not upload this branch to `nucleus.togudv.ru`. The conference site keeps the finished ЯДРО-2026 / NUCLEUS-2026 programme.
 
-Test locally (`site/index.html` or `python -m http.server 8080 --directory site`). GitHub Pages updates when `dev` is pushed.
+Test locally (`python tools/build.py`, then `site/index.html` or `python -m http.server 8080 --directory site`). GitHub Pages updates when `dev` is pushed: CI validates and builds before deploy.
 
 If the user asks to publish to the conference server or FTP, follow the `deploy-timetable` skill: refuse the upload. Never commit `.ftp.env` or print an FTP password.

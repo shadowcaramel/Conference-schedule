@@ -1,0 +1,82 @@
+[
+  {
+    "id": "C-01",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B001",
+    "order": 1,
+    "number": "1",
+    "title": "Title C-01",
+    "authors": [
+      {
+        "person_id": "PER-0001",
+        "affiliation_ids": [
+          "ORG-001"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 60,
+    "status": "ok"
+  },
+  {
+    "id": "C-02",
+    "format": "oral",
+    "track_id": "1",
+    "session_id": "B002",
+    "order": 1,
+    "number": "2",
+    "title": "Title C-02",
+    "authors": [
+      {
+        "person_id": "PER-0001",
+        "affiliation_ids": [
+          "ORG-001"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 60,
+    "status": "ok"
+  },
+  {
+    "id": "C-03",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B003",
+    "order": 1,
+    "number": "3",
+    "title": "Title C-03",
+    "authors": [
+      {
+        "person_id": "PER-0002",
+        "affiliation_ids": [
+          "ORG-001"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 60,
+    "status": "ok"
+  },
+  {
+    "id": "C-04",
+    "format": "oral",
+    "track_id": "2",
+    "session_id": "B004",
+    "order": 1,
+    "number": "4",
+    "title": "Title C-04",
+    "authors": [
+      {
+        "person_id": "PER-0002",
+        "affiliation_ids": [
+          "ORG-001"
+        ],
+        "presenting": true
+      }
+    ],
+    "duration_min": 60,
+    "status": "ok"
+  }
+]
