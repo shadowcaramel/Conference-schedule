@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { createRecord, loadProgramme } from "./api";
+import { createRecord, loadProgramme, reorderTalk, undoEdit } from "./api";
 import { ContributionForm } from "./ContributionForm";
 import { DiagnosticsList } from "./DiagnosticsList";
 import { DuplicatesBanner } from "./DuplicatesBanner";
@@ -24,11 +24,13 @@ export function App() {
   const [mode, setMode] = useState<"timetable" | "records">("timetable");
   const [kind, setKind] = useState<RecordKind>("people");
   const [recordId, setRecordId] = useState<string | null>(null);
+  const [undoDepth, setUndoDepth] = useState(0);
 
   const reload = useCallback(() => {
     return loadProgramme()
       .then((data) => {
         setProgramme(data);
+        setUndoDepth(data.undo ?? 0);
         return data;
       })
       .catch((reason: unknown) => {
@@ -167,6 +169,9 @@ export function App() {
       };
     });
     setDraftDiagnostics(result.diagnostics);
+    if (typeof result.undo === "number") {
+      setUndoDepth(result.undo);
+    }
   }
 
   function onEntitySaved(result: SaveResult) {
@@ -189,6 +194,9 @@ export function App() {
       return { ...current, [kind]: next, placement: result.placement, diagnostics: result.diagnostics };
     });
     setDraftDiagnostics(result.diagnostics);
+    if (typeof result.undo === "number") {
+      setUndoDepth(result.undo);
+    }
   }
 
   function onOpenMessage(message: string) {
@@ -280,6 +288,26 @@ export function App() {
               Records
             </button>
           </div>
+          <button
+            type="button"
+            className="day pressable"
+            id="btn-undo"
+            disabled={undoDepth === 0}
+            onClick={() => {
+              undoEdit()
+                .then((next) => {
+                  setProgramme(next);
+                  setUndoDepth(next.undo ?? 0);
+                  setDraftDiagnostics(null);
+                  toast.success("Undone");
+                })
+                .catch((reason: unknown) => {
+                  toast.error(reason instanceof Error ? reason.message : "Nothing to undo");
+                });
+            }}
+          >
+            Undo{undoDepth > 0 ? ` (${undoDepth})` : ""}
+          </button>
           <LanguageSwitch
             languages={languages}
             value={displayLang}
@@ -324,6 +352,7 @@ export function App() {
               setDraftDiagnostics(null);
             }}
             onSelect={openSession}
+            onSchedule={openContribution}
           />
         )}
         {mode === "records" && kind !== "contributions" && entity ? (
@@ -360,9 +389,30 @@ export function App() {
               setRecordId(null);
               void reload();
             }}
+            onProgramme={(next) => {
+              setProgramme(next);
+              setUndoDepth(next.undo ?? 0);
+              setDraftDiagnostics(null);
+            }}
           />
         ) : mode === "timetable" && session ? (
-          <SessionDetail programme={programme} session={session} displayLang={displayLang} onOpen={openContribution} />
+          <SessionDetail
+            programme={programme}
+            session={session}
+            displayLang={displayLang}
+            onOpen={openContribution}
+            onReorder={(id, direction) => {
+              reorderTalk(id, direction)
+                .then((next) => {
+                  setProgramme(next);
+                  setUndoDepth(next.undo ?? 0);
+                  toast.success(direction === "up" ? "Moved up" : "Moved down");
+                })
+                .catch((reason: unknown) => {
+                  toast.error(reason instanceof Error ? reason.message : "Could not reorder");
+                });
+            }}
+          />
         ) : (
           <section className="detail">
             <h2>{mode === "records" ? "Record" : "Session"}</h2>

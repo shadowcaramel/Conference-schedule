@@ -730,6 +730,43 @@ button {
   background: var(--surface);
 }
 
+.talk-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.talk-row .talk {
+  flex: 1;
+}
+
+.nudges {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nudge {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: var(--ink);
+}
+
+.nudge:disabled {
+  opacity: 0.4;
+}
+
+.unscheduled {
+  margin-top: 16px;
+}
+
+.unscheduled h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
 .inline-person {
   margin-top: 8px;
   padding: 8px 10px;

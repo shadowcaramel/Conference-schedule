@@ -71,3 +71,19 @@ export function loadDuplicates(): Promise<DuplicateReport> {
 export function mergePeople(keep: string, drop: string): Promise<{ kept: string; dropped: string; rewritten: number }> {
   return send("POST", "/api/people/merge", { keep, drop });
 }
+
+export function scheduleTalk(body: {
+  contribution_id: string;
+  session_id: string;
+  index?: number;
+}): Promise<Programme> {
+  return send<Programme>("POST", "/api/schedule", body);
+}
+
+export function reorderTalk(contributionId: string, direction: "up" | "down"): Promise<Programme> {
+  return send<Programme>("POST", "/api/reorder", { contribution_id: contributionId, direction });
+}
+
+export function undoEdit(): Promise<Programme> {
+  return send<Programme>("POST", "/api/undo");
+}

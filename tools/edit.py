@@ -32,6 +32,7 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1"})
 MAX_BODY = 1_000_000
+UNDO_LIMIT = 20
 DIST_DIR = ROOT / "editor" / "dist"
 
 # Opaque ids for new records. Existing ids are never rewritten.
@@ -419,6 +420,99 @@ def validate_request(data_dir: Path, body: dict) -> dict:
     return diagnostics_payload(data, record_id)
 
 
+def _sync_orders(data: dict, session_ids: set[str]) -> None:
+    by_id = {item.get("id"): item for item in data.get("contributions") or [] if isinstance(item, dict)}
+    for session in data.get("sessions") or []:
+        if not isinstance(session, dict) or session.get("id") not in session_ids:
+            continue
+        for index, cid in enumerate(session.get("contribution_ids") or []):
+            talk = by_id.get(cid)
+            if isinstance(talk, dict):
+                talk["session_id"] = session["id"]
+                talk["order"] = index + 1
+
+
+def schedule_contribution(data_dir: Path, body: dict) -> dict:
+    """Move a talk to a session and index, or clear its session to unschedule it."""
+    cid = body.get("contribution_id")
+    if not isinstance(cid, str) or not cid:
+        raise EditError(400, "contribution_id is required")
+    session_id = body.get("session_id") if body.get("session_id") is not None else ""
+    if not isinstance(session_id, str):
+        raise EditError(400, "session_id must be a string")
+    data = load_data(data_dir)
+    contribs = data.get("contributions")
+    sessions = data.get("sessions")
+    if not isinstance(contribs, list) or not isinstance(sessions, list):
+        raise EditError(400, "programme lists are missing")
+    contrib = next((item for item in contribs if isinstance(item, dict) and item.get("id") == cid), None)
+    if contrib is None:
+        raise EditError(404, f"no contributions record {cid}")
+    touched: set[str] = set()
+    for session in sessions:
+        if not isinstance(session, dict):
+            continue
+        ids = list(session.get("contribution_ids") or [])
+        if cid in ids:
+            touched.add(session["id"])
+            session["contribution_ids"] = [item for item in ids if item != cid]
+    if session_id:
+        dest = next((item for item in sessions if isinstance(item, dict) and item.get("id") == session_id), None)
+        if dest is None:
+            raise EditError(404, f"no sessions record {session_id}")
+        ids = list(dest.get("contribution_ids") or [])
+        if body.get("index") is None:
+            index = len(ids)
+        else:
+            try:
+                index = int(body["index"])
+            except (TypeError, ValueError) as exc:
+                raise EditError(400, "index must be an integer") from exc
+        index = max(0, min(index, len(ids)))
+        ids.insert(index, cid)
+        dest["contribution_ids"] = ids
+        touched.add(session_id)
+        _sync_orders(data, touched)
+    else:
+        contrib["session_id"] = ""
+        contrib["order"] = ""
+        _sync_orders(data, touched)
+    _canon_or_400("contributions", contribs)
+    _canon_or_400("sessions", sessions)
+    write_data(data, data_dir)
+    return read_programme(data_dir)
+
+
+def reorder_contribution(data_dir: Path, body: dict) -> dict:
+    cid = body.get("contribution_id")
+    direction = body.get("direction")
+    if not isinstance(cid, str) or not cid:
+        raise EditError(400, "contribution_id is required")
+    if direction not in {"up", "down"}:
+        raise EditError(400, "direction must be up or down")
+    data = load_data(data_dir)
+    host = None
+    index = -1
+    for session in data.get("sessions") or []:
+        if not isinstance(session, dict):
+            continue
+        ids = list(session.get("contribution_ids") or [])
+        if cid in ids:
+            host = session
+            index = ids.index(cid)
+            break
+    if host is None:
+        raise EditError(409, "the talk is not in a session")
+    new_index = index - 1 if direction == "up" else index + 1
+    ids = host.get("contribution_ids") or []
+    if new_index < 0 or new_index >= len(ids):
+        raise EditError(409, "the talk is already at that end of the session")
+    return schedule_contribution(
+        data_dir,
+        {"contribution_id": cid, "session_id": host["id"], "index": new_index},
+    )
+
+
 def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     check_host(host)
     directory = Path(data_dir)
@@ -436,6 +530,12 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                 if path == "/api/data":
                     with self.server.lock:  # type: ignore[attr-defined]
                         payload = read_programme(directory)
+                        payload["undo"] = len(self.server.undo)  # type: ignore[attr-defined]
+                    self._send_json(200, payload)
+                    return
+                if path == "/api/undo":
+                    with self.server.lock:  # type: ignore[attr-defined]
+                        payload = {"undo": len(self.server.undo)}  # type: ignore[attr-defined]
                     self._send_json(200, payload)
                     return
                 if path == "/api/validate":
@@ -469,7 +569,7 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                 if not match:
                     raise EditError(404, "unknown API path")
                 with self.server.lock:  # type: ignore[attr-defined]
-                    payload = delete_record(directory, match.group("kind"), match.group("rid"), force)
+                    payload = self._commit(lambda: delete_record(directory, match.group("kind"), match.group("rid"), force))
                 self._send_json(200, payload)
             except EditError as exc:
                 self._send_error(exc)
@@ -482,21 +582,32 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                     if path == "/api/validate" and method == "POST":
                         payload = validate_request(directory, body)
                         status = 200
+                    elif path == "/api/undo" and method == "POST":
+                        payload = self._undo()
+                        status = 200
+                    elif path == "/api/schedule" and method == "POST":
+                        payload = self._commit(lambda: schedule_contribution(directory, body))
+                        status = 200
+                    elif path == "/api/reorder" and method == "POST":
+                        payload = self._commit(lambda: reorder_contribution(directory, body))
+                        status = 200
                     elif path == "/api/people/merge" and method == "POST":
-                        payload = merge_people(directory, body)
+                        payload = self._commit(lambda: merge_people(directory, body))
                         status = 200
                     else:
                         created = _CREATE_PATH.fullmatch(path)
                         updated = _RECORD_PATH.fullmatch(path)
                         if method == "POST" and created:
-                            payload = create_record(directory, created.group("kind"), body)
+                            payload = self._commit(lambda: create_record(directory, created.group("kind"), body))
                             status = 201
                         elif method == "PUT" and updated:
-                            payload = update_record(
-                                directory,
-                                updated.group("kind"),
-                                updated.group("rid"),
-                                body,
+                            payload = self._commit(
+                                lambda: update_record(
+                                    directory,
+                                    updated.group("kind"),
+                                    updated.group("rid"),
+                                    body,
+                                )
                             )
                             status = 200
                         elif path.startswith("/api/"):
@@ -506,6 +617,27 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                 self._send_json(status, payload)
             except EditError as exc:
                 self._send_error(exc)
+
+        def _commit(self, fn):
+            before = json.loads(json.dumps(load_data(directory)))
+            payload = fn()
+            stack = self.server.undo  # type: ignore[attr-defined]
+            stack.append(before)
+            if len(stack) > UNDO_LIMIT:
+                del stack[:-UNDO_LIMIT]
+            if isinstance(payload, dict):
+                payload["undo"] = len(stack)
+            return payload
+
+        def _undo(self) -> dict:
+            stack = self.server.undo  # type: ignore[attr-defined]
+            if not stack:
+                raise EditError(409, "nothing to undo")
+            previous = stack.pop()
+            write_data(previous, directory)
+            payload = read_programme(directory)
+            payload["undo"] = len(stack)
+            return payload
 
         def _send_error(self, exc: EditError) -> None:
             payload = {"error": exc.message, **exc.extra}
@@ -578,6 +710,7 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
 
     httpd = ThreadingHTTPServer((host, port), EditorHandler)
     httpd.lock = threading.Lock()  # type: ignore[attr-defined]
+    httpd.undo = []  # type: ignore[attr-defined]
     return httpd
 
 
