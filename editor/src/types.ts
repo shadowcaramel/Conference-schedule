@@ -29,11 +29,14 @@ export type Person = {
   family?: string;
   given?: string;
   patronymic?: string;
+  email?: string;
 };
 
 export type Organization = {
   id: string;
   name?: TextValue;
+  url?: string;
+  logo?: string;
 };
 
 export type Track = {
@@ -57,7 +60,9 @@ export type Session = {
   title?: TextValue;
   track_id?: string;
   room_id?: string;
+  chairs?: Chair[];
   contribution_ids?: string[];
+  note?: TextValue;
 };
 
 export type Conference = {
@@ -66,6 +71,15 @@ export type Conference = {
   short_title?: TextValue;
   languages: string[];
   session_types?: Record<string, TextValue>;
+  date_start?: string;
+  date_end?: string;
+  city?: TextValue;
+  venue?: TextValue;
+  timezone?: string;
+  website?: string;
+  contact?: string;
+  footnote?: TextValue;
+  defaults?: { duration_min?: Record<string, number> };
 };
 
 export type Diagnostics = {
@@ -104,6 +118,52 @@ export type Placement = {
   contributions: Record<string, Slot>;
 };
 
+export type Resource = {
+  id: string;
+  contribution_id?: string;
+  kind?: string;
+  url?: string;
+  lang?: string;
+};
+
+export type Change = {
+  id: string;
+  at?: string;
+  text?: TextValue;
+};
+
+export type Chair = {
+  person_id: string;
+  label?: TextValue;
+};
+
+export type ReferenceHit = {
+  kind: string;
+  id: string;
+  field: string;
+};
+
+export type DuplicateGroup = {
+  family: string;
+  initial: string;
+  ids: string[];
+};
+
+export type DuplicateReport = {
+  groups: DuplicateGroup[];
+};
+
+export type RecordKind =
+  | "conference"
+  | "tracks"
+  | "rooms"
+  | "sessions"
+  | "contributions"
+  | "people"
+  | "organizations"
+  | "resources"
+  | "changes";
+
 export type Programme = {
   conference: Conference;
   tracks: Track[];
@@ -112,17 +172,23 @@ export type Programme = {
   contributions: Contribution[];
   people: Person[];
   organizations: Organization[];
-  resources: unknown[];
-  changes: unknown[];
+  resources: Resource[];
+  changes: Change[];
   placement: Placement;
   diagnostics: Diagnostics;
 };
 
+export type StoredRecord = {
+  id: string;
+  [key: string]: unknown;
+};
+
 export type SaveResult = {
-  record: Contribution;
+  record: StoredRecord;
   diagnostics: Diagnostics;
   for_record: ForRecord;
   placement: Placement;
+  deleted?: { kind: string; id: string };
 };
 
 export type ValidateResult = {

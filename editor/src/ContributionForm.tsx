@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { saveContribution, validateContribution } from "./api";
+import { DeleteControl } from "./DeleteControl";
 import { NamePicker, type NameOption } from "./NamePicker";
 import type { Author, Contribution, Diagnostics, ForRecord, Programme, SaveResult } from "./types";
 import { displayOrder, languageLabel, sessionLabel, textOf } from "./text";
@@ -12,6 +13,8 @@ type Props = {
   onBack: () => void;
   onSaved: (result: SaveResult) => void;
   onDraftDiagnostics: (diagnostics: Diagnostics) => void;
+  onCreatePerson: (draft: { family: string; given: string }) => Promise<string>;
+  onDeleted: () => void;
 };
 
 const EMPTY_RECORD: ForRecord = { id: "", errors: [], warnings: [] };
@@ -88,7 +91,16 @@ function materialize(
   return next;
 }
 
-export function ContributionForm({ programme, contribution, displayLang, onBack, onSaved, onDraftDiagnostics }: Props) {
+export function ContributionForm({
+  programme,
+  contribution,
+  displayLang,
+  onBack,
+  onSaved,
+  onDraftDiagnostics,
+  onCreatePerson,
+  onDeleted,
+}: Props) {
   const languages = programme.conference.languages ?? [];
   const shown = useMemo(() => displayOrder(languages, displayLang), [languages, displayLang]);
   const [draft, setDraft] = useState<Contribution>(contribution);
@@ -328,6 +340,7 @@ export function ContributionForm({ programme, contribution, displayLang, onBack,
               label="Person"
               options={people}
               value={author.person_id}
+              onCreatePerson={onCreatePerson}
               onChange={(id) => updateAuthor(index, { ...author, person_id: id })}
             />
             {author.affiliation_ids.map((orgId, affIndex) => (
@@ -412,6 +425,19 @@ export function ContributionForm({ programme, contribution, displayLang, onBack,
       <button type="submit" className="save pressable" disabled={saving}>
         {saving ? "Saving…" : "Save contribution"}
       </button>
+      <DeleteControl
+        kind="contributions"
+        id={draft.id}
+        programme={programme}
+        displayLang={displayLang}
+        contribution
+        onDeleted={onDeleted}
+        onMarkCancelled={async () => {
+          const result = await saveContribution({ ...payload, status: "cancelled" });
+          toast.success("Marked cancelled");
+          onSaved(result);
+        }}
+      />
     </form>
   );
 }

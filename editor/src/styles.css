@@ -595,7 +595,8 @@ button {
   .block:hover,
   .talk:hover,
   .check:hover,
-  .picker-item:hover {
+  .picker-item:hover,
+  .search-hits button:hover {
     background: var(--surface-2);
   }
 
@@ -628,6 +629,168 @@ button {
     animation: none !important;
     transition: opacity 120ms linear !important;
   }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.search {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+.search .field {
+  margin: 0;
+}
+
+.search-hits {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.search-hits button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  padding: 7px 8px;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.duplicates {
+  margin: 0;
+  padding: 10px 20px;
+  background: var(--warn-bg);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.duplicates h2 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.duplicate-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.duplicate-group li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+}
+
+.record-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.talk.is-selected {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.inline-person {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+.inline-person summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.danger-zone {
+  margin-top: 8px;
+}
+
+.danger-button {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: rgba(28, 25, 21, 0.35);
+  padding: 20px;
+}
+
+.dialog {
+  width: min(440px, 100%);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.dialog h3 {
+  margin: 0 0 8px;
+}
+
+.ref-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.top {
+  align-items: center;
 }
 
 @media (max-width: 1080px) {
