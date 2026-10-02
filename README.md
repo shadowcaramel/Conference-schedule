@@ -71,7 +71,7 @@
 - QR-код на стойку регистрации.
 - Тезисы и PDF по докладам.
 - Общее «Моё» между телефонами через сервер: для этого нужен вход.
-- Редактор программы. Пока JSON правят в файлах; вид файлов задаёт `tools/dataio.py`, и CI его проверяет.
+- Редактор на сервере конференции. Локальный редактор описан в конце этого файла; на nucleus.togudv.ru он ничего не заливает. Вид JSON по-прежнему задаёт `tools/dataio.py`, и CI его проверяет.
 
 Шрифт [Onest](https://fonts.google.com/specimen/Onest) ([simpals/onest](https://github.com/simpals/onest)) — SIL Open Font License, файлы в `site/assets/fonts/`. Иконки — встроенные SVG [Lucide](https://lucide.dev/).
 
@@ -169,3 +169,17 @@ const OVERVIEW_SECTION_SORT = 'room'; // сетка: порядок паралл
 
 - `'room'` (по умолчанию) — колонки слева направо: библиотека → актовый зал → 117л → 315л.
 - `'section'` — порядок по номерам секций S1…S7.
+
+## Редактор
+
+Локальный редактор слушает только `127.0.0.1` и ничего не выкладывает на nucleus.togudv.ru.
+
+```text
+cd editor
+npm install
+npm run build
+cd ..
+python tools/edit.py
+```
+
+Открыть http://127.0.0.1:8765/. Сетка расписания только для чтения; у вклада есть форма. Поля языков идут в порядке `conference.languages`, id менять нельзя. Проверка — та же, что у `tools/validate.py`; запись идёт через `tools/dataio.py`. Pull request в `dev` собирает редактор, а GitHub Pages по-прежнему публикует только папку `site/`.

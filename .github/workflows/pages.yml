@@ -34,6 +34,15 @@ jobs:
         run: python tools/validate.py
       - name: Test
         run: pytest
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: editor/package-lock.json
+      - name: Build editor
+        working-directory: editor
+        run: npm ci && npm run build
       - name: Build site
         run: python tools/build.py
       - name: Setup Pages

@@ -9,6 +9,10 @@
 dist/
 site/data.js
 
+# Local programme editor (npm run build in editor/)
+editor/node_modules/
+editor/dist/
+
 # FTP credentials (copy .ftp.env.example → .ftp.env)
 .ftp.env
 
