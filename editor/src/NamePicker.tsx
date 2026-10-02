@@ -1,5 +1,5 @@
 import { Combobox } from "@base-ui/react/combobox";
-import { useId, useMemo } from "react";
+import { useId, useMemo, useState } from "react";
 
 export type NameOption = {
   id: string;
@@ -11,10 +11,16 @@ type Props = {
   options: NameOption[];
   value: string;
   onChange: (id: string) => void;
+  onCreatePerson?: (draft: { family: string; given: string }) => Promise<string>;
 };
 
-export function NamePicker({ label, options, value, onChange }: Props) {
+export function NamePicker({ label, options, value, onChange, onCreatePerson }: Props) {
   const inputId = useId();
+  const familyId = useId();
+  const givenId = useId();
+  const [family, setFamily] = useState("");
+  const [given, setGiven] = useState("");
+  const [creating, setCreating] = useState(false);
   const listed = useMemo(() => {
     if (value && !options.some((item) => item.id === value)) {
       return [...options, { id: value, label: "Missing record" }];
@@ -62,6 +68,38 @@ export function NamePicker({ label, options, value, onChange }: Props) {
           </Combobox.Popup>
         </Combobox.Positioner>
       </Combobox.Portal>
+      {onCreatePerson ? (
+        <details className="inline-person">
+          <summary>Create a person</summary>
+          <div className="split">
+            <label className="field" htmlFor={familyId}>
+              <span>Family name</span>
+              <input id={familyId} value={family} onChange={(event) => setFamily(event.target.value)} />
+            </label>
+            <label className="field" htmlFor={givenId}>
+              <span>Given name</span>
+              <input id={givenId} value={given} onChange={(event) => setGiven(event.target.value)} />
+            </label>
+          </div>
+          <button
+            type="button"
+            className="text-button pressable"
+            disabled={creating || !family.trim() || !given.trim()}
+            onClick={() => {
+              setCreating(true);
+              onCreatePerson({ family: family.trim(), given: given.trim() })
+                .then((id) => {
+                  onChange(id);
+                  setFamily("");
+                  setGiven("");
+                })
+                .finally(() => setCreating(false));
+            }}
+          >
+            {creating ? "Creating…" : "Create and select"}
+          </button>
+        </details>
+      ) : null}
     </Combobox.Root>
   );
 }

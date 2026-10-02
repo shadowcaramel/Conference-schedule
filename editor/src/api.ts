@@ -1,4 +1,17 @@
-import type { Programme, SaveResult, ValidateResult } from "./types";
+import type { DuplicateReport, Programme, ReferenceHit, SaveResult, ValidateResult } from "./types";
+
+export class ApiError extends Error {
+  status: number;
+  references: ReferenceHit[];
+  offer?: string;
+
+  constructor(status: number, message: string, payload: { references?: ReferenceHit[]; offer?: string }) {
+    super(message);
+    this.status = status;
+    this.references = payload.references ?? [];
+    this.offer = payload.offer;
+  }
+}
 
 async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
   const response = await fetch(path, {
@@ -6,9 +19,13 @@ async function send<T>(method: string, path: string, body?: unknown): Promise<T>
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const payload = (await response.json().catch(() => ({}))) as T & { error?: string };
+  const payload = (await response.json().catch(() => ({}))) as T & {
+    error?: string;
+    references?: ReferenceHit[];
+    offer?: string;
+  };
   if (!response.ok) {
-    throw new Error(payload.error || `Request failed (${response.status})`);
+    throw new ApiError(response.status, payload.error || `Request failed (${response.status})`, payload);
   }
   return payload;
 }
@@ -27,4 +44,30 @@ export function validateContribution(record: Record<string, unknown>): Promise<V
     kind: "contributions",
     record,
   });
+}
+
+export function saveRecord(kind: string, record: Record<string, unknown>): Promise<SaveResult> {
+  const id = encodeURIComponent(String(record.id ?? ""));
+  return send<SaveResult>("PUT", `/api/records/${kind}/${id}`, record);
+}
+
+export function createRecord(kind: string, record: Record<string, unknown>): Promise<SaveResult> {
+  return send<SaveResult>("POST", `/api/records/${kind}`, record);
+}
+
+export function validateRecord(kind: string, record: Record<string, unknown>): Promise<ValidateResult> {
+  return send<ValidateResult>("POST", "/api/validate", { kind, record });
+}
+
+export function deleteRecord(kind: string, id: string, force = false): Promise<SaveResult> {
+  const path = `/api/records/${encodeURIComponent(kind)}/${encodeURIComponent(id)}${force ? "?force=1" : ""}`;
+  return send<SaveResult>("DELETE", path);
+}
+
+export function loadDuplicates(): Promise<DuplicateReport> {
+  return send<DuplicateReport>("GET", "/api/duplicates");
+}
+
+export function mergePeople(keep: string, drop: string): Promise<{ kept: string; dropped: string; rewritten: number }> {
+  return send("POST", "/api/people/merge", { keep, drop });
 }

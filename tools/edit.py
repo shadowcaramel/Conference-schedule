@@ -2,11 +2,11 @@
 """Local programme editor.
 
 A standard-library HTTP server bound to 127.0.0.1. It serves ``editor/dist``
-and a small JSON API: read the programme, save one record, validate. Every
+and a small JSON API: read the programme, save one record, delete one record
+when nothing still points at it, merge duplicate people, and validate. Every
 write goes through ``dataio``. Validation calls ``validate.py`` directly.
 
-Delete, preview, and publish are later slices. This server does not upload
-anything.
+Preview and publish are later slices. This server does not upload anything.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import DATA_DIR, ROOT, utf8_stdout  # noqa: E402
@@ -51,10 +51,11 @@ _CREATE_PATH = re.compile(r"^/api/records/(?P<kind>[a-z]+)$")
 
 
 class EditError(Exception):
-    def __init__(self, status: int, message: str) -> None:
+    def __init__(self, status: int, message: str, extra: dict | None = None) -> None:
         super().__init__(message)
         self.status = status
         self.message = message
+        self.extra = extra or {}
 
 
 def check_host(host: str) -> None:
@@ -196,6 +197,194 @@ def create_record(data_dir: Path, kind: str, body: dict) -> dict:
     return payload
 
 
+def _record_id(item: object) -> str | None:
+    if isinstance(item, dict) and isinstance(item.get("id"), str):
+        return item["id"]
+    return None
+
+
+def _add_ref(refs: list[dict], kind: str, ident: str | None, field: str) -> None:
+    if ident:
+        refs.append({"kind": kind, "id": ident, "field": field})
+
+
+def find_references(data: dict, kind: str, record_id: str) -> list[dict]:
+    """Records that still point at ``record_id``. Delete is blocked while this is non-empty."""
+    refs: list[dict] = []
+    contributions = data.get("contributions") if isinstance(data.get("contributions"), list) else []
+    sessions = data.get("sessions") if isinstance(data.get("sessions"), list) else []
+    resources = data.get("resources") if isinstance(data.get("resources"), list) else []
+
+    if kind == "people":
+        for contrib in contributions:
+            cid = _record_id(contrib)
+            authors = contrib.get("authors") if isinstance(contrib, dict) else None
+            if any(isinstance(author, dict) and author.get("person_id") == record_id for author in authors or []):
+                _add_ref(refs, "contributions", cid, "authors.person_id")
+        for session in sessions:
+            chairs = session.get("chairs") if isinstance(session, dict) else None
+            if any(isinstance(chair, dict) and chair.get("person_id") == record_id for chair in chairs or []):
+                _add_ref(refs, "sessions", _record_id(session), "chairs.person_id")
+    elif kind == "organizations":
+        for contrib in contributions:
+            if not isinstance(contrib, dict):
+                continue
+            cid = _record_id(contrib)
+            if contrib.get("sponsor_id") == record_id:
+                _add_ref(refs, "contributions", cid, "sponsor_id")
+            authors = contrib.get("authors") or []
+            if any(
+                isinstance(author, dict) and record_id in (author.get("affiliation_ids") or [])
+                for author in authors
+            ):
+                _add_ref(refs, "contributions", cid, "authors.affiliation_ids")
+    elif kind == "tracks":
+        for session in sessions:
+            if isinstance(session, dict) and session.get("track_id") == record_id:
+                _add_ref(refs, "sessions", _record_id(session), "track_id")
+        for contrib in contributions:
+            if not isinstance(contrib, dict):
+                continue
+            cid = _record_id(contrib)
+            if contrib.get("track_id") == record_id:
+                _add_ref(refs, "contributions", cid, "track_id")
+            if contrib.get("topic_id") == record_id:
+                _add_ref(refs, "contributions", cid, "topic_id")
+    elif kind == "rooms":
+        for session in sessions:
+            if isinstance(session, dict) and session.get("room_id") == record_id:
+                _add_ref(refs, "sessions", _record_id(session), "room_id")
+    elif kind == "sessions":
+        for contrib in contributions:
+            if isinstance(contrib, dict) and contrib.get("session_id") == record_id:
+                _add_ref(refs, "contributions", _record_id(contrib), "session_id")
+    elif kind == "contributions":
+        for session in sessions:
+            if isinstance(session, dict) and record_id in (session.get("contribution_ids") or []):
+                _add_ref(refs, "sessions", _record_id(session), "contribution_ids")
+        for resource in resources:
+            if isinstance(resource, dict) and resource.get("contribution_id") == record_id:
+                _add_ref(refs, "resources", _record_id(resource), "contribution_id")
+    return refs
+
+
+def _given_initial(given: object) -> str:
+    if not isinstance(given, str):
+        return ""
+    text = given.strip()
+    return text[:1].casefold() if text else ""
+
+
+def duplicate_people(data: dict) -> dict:
+    """People who share a family name and the same given-name initial."""
+    people = data.get("people") if isinstance(data.get("people"), list) else []
+    buckets: dict[tuple[str, str], list[str]] = {}
+    for person in people:
+        if not isinstance(person, dict) or not isinstance(person.get("id"), str):
+            continue
+        family = person.get("family") if isinstance(person.get("family"), str) else ""
+        key = (family.strip().casefold(), _given_initial(person.get("given")))
+        if not key[0]:
+            continue
+        buckets.setdefault(key, []).append(person["id"])
+    groups = []
+    for (family, initial), ids in sorted(buckets.items()):
+        if len(ids) > 1:
+            groups.append({"family": family, "initial": initial, "ids": ids})
+    return {"groups": groups}
+
+
+def _rewrite_person(data: dict, keep: str, drop: str) -> int:
+    rewritten = 0
+    for contrib in data.get("contributions") or []:
+        if not isinstance(contrib, dict):
+            continue
+        for author in contrib.get("authors") or []:
+            if isinstance(author, dict) and author.get("person_id") == drop:
+                author["person_id"] = keep
+                rewritten += 1
+    for session in data.get("sessions") or []:
+        if not isinstance(session, dict):
+            continue
+        for chair in session.get("chairs") or []:
+            if isinstance(chair, dict) and chair.get("person_id") == drop:
+                chair["person_id"] = keep
+                rewritten += 1
+    return rewritten
+
+
+def merge_people(data_dir: Path, body: dict) -> dict:
+    keep = body.get("keep")
+    drop = body.get("drop")
+    if not isinstance(keep, str) or not isinstance(drop, str) or not keep or not drop:
+        raise EditError(400, "merge needs keep and drop person ids")
+    if keep == drop:
+        raise EditError(400, "keep and drop must be different people")
+    data = load_data(data_dir)
+    people = data.get("people")
+    if not isinstance(people, list):
+        raise EditError(400, "people is not a list")
+    ids = _existing_ids(people)
+    if keep not in ids or drop not in ids:
+        raise EditError(404, "person not found")
+    rewritten = _rewrite_person(data, keep, drop)
+    data["people"] = [person for person in people if not (isinstance(person, dict) and person.get("id") == drop)]
+    _canon_or_400("people", data["people"])
+    _canon_or_400("contributions", data["contributions"])
+    _canon_or_400("sessions", data["sessions"])
+    write_data(data, data_dir)
+    stored = load_data(data_dir)
+    payload = {
+        "kept": keep,
+        "dropped": drop,
+        "rewritten": rewritten,
+        "placement": placement_payload(stored),
+    }
+    payload.update(diagnostics_payload(stored))
+    return payload
+
+
+def delete_record(data_dir: Path, kind: str, record_id: str, force: bool) -> dict:
+    if kind == "conference":
+        raise EditError(400, "the conference record cannot be deleted")
+    if kind not in FILES:
+        raise EditError(404, f"unknown record type {kind}")
+    data = load_data(data_dir)
+    items = data.get(kind)
+    if not isinstance(items, list):
+        raise EditError(400, f"{kind} is not a list")
+    index = next((i for i, item in enumerate(items) if isinstance(item, dict) and item.get("id") == record_id), None)
+    if index is None:
+        raise EditError(404, f"no {kind} record {record_id}")
+    refs = find_references(data, kind, record_id)
+    if kind == "contributions":
+        extra = {
+            "references": refs,
+            "offer": "cancelled",
+        }
+        message = (
+            "Deleting this talk drops its id from visitor stars and #my= links. "
+            "Mark it cancelled instead."
+        )
+        if refs:
+            message += " Other records still point at it."
+        if refs or not force:
+            raise EditError(409, message, extra)
+    elif refs:
+        raise EditError(
+            409,
+            "This record is still referenced.",
+            {"references": refs},
+        )
+    del items[index]
+    _canon_or_400(kind, items)
+    write_data(data, data_dir)
+    stored = load_data(data_dir)
+    payload = {"deleted": {"kind": kind, "id": record_id}, "placement": placement_payload(stored)}
+    payload.update(diagnostics_payload(stored))
+    return payload
+
+
 def validate_request(data_dir: Path, body: dict) -> dict:
     """Validate the files, or a draft record substituted in memory. Never writes."""
     data = load_data(data_dir)
@@ -254,17 +443,36 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                         payload = validate_request(directory, {})
                     self._send_json(200, payload)
                     return
+                if path == "/api/duplicates":
+                    with self.server.lock:  # type: ignore[attr-defined]
+                        payload = duplicate_people(load_data(directory))
+                    self._send_json(200, payload)
+                    return
                 if path.startswith("/api/"):
                     raise EditError(404, "unknown API path")
                 self._send_static(path)
             except EditError as exc:
-                self._send_json(exc.status, {"error": exc.message})
+                self._send_error(exc)
 
         def do_POST(self) -> None:  # noqa: N802
             self._route_write("POST")
 
         def do_PUT(self) -> None:  # noqa: N802
             self._route_write("PUT")
+
+        def do_DELETE(self) -> None:  # noqa: N802
+            parsed = urlparse(self.path)
+            path = unquote(parsed.path)
+            force = parse_qs(parsed.query).get("force", ["0"])[0] in {"1", "true", "yes"}
+            try:
+                match = _RECORD_PATH.fullmatch(path)
+                if not match:
+                    raise EditError(404, "unknown API path")
+                with self.server.lock:  # type: ignore[attr-defined]
+                    payload = delete_record(directory, match.group("kind"), match.group("rid"), force)
+                self._send_json(200, payload)
+            except EditError as exc:
+                self._send_error(exc)
 
         def _route_write(self, method: str) -> None:
             path = unquote(self.path.split("?", 1)[0])
@@ -273,6 +481,9 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                 with self.server.lock:  # type: ignore[attr-defined]
                     if path == "/api/validate" and method == "POST":
                         payload = validate_request(directory, body)
+                        status = 200
+                    elif path == "/api/people/merge" and method == "POST":
+                        payload = merge_people(directory, body)
                         status = 200
                     else:
                         created = _CREATE_PATH.fullmatch(path)
@@ -294,7 +505,11 @@ def make_server(data_dir: Path, dist_dir: Path, host: str = DEFAULT_HOST, port: 
                             raise EditError(405, "method not allowed")
                 self._send_json(status, payload)
             except EditError as exc:
-                self._send_json(exc.status, {"error": exc.message})
+                self._send_error(exc)
+
+        def _send_error(self, exc: EditError) -> None:
+            payload = {"error": exc.message, **exc.extra}
+            self._send_json(exc.status, payload)
 
         def _read_json(self) -> dict:
             length = int(self.headers.get("Content-Length") or "0")
