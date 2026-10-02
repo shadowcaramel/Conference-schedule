@@ -1,14 +1,32 @@
 import clsx from "clsx";
-import type { Diagnostics } from "./types";
-import { mentionsId } from "./text";
+import type { Diagnostics, Programme } from "./types";
+import { mentionsId, sessionLabel, textOf } from "./text";
 
 type Props = {
   diagnostics: Diagnostics;
+  programme: Programme;
+  displayLanguages: string[];
   activeId: string | null;
   onOpenMessage: (message: string) => void;
 };
 
-export function DiagnosticsList({ diagnostics, activeId, onOpenMessage }: Props) {
+function quotedData(message: string, programme: Programme, languages: string[]): string | null {
+  const contribution = programme.contributions
+    .filter((item) => mentionsId(message, item.id))
+    .sort((a, b) => b.id.length - a.id.length)[0];
+  if (contribution) {
+    return textOf(contribution.title, languages) || null;
+  }
+  const session = programme.sessions
+    .filter((item) => mentionsId(message, item.id))
+    .sort((a, b) => b.id.length - a.id.length)[0];
+  if (session) {
+    return sessionLabel(session, programme, languages);
+  }
+  return null;
+}
+
+export function DiagnosticsList({ diagnostics, programme, displayLanguages, activeId, onOpenMessage }: Props) {
   const rows = [
     ...diagnostics.errors.map((message) => ({ level: "error" as const, message })),
     ...diagnostics.warnings.map((message) => ({ level: "warning" as const, message })),
@@ -30,6 +48,7 @@ export function DiagnosticsList({ diagnostics, activeId, onOpenMessage }: Props)
         <ul className="check-list">
           {rows.map((row, index) => {
             const current = activeId ? mentionsId(row.message, activeId) : false;
+            const quote = quotedData(row.message, programme, displayLanguages);
             return (
               <li key={`${row.level}-${index}`}>
                 <button
@@ -38,6 +57,7 @@ export function DiagnosticsList({ diagnostics, activeId, onOpenMessage }: Props)
                   onClick={() => onOpenMessage(row.message)}
                 >
                   <span className="check-level">{row.level === "error" ? "Error" : "Warning"}</span>
+                  {quote ? <span className="check-quote">{quote}</span> : null}
                   <span>{row.message}</span>
                 </button>
               </li>

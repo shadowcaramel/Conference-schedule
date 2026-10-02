@@ -1,14 +1,15 @@
 import type { Contribution, Programme, Session } from "./types";
-import { personName, sessionLabel, textOf } from "./text";
+import { displayOrder, personName, sessionLabel, textOf } from "./text";
 
 type Props = {
   programme: Programme;
   session: Session;
+  displayLang: string;
   onOpen: (contributionId: string) => void;
 };
 
-export function SessionDetail({ programme, session, onOpen }: Props) {
-  const languages = programme.conference.languages ?? [];
+export function SessionDetail({ programme, session, displayLang, onOpen }: Props) {
+  const languages = displayOrder(programme.conference.languages ?? [], displayLang);
   const people = new Map(programme.people.map((person) => [person.id, person]));
   const contributions = new Map(programme.contributions.map((item) => [item.id, item]));
   const room = programme.rooms.find((item) => item.id === session.room_id);
@@ -19,7 +20,7 @@ export function SessionDetail({ programme, session, onOpen }: Props) {
     <section className="detail" aria-label="Session">
       <header className="detail-head">
         <p className="eyebrow">{session.type}</p>
-        <h2>{sessionLabel(session, programme)}</h2>
+        <h2>{sessionLabel(session, programme, languages)}</h2>
         <p className="meta">
           {textOf(room?.label, languages) || "No room"}
           {" · "}

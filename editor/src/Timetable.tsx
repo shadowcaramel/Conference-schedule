@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useEffect } from "react";
 import type { Programme } from "./types";
-import { clockMinutes, formatDay, sessionLabel, textOf } from "./text";
+import { clockMinutes, displayOrder, formatDay, sessionLabel, textOf } from "./text";
 
 const PX_PER_MIN = 1.35;
 
@@ -10,12 +10,13 @@ type Props = {
   day: string;
   days: string[];
   selectedId: string | null;
+  displayLang: string;
   onDay: (day: string) => void;
   onSelect: (sessionId: string) => void;
 };
 
-export function Timetable({ programme, day, days, selectedId, onDay, onSelect }: Props) {
-  const languages = programme.conference.languages ?? [];
+export function Timetable({ programme, day, days, selectedId, displayLang, onDay, onSelect }: Props) {
+  const languages = displayOrder(programme.conference.languages ?? [], displayLang);
   const sessions = programme.sessions.filter((session) => session.date === day);
   const roomOrder = new Map(programme.rooms.map((room, index) => [room.id, index]));
   const roomIds = [...new Set(sessions.map((session) => session.room_id || ""))].sort((a, b) => {
@@ -65,11 +66,12 @@ export function Timetable({ programme, day, days, selectedId, onDay, onSelect }:
             key={item}
             type="button"
             role="tab"
+            data-date={item}
             aria-selected={item === day}
             className={clsx("day", "pressable", item === day && "is-selected")}
             onClick={() => onDay(item)}
           >
-            {formatDay(item)}
+            {formatDay(item, displayLang)}
           </button>
         ))}
       </div>
@@ -127,7 +129,7 @@ export function Timetable({ programme, day, days, selectedId, onDay, onSelect }:
                       <span className="block-time">
                         {session.start}–{placed?.effective_end || session.end}
                       </span>
-                      <span className="block-title">{sessionLabel(session, programme)}</span>
+                      <span className="block-title">{sessionLabel(session, programme, languages)}</span>
                     </button>
                   );
                 })}

@@ -176,6 +176,6 @@ cd ..
 python tools/edit.py
 ```
 
-Open http://127.0.0.1:8765/. The timetable is read-only: days by room, and a click lists that session’s talks in running order with the clock times from `tools/schedule.py`. The contribution form can be edited. People, organizations, and tracks are chosen by name. Language fields follow `conference.languages`. Ids are read-only. Errors and warnings come from `tools/validate.py` and can be saved; they show on the contribution and in the Checks list.
+Open http://127.0.0.1:8765/. The timetable is read-only: days by room, and a click lists that session’s talks in running order with the clock times from `tools/schedule.py`. The contribution form can be edited. People, organizations, and tracks are chosen by name. The timetable shows the first language in `conference.languages`; the header control cycles that list and remembers the choice in this browser. Language fields on the form stay side by side in that order. Ids are read-only. Errors and warnings come from `tools/validate.py` and can be saved; they show on the contribution and in the Checks list.
 
 `npm run dev` in `editor/` proxies `/api` to the same Python server. Every save goes through `tools/dataio.py`. Pull requests into `dev` build the editor. GitHub Pages still publishes only the `site/` folder.

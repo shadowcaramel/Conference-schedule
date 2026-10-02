@@ -3,11 +3,12 @@ import { toast } from "sonner";
 import { saveContribution, validateContribution } from "./api";
 import { NamePicker, type NameOption } from "./NamePicker";
 import type { Author, Contribution, Diagnostics, ForRecord, Programme, SaveResult } from "./types";
-import { languageLabel, sessionLabel, textOf } from "./text";
+import { displayOrder, languageLabel, sessionLabel, textOf } from "./text";
 
 type Props = {
   programme: Programme;
   contribution: Contribution;
+  displayLang: string;
   onBack: () => void;
   onSaved: (result: SaveResult) => void;
   onDraftDiagnostics: (diagnostics: Diagnostics) => void;
@@ -87,8 +88,9 @@ function materialize(
   return next;
 }
 
-export function ContributionForm({ programme, contribution, onBack, onSaved, onDraftDiagnostics }: Props) {
+export function ContributionForm({ programme, contribution, displayLang, onBack, onSaved, onDraftDiagnostics }: Props) {
   const languages = programme.conference.languages ?? [];
+  const shown = useMemo(() => displayOrder(languages, displayLang), [languages, displayLang]);
   const [draft, setDraft] = useState<Contribution>(contribution);
   const [titleWasString, setTitleWasString] = useState(typeof contribution.title === "string");
   const [titleByLang, setTitleByLang] = useState(() => languageMap(contribution.title, languages, true));
@@ -144,17 +146,17 @@ export function ContributionForm({ programme, contribution, onBack, onSaved, onD
     () =>
       programme.organizations.map((org) => ({
         id: org.id,
-        label: textOf(org.name, languages) || org.id,
+        label: textOf(org.name, shown) || org.id,
       })),
-    [programme.organizations, languages],
+    [programme.organizations, shown],
   );
   const tracks = useMemo<NameOption[]>(
     () =>
       programme.tracks.map((track) => ({
         id: track.id,
-        label: textOf(track.short, languages) || track.id,
+        label: textOf(track.short, shown) || track.id,
       })),
-    [programme.tracks, languages],
+    [programme.tracks, shown],
   );
 
   const session = programme.sessions.find((item) => item.id === draft.session_id);
@@ -201,7 +203,7 @@ export function ContributionForm({ programme, contribution, onBack, onSaved, onD
         <span>Session</span>
         <strong>
           {session
-            ? `${sessionLabel(session, programme)} · ${textOf(room?.label, languages) || "No room"}`
+            ? `${sessionLabel(session, programme, shown)} · ${textOf(room?.label, shown) || "No room"}`
             : "Not scheduled"}
         </strong>
       </div>

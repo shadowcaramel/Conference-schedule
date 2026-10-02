@@ -3,10 +3,11 @@ import { toast } from "sonner";
 import { loadProgramme } from "./api";
 import { ContributionForm } from "./ContributionForm";
 import { DiagnosticsList } from "./DiagnosticsList";
+import { LanguageSwitch } from "./LanguageSwitch";
 import { SessionDetail } from "./SessionDetail";
 import { Timetable } from "./Timetable";
 import type { Diagnostics, Programme, SaveResult } from "./types";
-import { mentionsId, textOf } from "./text";
+import { activeLanguage, displayOrder, mentionsId, readStoredLanguage, storeLanguage, textOf } from "./text";
 
 export function App() {
   const [programme, setProgramme] = useState<Programme | null>(null);
@@ -15,6 +16,7 @@ export function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftDiagnostics, setDraftDiagnostics] = useState<Diagnostics | null>(null);
+  const [storedLang, setStoredLang] = useState<string | null>(() => readStoredLanguage());
 
   useEffect(() => {
     loadProgramme()
@@ -39,6 +41,15 @@ export function App() {
     return [...new Set(programme.sessions.map((session) => session.date))].sort();
   }, [programme]);
 
+  const languages = programme?.conference.languages ?? [];
+  const displayLang = activeLanguage(languages, storedLang);
+
+  useEffect(() => {
+    if (programme) {
+      document.documentElement.lang = displayLang;
+    }
+  }, [programme, displayLang]);
+
   if (error) {
     return (
       <main className="boot">
@@ -58,7 +69,7 @@ export function App() {
 
   const activeDay = day ?? days[0] ?? "";
 
-  const languages = programme.conference.languages ?? [];
+  const shown = displayOrder(languages, displayLang);
   const session = programme.sessions.find((item) => item.id === sessionId) ?? null;
   const contribution = programme.contributions.find((item) => item.id === editingId) ?? null;
   const diagnostics = editingId && draftDiagnostics ? draftDiagnostics : programme.diagnostics;
@@ -134,9 +145,19 @@ export function App() {
       <header className="top">
         <div>
           <p className="eyebrow">Local programme editor</p>
-          <h1>{textOf(programme.conference.short_title, languages) || "Programme"}</h1>
+          <h1>{textOf(programme.conference.short_title, shown) || "Programme"}</h1>
         </div>
-        <p className="loopback">127.0.0.1 · changes stay on this computer</p>
+        <div className="top-actions">
+          <LanguageSwitch
+            languages={languages}
+            value={displayLang}
+            onChange={(next) => {
+              storeLanguage(next);
+              setStoredLang(next);
+            }}
+          />
+          <p className="loopback">127.0.0.1 · changes stay on this computer</p>
+        </div>
       </header>
       <div className="workspace">
         <Timetable
@@ -144,6 +165,7 @@ export function App() {
           day={activeDay}
           days={days}
           selectedId={sessionId}
+          displayLang={displayLang}
           onDay={(next) => {
             setDay(next);
             setSessionId(null);
@@ -157,6 +179,7 @@ export function App() {
             key={contribution.id}
             programme={programme}
             contribution={contribution}
+            displayLang={displayLang}
             onBack={() => {
               setEditingId(null);
               setDraftDiagnostics(null);
@@ -165,7 +188,7 @@ export function App() {
             onDraftDiagnostics={onDraftDiagnostics}
           />
         ) : session ? (
-          <SessionDetail programme={programme} session={session} onOpen={openContribution} />
+          <SessionDetail programme={programme} session={session} displayLang={displayLang} onOpen={openContribution} />
         ) : (
           <section className="detail">
             <h2>Session</h2>
@@ -174,6 +197,8 @@ export function App() {
         )}
         <DiagnosticsList
           diagnostics={diagnostics}
+          programme={programme}
+          displayLanguages={shown}
           activeId={editingId}
           onOpenMessage={onOpenMessage}
         />
