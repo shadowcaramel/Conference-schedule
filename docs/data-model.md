@@ -42,7 +42,7 @@ For a `section` session the site’s end time is the end of the last talk when t
 
 Days are not an entity. They are the sorted set of session dates. The conference stores `timezone` (IANA name, `Asia/Vladivostok`). The site still receives `utcOffset`; the build derives it from the time zone on `date_start`. The offset is not stored, so it cannot drift away from the zone.
 
-Text that has two languages is `{ "ru": "…", "en": "…" }`. The language list is `conference.languages` (`["ru", "en"]`). A contribution title is usually one string, the title as it was written. A bilingual title is allowed when a translation exists.
+Text that has two languages is `{ "ru": "…", "en": "…" }`. The language list is `conference.languages` (`["en", "ru"]`). A contribution title is usually one string, the title as it was written. A bilingual title is allowed when a translation exists.
 
 Names are stored as written: `family`, `given`, `patronymic`. Patronymic and email may be absent.
 

@@ -25,8 +25,8 @@
     "en": "All times are local (Khabarovsk, UTC+10). The programme is subject to change."
   },
   "languages": [
-    "ru",
-    "en"
+    "en",
+    "ru"
   ],
   "defaults": {
     "duration_min": {
