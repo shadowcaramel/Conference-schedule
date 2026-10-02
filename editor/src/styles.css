@@ -767,6 +767,27 @@ button {
   font-size: 1rem;
 }
 
+.review-panel {
+  grid-column: span 2;
+}
+
+.diff {
+  margin: 0;
+  max-height: 420px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+}
+
+.publish-result a {
+  color: var(--accent);
+}
+
 .inline-person {
   margin-top: 8px;
   padding: 8px 10px;

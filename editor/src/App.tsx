@@ -8,6 +8,7 @@ import { DuplicatesBanner } from "./DuplicatesBanner";
 import { LanguageSwitch } from "./LanguageSwitch";
 import { ProgrammeSearch } from "./ProgrammeSearch";
 import { RecordForm } from "./RecordForm";
+import { ReviewPanel } from "./ReviewPanel";
 import { blankRecord, RecordsColumn } from "./RecordsColumn";
 import { SessionDetail } from "./SessionDetail";
 import { Timetable } from "./Timetable";
@@ -22,7 +23,7 @@ export function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftDiagnostics, setDraftDiagnostics] = useState<Diagnostics | null>(null);
   const [storedLang, setStoredLang] = useState<string | null>(() => readStoredLanguage());
-  const [mode, setMode] = useState<"timetable" | "records">("timetable");
+  const [mode, setMode] = useState<"timetable" | "records" | "review">("timetable");
   const [kind, setKind] = useState<RecordKind>("people");
   const [recordId, setRecordId] = useState<string | null>(null);
   const [undoDepth, setUndoDepth] = useState(0);
@@ -286,6 +287,14 @@ export function App() {
             </button>
             <button
               type="button"
+              className={mode === "review" ? "day is-selected pressable" : "day pressable"}
+              aria-pressed={mode === "review"}
+              onClick={() => setMode("review")}
+            >
+              Review
+            </button>
+            <button
+              type="button"
               className={mode === "records" ? "day is-selected pressable" : "day pressable"}
               aria-pressed={mode === "records"}
               onClick={() => {
@@ -331,7 +340,9 @@ export function App() {
       </header>
       <DuplicatesBanner programme={programme} onMerged={() => void reload()} />
       <div className="workspace">
-        {mode === "records" ? (
+        {mode === "review" ? (
+          <ReviewPanel />
+        ) : mode === "records" ? (
           <RecordsColumn
             programme={programme}
             kind={kind}
@@ -365,7 +376,7 @@ export function App() {
             onSchedule={openContribution}
           />
         )}
-        {mode === "records" && kind !== "contributions" && entity ? (
+        {mode === "review" ? null : mode === "records" && kind !== "contributions" && entity ? (
           <RecordForm
             key={`${kind}-${entity.id}`}
             kind={kind === "conference" ? "conference" : kind}
