@@ -176,6 +176,7 @@ export type Programme = {
   changes: Change[];
   placement: Placement;
   diagnostics: Diagnostics;
+  undo?: number;
 };
 
 export type StoredRecord = {
@@ -189,6 +190,7 @@ export type SaveResult = {
   for_record: ForRecord;
   placement: Placement;
   deleted?: { kind: string; id: string };
+  undo?: number;
 };
 
 export type ValidateResult = {

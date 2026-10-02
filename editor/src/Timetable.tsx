@@ -13,9 +13,10 @@ type Props = {
   displayLang: string;
   onDay: (day: string) => void;
   onSelect: (sessionId: string) => void;
+  onSchedule: (contributionId: string) => void;
 };
 
-export function Timetable({ programme, day, days, selectedId, displayLang, onDay, onSelect }: Props) {
+export function Timetable({ programme, day, days, selectedId, displayLang, onDay, onSelect, onSchedule }: Props) {
   const languages = displayOrder(programme.conference.languages ?? [], displayLang);
   const sessions = programme.sessions.filter((session) => session.date === day);
   const roomOrder = new Map(programme.rooms.map((room, index) => [room.id, index]));
@@ -49,6 +50,9 @@ export function Timetable({ programme, day, days, selectedId, displayLang, onDay
   useEffect(() => {
     document.querySelector(".block.is-selected")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [selectedId, day]);
+
+  const listed = new Set(programme.sessions.flatMap((session) => session.contribution_ids ?? []));
+  const unscheduled = programme.contributions.filter((talk) => !talk.session_id || !listed.has(talk.id));
 
   const roomLabel = (roomId: string) => {
     if (!roomId) {
@@ -137,6 +141,28 @@ export function Timetable({ programme, day, days, selectedId, displayLang, onDay
           ))}
         </div>
       </div>
+      <section className="unscheduled" aria-label="Unscheduled talks">
+        <h2>Unscheduled</h2>
+        {unscheduled.length === 0 ? (
+          <p className="quiet">Every talk is in a session.</p>
+        ) : (
+          <ul className="record-list">
+            {unscheduled.map((talk) => (
+              <li key={talk.id}>
+                <div className="talk-row">
+                  <button type="button" className="talk pressable" onClick={() => onSchedule(talk.id)}>
+                    <span className="talk-title">{textOf(talk.title, languages) || talk.id}</span>
+                    <span className="talk-meta">{talk.id}</span>
+                  </button>
+                  <button type="button" className="save pressable" onClick={() => onSchedule(talk.id)}>
+                    Schedule
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </section>
   );
 }

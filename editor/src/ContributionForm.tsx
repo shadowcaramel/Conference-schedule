@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { saveContribution, validateContribution } from "./api";
+import { saveContribution, scheduleTalk, validateContribution } from "./api";
 import { DeleteControl } from "./DeleteControl";
 import { NamePicker, type NameOption } from "./NamePicker";
 import type { Author, Contribution, Diagnostics, ForRecord, Programme, SaveResult } from "./types";
@@ -15,6 +15,7 @@ type Props = {
   onDraftDiagnostics: (diagnostics: Diagnostics) => void;
   onCreatePerson: (draft: { family: string; given: string }) => Promise<string>;
   onDeleted: () => void;
+  onProgramme: (programme: Programme) => void;
 };
 
 const EMPTY_RECORD: ForRecord = { id: "", errors: [], warnings: [] };
@@ -100,6 +101,7 @@ export function ContributionForm({
   onDraftDiagnostics,
   onCreatePerson,
   onDeleted,
+  onProgramme,
 }: Props) {
   const languages = programme.conference.languages ?? [];
   const shown = useMemo(() => displayOrder(languages, displayLang), [languages, displayLang]);
@@ -109,12 +111,15 @@ export function ContributionForm({
   const [noteByLang, setNoteByLang] = useState(() => languageMap(contribution.note, languages, false));
   const [recordChecks, setRecordChecks] = useState<ForRecord>(EMPTY_RECORD);
   const [saving, setSaving] = useState(false);
+  const [targetSession, setTargetSession] = useState(contribution.session_id ?? "");
+  const [targetIndex, setTargetIndex] = useState(0);
 
   useEffect(() => {
     setDraft(contribution);
     setTitleWasString(typeof contribution.title === "string");
     setTitleByLang(languageMap(contribution.title, languages, true));
     setNoteByLang(languageMap(contribution.note, languages, false));
+    setTargetSession(contribution.session_id ?? "");
   }, [contribution, languages]);
 
   const payload = useMemo(
@@ -174,6 +179,17 @@ export function ContributionForm({
   const session = programme.sessions.find((item) => item.id === draft.session_id);
   const room = programme.rooms.find((item) => item.id === session?.room_id);
   const slot = programme.placement.contributions[draft.id];
+  const positionOptions = useMemo(() => {
+    const dest = programme.sessions.find((item) => item.id === targetSession);
+    const ids = (dest?.contribution_ids ?? []).filter((id) => id !== draft.id);
+    const options = ids.map((id, index) => {
+      const talk = programme.contributions.find((item) => item.id === id);
+      const title = talk ? textOf(talk.title, shown) || id : id;
+      return { index, label: `${index + 1}. Before ${title}` };
+    });
+    options.push({ index: ids.length, label: `${ids.length + 1}. At the end` });
+    return options;
+  }, [programme, targetSession, draft.id, shown]);
 
   function updateAuthor(index: number, author: Author) {
     setDraft((current) => ({
@@ -223,6 +239,54 @@ export function ContributionForm({
         <span>Computed time</span>
         <strong>{slot ? `${slot.start}–${slot.end}` : "Not placed"}</strong>
       </div>
+      <fieldset className="author" id="schedule-talk">
+        <legend>Move or schedule</legend>
+        <label className="field">
+          <span>Session</span>
+          <select value={targetSession} onChange={(event) => setTargetSession(event.target.value)}>
+            <option value="">Unscheduled</option>
+            {programme.sessions.map((item) => (
+              <option key={item.id} value={item.id}>
+                {sessionLabel(item, programme, shown)} · {item.date} {item.start}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Position</span>
+          <select
+            value={String(targetIndex)}
+            onChange={(event) => setTargetIndex(Number(event.target.value))}
+            disabled={!targetSession}
+          >
+            {positionOptions.map((option) => (
+              <option key={option.index} value={option.index}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          className="text-button pressable"
+          onClick={() => {
+            scheduleTalk({
+              contribution_id: draft.id,
+              session_id: targetSession,
+              index: targetSession ? targetIndex : undefined,
+            })
+              .then((next) => {
+                toast.success(targetSession ? "Talk moved" : "Talk unscheduled");
+                onProgramme(next);
+              })
+              .catch((error: unknown) => {
+                toast.error(error instanceof Error ? error.message : "Could not move the talk");
+              });
+          }}
+        >
+          {targetSession ? "Move talk" : "Leave unscheduled"}
+        </button>
+      </fieldset>
       {draft.order ? (
         <div className="readonly">
           <span>Order in session</span>

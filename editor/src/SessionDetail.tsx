@@ -6,9 +6,10 @@ type Props = {
   session: Session;
   displayLang: string;
   onOpen: (contributionId: string) => void;
+  onReorder: (contributionId: string, direction: "up" | "down") => void;
 };
 
-export function SessionDetail({ programme, session, displayLang, onOpen }: Props) {
+export function SessionDetail({ programme, session, displayLang, onOpen, onReorder }: Props) {
   const languages = displayOrder(programme.conference.languages ?? [], displayLang);
   const people = new Map(programme.people.map((person) => [person.id, person]));
   const contributions = new Map(programme.contributions.map((item) => [item.id, item]));
@@ -31,7 +32,7 @@ export function SessionDetail({ programme, session, displayLang, onOpen }: Props
         <p className="quiet">No talks in this session.</p>
       ) : (
         <ol className="talks">
-          {ids.map((id) => {
+          {ids.map((id, index) => {
             const talk = contributions.get(id);
             return (
               <li key={id}>
@@ -43,6 +44,9 @@ export function SessionDetail({ programme, session, displayLang, onOpen }: Props
                   start={programme.placement.contributions[id]?.start}
                   end={programme.placement.contributions[id]?.end}
                   onOpen={onOpen}
+                  onReorder={onReorder}
+                  canUp={index > 0}
+                  canDown={index < ids.length - 1}
                 />
               </li>
             );
@@ -75,6 +79,9 @@ function TalkRow({
   start,
   end,
   onOpen,
+  onReorder,
+  canUp,
+  canDown,
 }: {
   id: string;
   talk: Contribution | undefined;
@@ -83,20 +90,33 @@ function TalkRow({
   start?: string;
   end?: string;
   onOpen: (id: string) => void;
+  onReorder: (id: string, direction: "up" | "down") => void;
+  canUp: boolean;
+  canDown: boolean;
 }) {
   const title = talk ? textOf(talk.title, languages) : "Missing contribution";
   const when = start && end ? `${start}–${end}` : "Time not computed";
   return (
-    <button type="button" className="talk pressable" onClick={() => onOpen(id)}>
-      <span className="talk-time">{when}</span>
-      <span className="talk-body">
-        <span className={talk?.status === "cancelled" ? "talk-title is-cancelled" : "talk-title"}>{title}</span>
-        <span className="talk-meta">
-          {speaker || "No speaker"}
-          {talk?.format === "poster" ? " · Poster" : ""}
-          {talk?.status && talk.status !== "ok" ? ` · ${talk.status}` : ""}
+    <div className="talk-row">
+      <button type="button" className="talk pressable" onClick={() => onOpen(id)}>
+        <span className="talk-time">{when}</span>
+        <span className="talk-body">
+          <span className={talk?.status === "cancelled" ? "talk-title is-cancelled" : "talk-title"}>{title}</span>
+          <span className="talk-meta">
+            {speaker || "No speaker"}
+            {talk?.format === "poster" ? " · Poster" : ""}
+            {talk?.status && talk.status !== "ok" ? ` · ${talk.status}` : ""}
+          </span>
         </span>
-      </span>
-    </button>
+      </button>
+      <div className="nudges">
+        <button type="button" className="nudge pressable" aria-label={`Move ${title} up`} disabled={!canUp} onClick={() => onReorder(id, "up")}>
+          Up
+        </button>
+        <button type="button" className="nudge pressable" aria-label={`Move ${title} down`} disabled={!canDown} onClick={() => onReorder(id, "down")}>
+          Down
+        </button>
+      </div>
+    </div>
   );
 }
