@@ -1,16 +1,16 @@
 import type { Person, Programme, RecordKind, StoredRecord } from "./types";
 import { displayOrder, personName, sessionLabel, textOf } from "./text";
 
-const KINDS: { id: RecordKind; label: string }[] = [
-  { id: "conference", label: "Conference" },
-  { id: "tracks", label: "Tracks" },
-  { id: "rooms", label: "Rooms" },
-  { id: "sessions", label: "Sessions" },
-  { id: "contributions", label: "Talks" },
-  { id: "people", label: "People" },
-  { id: "organizations", label: "Organizations" },
-  { id: "resources", label: "Resources" },
-  { id: "changes", label: "Changes" },
+const KINDS: { id: RecordKind; label: string; create: string }[] = [
+  { id: "conference", label: "Conference", create: "conference" },
+  { id: "tracks", label: "Tracks", create: "track" },
+  { id: "rooms", label: "Rooms", create: "room" },
+  { id: "sessions", label: "Sessions", create: "session" },
+  { id: "contributions", label: "Talks", create: "talk" },
+  { id: "people", label: "People", create: "person" },
+  { id: "organizations", label: "Organizations", create: "organization" },
+  { id: "resources", label: "Resources", create: "resource" },
+  { id: "changes", label: "Changes", create: "change" },
 ];
 
 type Props = {
@@ -74,7 +74,7 @@ export function RecordsColumn({ programme, kind, selectedId, displayLang, onKind
       </div>
       {kind === "conference" ? null : (
         <button type="button" className="save pressable" onClick={onCreate}>
-          New {KINDS.find((item) => item.id === kind)?.label.replace(/s$/, "").toLowerCase() || "record"}
+          New {KINDS.find((item) => item.id === kind)?.create || "record"}
         </button>
       )}
       <ul className="record-list">
