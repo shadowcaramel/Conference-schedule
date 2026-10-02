@@ -29,6 +29,28 @@ def clock_minutes(value: str) -> int | None:
     return minutes(parsed)
 
 
+def talk_output_order(contribution_id: str) -> tuple:
+    """Key order of ``talks`` in the previous ``site/data.js``.
+
+    That file followed the Доклады sheet: jubilee rows, plenary numbers 1–5,
+    sponsor rows, the remaining plenaries, then section talks by id. The site
+    looks a talk up by id. This order keeps the built file identical to that
+    snapshot apart from ``generatedAt`` and the changes feed.
+    """
+    cid = contribution_id or ""
+    if cid.startswith("P-J"):
+        group = 0
+    elif cid.startswith("P-") and cid[2:].isdigit() and int(cid[2:]) <= 5:
+        group = 1
+    elif cid.startswith("P-S"):
+        group = 2
+    elif cid.startswith("P-"):
+        group = 3
+    else:
+        group = 4
+    return (group, cid)
+
+
 def bilingual_fill(value: object) -> dict[str, str]:
     """Match the old workbook reader: an empty side is copied from the other."""
     if isinstance(value, str):
@@ -256,9 +278,8 @@ def assemble(data: dict, *, generated_at: str | None = None) -> dict:
     ))
 
     talks: dict[str, dict] = {}
-    for contrib in data.get("contributions") or []:
-        if contrib.get("format") == "poster":
-            continue
+    orals = [contrib for contrib in (data.get("contributions") or []) if contrib.get("format") != "poster"]
+    for contrib in sorted(orals, key=lambda rec: talk_output_order(rec.get("id") or "")):
         author = _presenting_author(contrib) or {}
         person = people.get(author.get("person_id") or "", {})
         org_names = [_org_text(orgs.get(oid)) for oid in author.get("affiliation_ids") or []]
